@@ -6,6 +6,7 @@ cnx = mysql.connector.connect(user='vagrant', password='vagrant',
                               database='research')
 createTables()
 insertData(cnx)
+testLog(cnx)
 cnx.close()
 
 
@@ -41,6 +42,29 @@ def createTables():
         "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
+    TABLES['upvote'] = (
+        "CREATE TABLE 'upvote' ("
+        "  'creator_id' int(11) NOT NULL,"
+        "  'post_id' int(11) NOT NULL,"
+        "  'created_at' date NOT NULL,"
+        "  PRIMARY KEY ('creator_id,post_id')"
+        "  CONSTRAINT 'user_fk' FOREIGN KEY ('creator_id') "
+        "     REFERENCES 'user' ('id') ON DELETE CASCADE"
+        "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
+        "     REFERENCES 'post' ('id') ON DELETE CASCADE"
+        ") ENGINE=InnoDB")
+     TABLES['down'] = (
+        "CREATE TABLE 'upvote' ("
+        "  'creator_id' int(11) NOT NULL,"
+        "  'post_id' int(11) NOT NULL,"
+        "  'created_at' date NOT NULL,"
+        "  PRIMARY KEY ('creator_id,post_id')"
+        "  CONSTRAINT 'user_fk' FOREIGN KEY ('creator_id') "
+        "     REFERENCES 'user' ('id') ON DELETE CASCADE"
+        "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
+        "     REFERENCES 'post' ('id') ON DELETE CASCADE"
+        ") ENGINE=InnoDB")
+        
         
 def insertData(cnx):
     cursor = cnx.cursor()
@@ -54,4 +78,10 @@ def insertData(cnx):
         userIDs.append(cursor.lastrowid)
     cursor.close()
     
+    
+def testLog(cnx):
+    cursor = cnx.cursor()
+    userQuery = ("SELECT * FROM users")
+    cursor.execute(userQuery)
+    cursor.close()
     
