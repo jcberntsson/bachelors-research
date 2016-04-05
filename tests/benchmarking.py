@@ -4,35 +4,52 @@ from pycallgraph import Config
 from pycallgraph import GlobbingFilter
 from pycallgraph.output import GraphvizOutput
 from sys import argv
+import os
+import datetime
 
-if len(argv) == 5:
-    script_name, a, b, c, d = argv
+# Check if argument is provided
+if (len(argv) < 2):
+	print("Too few arguments. A argument for test file is needed.")
+	print("Syntax: 'python benchmarking.py <testFile> <comment>'")
+	print("Example: 'python benchmarking.py mysql onlyTesting'")
+	print("Exiting...")
+	exit()
+
+# Declare variables
+now = str(datetime.datetime.now()).replace(" ", "_").replace(":", ".")
+testFile = argv[1]
+directory = 'graphs/' + testFile
+outputfile = directory + '/' + now
+if (len(argv) > 2):
+	outputfile += '-' + argv[2]
+outputfile += '.png'
+
+# Create directory if needed
+os.makedirs(directory, exist_ok=True)
+
+# Import test method
+if testFile == 'mysql':
+	from test import main
+# ... More cases
 else:
-    print("Error inte arguments: ", argv)
+	from test import main	
 
-from 'test.py
-
-from argv[1] import main
-
+# Configuration for graphs
 config = Config()
 config.trace_filter = GlobbingFilter(exclude=[
     'pycallgraph.*',
     '*.secret_function',
 ])
-
 output = GraphvizOutput()
-output.output_file = 'basic.png'
+output.output_file = outputfile
 
+# Profile the method
 def profiling():
     with PyCallGraph(output=output, config=config):
-        for x in range(500):
-            main()
-    
-def test():
-    y = 1
-    for x in range(500):
-        y += x
-    print("Done: ", y)
-    
+        #for x in range(500):
+        main()
+
+# Run
 if __name__ == '__main__':
-    profiling()
+	from timeit import timeit
+	print(timeit("profiling()", setup="from __main__ import profiling", number=1))
