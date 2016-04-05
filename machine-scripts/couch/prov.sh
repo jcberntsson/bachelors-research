@@ -2,11 +2,6 @@
 # Install CouchDB Server
 echo "Provisioning"
 
-echo "Installing VIM"
-sudo apt-get update
-sudo apt-get install -y -q vim
-echo "VIM installed"
-
 echo "Installing couchdb"
 sudo apt-get update
 sudo apt-get install -y -q couchdb

@@ -8,7 +8,7 @@ sudo apt-get install -y -q software-properties-common
 sudo apt-get update
 sudo apt-get install -y -q python-software-properties
 sudo apt-get update
-sudo add-apt-repository -y -q ppa:webupd8team/java
+sudo add-apt-repository -y ppa:webupd8team/java
 sudo apt-get update
 sudo apt-get install -y -q oracle-java8-set-default
 echo "Oracle Runtime JRE should be default"
