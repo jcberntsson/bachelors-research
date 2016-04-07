@@ -1,17 +1,17 @@
 import mysql.connector
 from datetime import date, datetime, timedelta
 
-cnx = mysql.connector.connect(user='vagrant', password='vagrant',
-                              host='192.168.33.1',
-                              database='research')
-createTables()
-insertData(cnx)
-testLog(cnx)
-cnx.close()
+
+def main():
+    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
+    createTables()
+    insertData(cnx)
+    testLog(cnx)
+    cnx.close()
 
 
 def createTables():
-	print("creating tables")
+    print("creating tables")
     TABLES = {}
     TABLES['user'] = (
         "CREATE TABLE 'user' ("
@@ -53,8 +53,8 @@ def createTables():
         "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
-     TABLES['down'] = (
-        "CREATE TABLE 'upvote' ("
+    TABLES['downvote'] = (
+        "CREATE TABLE 'downvote' ("
         "  'creator_id' int(11) NOT NULL,"
         "  'post_id' int(11) NOT NULL,"
         "  'created_at' date NOT NULL,"
@@ -73,7 +73,7 @@ def insertData(cnx):
                "VALUES (%s)")
     usernames = [('simon'),('takman'),('nordmark'),('jcb-it'),('pedro'),('virre')]
     userIDs = []
-    for username in usernames
+    for username in usernames:
         cursor.execute(add_employee, username)
         userIDs.append(cursor.lastrowid)
     cursor.close()
