@@ -55,7 +55,7 @@ def reddit_createTables(cnx):
         "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
-    for name, ddl in TABLES.iteritems():
+    for name, ddl in TABLES.items():
         try:
             print("Creating table {}: ".format(name), end='')
             cursor.execute(ddl)
