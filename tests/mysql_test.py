@@ -10,7 +10,7 @@ def main():
     cnx.close()
 
 
-def createTables():
+def reddit_createTables():
     print("creating tables")
     TABLES = {}
     TABLES['user'] = (
@@ -66,7 +66,7 @@ def createTables():
         ") ENGINE=InnoDB")
         
         
-def insertData(cnx):
+def reddit_insertData(cnx):
     cursor = cnx.cursor()
     add_user = ("INSERT INTO user "
                "(username) "
@@ -79,7 +79,7 @@ def insertData(cnx):
     cursor.close()
     
     
-def testLog(cnx):
+def reddit_testLog(cnx):
     cursor = cnx.cursor()
     userQuery = ("SELECT * FROM users")
     cursor.execute(userQuery)
