@@ -1,7 +1,7 @@
 import mysql.connector
 from datetime import date, datetime, timedelta
 
-def reddit_createTables():
+def reddit_createTables(cnx):
     print("creating tables")
     TABLES = {}
     TABLES['user'] = (
@@ -55,7 +55,19 @@ def reddit_createTables():
         "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
-        
+    for name, ddl in TABLES.iteritems():
+        try:
+            print("Creating table {}: ".format(name), end='')
+            cursor.execute(ddl)
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                print("already exists.")
+            else:
+                print(err.msg)
+        else:
+            print("OK")
+        cursor.close()
+        cnx.close()
         
 def reddit_insertData(cnx):
     cursor = cnx.cursor()
@@ -78,7 +90,7 @@ def reddit_testLog(cnx):
     
 def main():
     cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
-    reddit_createTables()
+    reddit_createTables(cnx)
     reddit_insertData(cnx)
     reddit_testLog(cnx)
     cnx.close()
