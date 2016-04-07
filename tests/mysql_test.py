@@ -65,7 +65,7 @@ def reddit_insertData(cnx):
     usernames = [('simon'),('takman'),('nordmark'),('jcb-it'),('pedro'),('virre')]
     userIDs = []
     for username in usernames:
-        cursor.execute(add_user, username)
+        cursor.execute(add_user, mysql_real_escape_string(username))
         userIDs.append(cursor.lastrowid)
     cursor.close()
     
