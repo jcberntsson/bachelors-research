@@ -5,13 +5,13 @@ def reddit_createTables():
     print("creating tables")
     TABLES = {}
     TABLES['user'] = (
-        "CREATE TABLE 'research.user' ("
+        "CREATE TABLE 'user' ("
         "  'id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'username' varchar(20) NOT NULL,"
         "  PRIMARY KEY ('id')"
         ") ENGINE=InnoDB")
     TABLES['post'] = (
-        "CREATE TABLE 'research.post' ("
+        "CREATE TABLE 'post' ("
         "  'id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'creator_id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'title' varchar(100) NOT NULL,"
@@ -21,7 +21,7 @@ def reddit_createTables():
         "     REFERENCES 'user' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['comment'] = (
-        "CREATE TABLE 'research.comment' ("
+        "CREATE TABLE 'comment' ("
         "  'id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'creator_id' int(11) NOT NULL,"
         "  'post_id' int(11) NOT NULL,"
@@ -34,7 +34,7 @@ def reddit_createTables():
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['upvote'] = (
-        "CREATE TABLE 'research.upvote' ("
+        "CREATE TABLE 'upvote' ("
         "  'creator_id' int(11) NOT NULL,"
         "  'post_id' int(11) NOT NULL,"
         "  'created_at' date NOT NULL,"
@@ -45,7 +45,7 @@ def reddit_createTables():
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['downvote'] = (
-        "CREATE TABLE 'research.downvote' ("
+        "CREATE TABLE 'downvote' ("
         "  'creator_id' int(11) NOT NULL,"
         "  'post_id' int(11) NOT NULL,"
         "  'created_at' date NOT NULL,"
@@ -77,7 +77,7 @@ def reddit_testLog(cnx):
     cursor.close()
     
 def main():
-    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
+    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110')
     reddit_createTables()
     reddit_insertData(cnx)
     reddit_testLog(cnx)
