@@ -62,7 +62,7 @@ def reddit_insertData(cnx):
     add_user = ("INSERT INTO user "
                "(username) "
                "VALUES (%s)")
-    usernames = [("simon"),("takman"),("nordmark"),("jcb-it"),("pedro"),("virre")]
+    usernames = [(simon),(takman),(nordmark),(jcb-it),(pedro),(virre)]
     userIDs = []
     for username in usernames:
         cursor.execute(add_user, username)
