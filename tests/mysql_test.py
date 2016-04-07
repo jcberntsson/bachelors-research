@@ -77,7 +77,7 @@ def reddit_testLog(cnx):
     cursor.close()
     
 def main():
-    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110')
+    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
     reddit_createTables()
     reddit_insertData(cnx)
     reddit_testLog(cnx)
