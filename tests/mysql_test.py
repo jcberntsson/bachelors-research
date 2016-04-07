@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 
 def reddit_createTables(cnx):
     print("creating tables")
+    cursor = cnx.cursor()
     TABLES = {}
     TABLES['user'] = (
         "CREATE TABLE 'user' ("
