@@ -1,7 +1,7 @@
 import mysql.connector
 from datetime import date, datetime, timedelta
 
-
+main()
 def main():
     cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
     createTables()
