@@ -1,14 +1,6 @@
 import mysql.connector
 from datetime import date, datetime, timedelta
 
-def main():
-    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
-    createTables()
-    insertData(cnx)
-    testLog(cnx)
-    cnx.close()
-
-
 def reddit_createTables():
     print("creating tables")
     TABLES = {}
@@ -84,4 +76,11 @@ def reddit_testLog(cnx):
     cursor.execute(userQuery)
     cursor.close()
     
+def main():
+    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
+    reddit_createTables()
+    reddit_insertData(cnx)
+    reddit_testLog(cnx)
+    cnx.close()
+
 main()
