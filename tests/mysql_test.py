@@ -5,13 +5,13 @@ def reddit_createTables():
     print("creating tables")
     TABLES = {}
     TABLES['user'] = (
-        "CREATE TABLE 'user' ("
+        "CREATE TABLE 'research.user' ("
         "  'id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'username' varchar(20) NOT NULL,"
         "  PRIMARY KEY ('id')"
         ") ENGINE=InnoDB")
     TABLES['post'] = (
-        "CREATE TABLE 'post' ("
+        "CREATE TABLE 'research.post' ("
         "  'id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'creator_id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'title' varchar(100) NOT NULL,"
@@ -21,7 +21,7 @@ def reddit_createTables():
         "     REFERENCES 'user' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['comment'] = (
-        "CREATE TABLE 'comment' ("
+        "CREATE TABLE 'research.comment' ("
         "  'id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'creator_id' int(11) NOT NULL,"
         "  'post_id' int(11) NOT NULL,"
@@ -34,7 +34,7 @@ def reddit_createTables():
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['upvote'] = (
-        "CREATE TABLE 'upvote' ("
+        "CREATE TABLE 'research.upvote' ("
         "  'creator_id' int(11) NOT NULL,"
         "  'post_id' int(11) NOT NULL,"
         "  'created_at' date NOT NULL,"
@@ -45,7 +45,7 @@ def reddit_createTables():
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['downvote'] = (
-        "CREATE TABLE 'downvote' ("
+        "CREATE TABLE 'research.downvote' ("
         "  'creator_id' int(11) NOT NULL,"
         "  'post_id' int(11) NOT NULL,"
         "  'created_at' date NOT NULL,"
