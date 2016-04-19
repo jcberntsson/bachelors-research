@@ -28,11 +28,19 @@ def initSkimData():
 				"email":	"user_"+str(x)+"@gmail.com",
 			}
 		)
-	for x in range(8)
+	for x in range(8):
+		project = db.projects.insert_one(
+			{
+				"name": "project_"+str(x)
+			}
+		)
 	# print out the docuemnts in the users collection
-	# cursor = db.users.find()
-	# for document in cursor:
-	# 	print(document)
+	cursor = db.projects.find()
+	for document in cursor:
+		print(document)
 		
 if __name__ == '__main__':
     initData("skim")
+	
+	
+# Run project on: python mongo.py 
