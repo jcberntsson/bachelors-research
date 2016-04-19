@@ -23,23 +23,23 @@ def initRaceOneData():
 	# Users
 	users = []
 	for x in range(50):
-		users.append(Node("User", username="user_"+str(x)))
+		users.append(Node("USER", username="user_"+str(x)))
 		tx.create(users[x])
 	
 	# Events & Races
 	events = []
 	for x in range(10):
-		events.append(Node("Event", name="event_"+str(x)))
+		events.append(Node("EVENT", name="event_"+str(x)))
 		tx.create(events[x])
 		for y in range(5):
 			nbr = x + 5 + y
-			race = Node("Race", name="race_"+str(nbr))
+			race = Node("RACE", name="race_"+str(nbr))
 			tx.create(race)
 			tx.create(Relationship(race, "IN", events[x]))
 			# Coordinates
-			coord1 = Node("Coordinate", lat=33, lng=44)
-			coord2 = Node("Coordinate", lat=33.1, lng=44.1)
-			coord3 = Node("Coordinate", lat=33.2, lng=44.2)
+			coord1 = Node("COORDINATE", lat=33, lng=44)
+			coord2 = Node("COORDINATE", lat=33.1, lng=44.1)
+			coord3 = Node("COORDINATE", lat=33.2, lng=44.2)
 			tx.create(Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race))
 		
 		tx.create(Relationship(events[x], "MADE_BY", users[x*5]))
@@ -52,28 +52,28 @@ def initSkimData():
 	# Users
 	users = []
 	for x in range(50):
-		users.append(Node("User", username="user_"+str(x), email="user_"+str(x)+"@mail.com"))
+		users.append(Node("USER", username="user_"+str(x), email="user_"+str(x)+"@mail.com"))
 		tx.create(users[x])
 	
 	# Projects and images
 	projects = []
 	for x in range(8):
-		projects.append(Node("Project", name="project_"+str(x)))
+		projects.append(Node("PROJECT", name="project_"+str(x)))
 		tx.create(projects[x])
 		tx.create(Relationship(projects[x], "COLLABORATOR", users[x*2]))
 		tx.create(Relationship(projects[x], "COLLABORATOR", users[x*3]))
 		tx.create(Relationship(projects[x], "COLLABORATOR", users[x*4]))
 		for y in range(4):
 			nbr = x + 5 + y
-			image = Node("Image", name="image_"+str(nbr), height="100", width="100", extension="png", createdAt=str(datetime.datetime.now()))
+			image = Node("IMAGE", name="image_"+str(nbr), height="100", width="100", extension="png", createdAt=str(datetime.datetime.now()))
 			tx.create(image)
 			tx.create(Relationship(image, "IN", projects[x]))
 			# Coordinates
 			nbr = x + 5 + y
-			image = Node("Image", name="innerimage_"+str(nbr), height="100", width="100", extension="png", createdAt=str(datetime.datetime.now()))
+			image = Node("IMAGE", name="innerimage_"+str(nbr), height="100", width="100", extension="png", createdAt=str(datetime.datetime.now()))
 			tx.create(image)
 			for z in range(2):
-				comment = Node("Comment", text="Haha, cool image", createdAt=str(datetime.datetime.now()))
+				comment = Node("COMMENT", text="Haha, cool image", createdAt=str(datetime.datetime.now()))
 				tx.create(comment)
 				tx.create(Relationship(comment, "ON", image))
 				tx.create(Relationship(comment, "MADE_BY", users[x*2]))
@@ -82,7 +82,7 @@ def initSkimData():
 			tx.create(Relationship(sku, "IN", projects[x]))
 			tx.create(Relationship(image, "BELONGS_TO", sku))
 			for z in range(5):
-				row = Node("Row", header="header_"+str(z), value=str(z))
+				row = Node("ROW", header="header_"+str(z), value=str(z))
 				tx.create(row)
 				tx.create(Relationship(row, "OF", sku))
 		
@@ -94,32 +94,38 @@ def initRedditData():
 	# Users
 	users = []
 	for x in range(50):
-		users.append(Node("User", username="user_"+str(x)))
+		users.append(Node("USER", username="user_"+str(x)))
 		tx.create(users[x])
 	
 	# Events & Races
 	events = []
 	for x in range(10):
-		events.append(Node("Event", name="event_"+str(x)))
+		events.append(Node("EVENT", name="event_"+str(x)))
 		tx.create(events[x])
 		for y in range(5):
 			nbr = x + 5 + y
-			race = Node("Race", name="race_"+str(nbr))
+			race = Node("RACE", name="race_"+str(nbr))
 			tx.create(race)
 			tx.create(Relationship(race, "IN", events[x]))
 			# Coordinates
-			coord1 = Node("Coordinate", lat=33, lng=44)
-			coord2 = Node("Coordinate", lat=33.1, lng=44.1)
-			coord3 = Node("Coordinate", lat=33.2, lng=44.2)
+			coord1 = Node("COORDINATE", lat=33, lng=44)
+			coord2 = Node("COORDINATE", lat=33.1, lng=44.1)
+			coord3 = Node("COORDINATE", lat=33.2, lng=44.2)
 			tx.create(Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race))
 		
 		tx.create(Relationship(events[x], "MADE_BY", users[x*5]))
 		
 	tx.commit()
+	
+def fetchSKU():
+	cursor = graph.run('MATCH (row:ROW)-[of:OF]->(sku:SKU) WHERE sku.name="sku_7" RETURN sku,of,row')
+	#while cursor.forward():
+		#print(cursor.current['row']['header'] + " - " + cursor.current['row']['value'])
 
 def clearData():
 	# Dangerous
 	graph.delete_all();
 	
 if __name__ == '__main__':
-    initData("skim")
+    #initData("skim")
+	fetchSKU()
