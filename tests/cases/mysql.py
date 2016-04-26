@@ -58,10 +58,7 @@ class MySQL(Base):
             "CREATE TABLE raceprofile ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
-            "  race bigint,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT raceprofile_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
+            "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
         TABLES['tag'] = (
             "CREATE TABLE tag ("
