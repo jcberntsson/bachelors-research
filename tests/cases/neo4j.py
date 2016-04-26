@@ -3,7 +3,7 @@ import random
 
 from py2neo import Relationship, Graph, Node, Path
 
-from cases.base import Base
+from cases import Base
 
 
 class Neo4j(Base):
@@ -20,7 +20,10 @@ class Neo4j(Base):
         # Users
         users = []
         for x in range(50):
-            users.append(Node("USER", username="user_" + str(random.randint(1, 50))))
+            users.append(Node("USER",
+                              username="user_" + str(random.randint(1, 50)),
+                              fullname="Tester",
+                              password="SuperHash"))
             tx.create(users[x])
 
         # Events & Races
@@ -29,22 +32,38 @@ class Neo4j(Base):
         coordinates = []
         activities = []
         for x in range(10):
-            events.append(Node("EVENT", name="event_" + str(x)))
+            events.append(Node("EVENT",
+                               name="event_" + str(x),
+                               logoURL="google.se/img.png"))
             tx.create(events[x])
             for y in range(5):
-                race = Node("RACE", name="race_" + str(random.randint(1, 500)))
+                race = Node("RACE",
+                            name="race_" + str(random.randint(1, 500)),
+                            description="A nice race to participate in",
+                            date="2016-06-13",
+                            maxDuration=3,
+                            preview="linktoimage.png",
+                            location="Gothenburg, Sweden",
+                            logoURL="google.se/img.png")
                 tx.create(race)
                 races.append(race)
                 tx.create(Relationship(race, "IN", events[x]))
                 # Coordinates
-                coord1 = Node("COORDINATE", lat=33, lng=44)
+                coord1 = Node("COORDINATE", lat=33, lng=44, alt=100)
                 coordinates.append(coord1)
-                coord2 = Node("COORDINATE", lat=33.1, lng=44.1)
+                coord2 = Node("COORDINATE", lat=33.1, lng=44.1, alt=100)
                 coordinates.append(coord2)
-                coord3 = Node("COORDINATE", lat=33.2, lng=44.2)
+                coord3 = Node("COORDINATE", lat=33.2, lng=44.2, alt=100)
                 coordinates.append(coord3)
-                tx.create(
-                    Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race))
+                #map = Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race)
+                prev = coord3
+                for i in range(100):
+                    coord = Node("COORDINATE", lat=33, lng=44, alt=100)
+                    tx.create(coord)
+                    tx.create(Relationship(prev, "FOLLOWED_BY", coord))
+                    prev = coord
+                tx.create(Relationship(prev, "END_FOR", race))
+                #tx.create(Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race))
 
                 rands = []
                 for z in range(random.randint(0, 5)):
@@ -131,26 +150,79 @@ class Neo4j(Base):
 
     # SKIM
     def fetchSKU(self):
-        self.graph.run(
-            'MATCH (row:ROW)-[of:OF]->(sku:SKU) WHERE sku.name="sku_7" RETURN sku,of,row'
-        ).dump()
+        def setup(inner_self):
+            # print("Setup")
+            out = self.graph.run(
+                'CREATE (sku:SKU { name: "test_sku" }) '
+                'RETURN ID(sku) AS sku_id'
+            )
+            if out.forward():
+                # print(out.current)
+                inner_self.sku_id = out.current['sku_id']
+
+        def run(inner_self):
+            self.graph.run(
+                'MATCH (row:ROW)-[of:OF]->(sku:SKU) '
+                'WHERE ID(sku)=%d '
+                'RETURN sku,of,row' % inner_self.sku_id
+            ) #.dump()
+
+        def teardown(inner_self):
+            self.graph.run(
+                'MATCH (sku:SKU) '
+                'WHERE ID(sku)=%d '
+                'DELETE sku '
+                'RETURN count(*) AS deleted_rows' % inner_self.sku_id
+            )  # .dump()
+
+        return self.create_case("fetchSKU", setup, run, teardown)
 
     def fetchUsers(self):
-        self.graph.run(
-            'MATCH (user:USER) RETURN user'
-        ).dump()
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            self.graph.run(
+                'MATCH (user:USER) RETURN user'
+            ).dump()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchUsers", setup, run, teardown)
 
     def commentOnImage(self):
-        # TODO: Maybe better to create all three in one create?
-        self.graph.run(
-            'MATCH (user:USER)<-[:COLLABORATOR]-(:PROJECT)<-[:IN]-(image:IMAGE) '
-            'WITH * LIMIT 1 '
-            'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
-            'RETURN comment'
-        ).dump()
+        def setup(inner_self):
+            out = self.graph.run(
+                'CREATE (user:USER { username: "test_user" })<-[:COLLABORATOR]-(project:PROJECT { name: "test_project" })<-[:IN]-(image:IMAGE { name: "test_image" }) '
+                'RETURN ID(user) AS user_id, ID(project) AS project_id, ID(image) AS image_id'
+            )
+            if out.forward():
+                #print(out.current)
+                inner_self.user_id = out.current['user_id']
+                inner_self.project_id = out.current['project_id']
+                inner_self.image_id = out.current['image_id']
+
+        def run(inner_self):
+            self.graph.run(
+                'MATCH (user:USER)<-[:COLLABORATOR]-(project:PROJECT)<-[:IN]-(image:IMAGE) '
+                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
+                'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
+                'RETURN comment' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
+            ) #.dump()
+
+        def teardown(inner_self):
+            self.graph.run(
+                'MATCH (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
+                '      (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
+                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
+                'DELETE collaborator,in,made,on,user,project,image,comment '
+                'RETURN count(*) AS deleted_rows' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
+            ).dump()
+
+        return self.create_case("commentOnImage", setup, run, teardown)
 
     def pairImageSKU(self):
-
         def setup(inner_self):
             #print("Setup")
             out = self.graph.run(
@@ -182,27 +254,7 @@ class Neo4j(Base):
                 'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
             )#.dump()
 
-        return self.create_case("PairImageAndSKUCase", setup, run, teardown)
-
-        '''
-        rel = self.graph.run(
-            'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
-            'WITH * SKIP 55 LIMIT 1 '
-            'CREATE (image)-[b:BELONGS_TO]->(sku) '
-            'DELETE in '
-            'RETURN ID(b) AS ID'
-        )
-
-        relation_id = str(rel.evaluate())
-
-        self.graph.run(
-            'MATCH (image:IMAGE)-[b:BELONGS_TO]->(:SKU)-[:IN]->(project:PROJECT)'
-            'WHERE ID(b) = ' + relation_id + ' '
-            'CREATE (image)-[:IN]->(project) '
-            'DELETE b '
-            'RETURN count(*)'
-        ).dump()
-        '''
+        return self.create_case("pairImageSKU", setup, run, teardown)
 
     # RaceOne
     def follow(self):
@@ -285,14 +337,3 @@ class Neo4j(Base):
 
     def insertMaps(self):
         pass
-
-if __name__ == '__main__':
-    neo = Neo4j()
-    #neo.init("skim")
-    # clearData()
-    # initData("raceone")
-    # dump(fetchUsers())
-    testCase = neo.pairImageSKU()
-    testCase.setup()
-    testCase.run()
-    testCase.teardown()

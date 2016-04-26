@@ -1,7 +1,7 @@
 import abc
 import random
 
-from core.case import Case
+from core import Case
 
 
 class Base:
@@ -11,6 +11,7 @@ class Base:
     skim = {'users': [], 'projects': [], 'images': [], 'skus': [], 'comments': []}
 
     def init(self, company):
+        self.clearData()
         if company == "raceone":
             self.initRaceOne()
         elif company == "skim":
