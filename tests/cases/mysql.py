@@ -105,6 +105,10 @@ class MySQL(Base):
             "  goal_point bigint,"
             "  PRIMARY KEY (id),"
             "  CONSTRAINT racemap_map_fk FOREIGN KEY (map) "
+            "     REFERENCES map (id),"
+            "  CONSTRAINT racemap_startpoint_fk FOREIGN KEY (start_point) "
+            "     REFERENCES map (id),"
+            "  CONSTRAINT racemap_goalpoint_fk FOREIGN KEY (goal_point) "
             "     REFERENCES map (id)"
             ") ENGINE=InnoDB")
         TABLES['eventmap'] = (
