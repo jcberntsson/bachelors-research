@@ -262,7 +262,7 @@ class MySQL(Base):
 
     def clearData(self):
         # Dangerous
-        self.graph.delete_all()
+        #self.graph.delete_all()
 
     ############################
     ####	TEST METHODS	####
