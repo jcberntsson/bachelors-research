@@ -57,10 +57,10 @@ def reddit_createTables(cnx):
         "     REFERENCES post (id) ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     cursor.execute('drop table account');
-    cursor.execute('drop post account');
-    cursor.execute('drop comment account');
-    cursor.execute('drop upvote account');
-    cursor.execute('drop downvote account');
+    cursor.execute('drop table post');
+    cursor.execute('drop table comment');
+    cursor.execute('drop table upvote');
+    cursor.execute('drop table downvote');
     for name, ddl in TABLES.items():
         try:
             print("Creating table {}: ".format(name), end='')
