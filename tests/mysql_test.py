@@ -14,7 +14,7 @@ def reddit_createTables(cnx):
     TABLES['post'] = (
         "CREATE TABLE post ("
         "  id int(11) NOT NULL AUTO_INCREMENT,"
-        "  creator_id int(11) NOT NULL AUTO_INCREMENT,"
+        "  creator_id int(11) NOT NULL,"
         "  title varchar(100) NOT NULL,"
         "  created_at date NOT NULL,"
         "  PRIMARY KEY (id),"
