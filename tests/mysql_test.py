@@ -68,7 +68,6 @@ def reddit_createTables(cnx):
         else:
             print("OK")
     cursor.close()
-    cnx.close()
         
 def reddit_insertData(cnx):
     cursor = cnx.cursor()
