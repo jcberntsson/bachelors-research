@@ -17,7 +17,7 @@ class MySQL(Base):
     def initRaceOne(self):
         ##Create tables
         print("creating tables")
-        cursor = cnx.cursor()
+        cursor = self.cnx.cursor()
         TABLES = {}
         TABLES['organizer'] = (
             "CREATE TABLE organizer ("
