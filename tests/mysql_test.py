@@ -73,11 +73,11 @@ def reddit_insertData(cnx):
     cursor = cnx.cursor()
     add_account = ("INSERT INTO account "
                "(username) "
-               "VALUES (")
+               "VALUES ('")
     usernames = [("simon"),("takman"),("nordmark"),("jcb-it"),("pedro"),("virre")]
     userIDs = []
     for username in usernames:
-        cursor.execute(add_account + username + ")")
+        cursor.execute(add_account + username + "')")
         userIDs.append(cursor.lastrowid)
     cursor.close()
     
