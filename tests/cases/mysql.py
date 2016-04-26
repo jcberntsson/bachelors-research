@@ -138,7 +138,7 @@ class MySQL(Base):
             "  CONSTRAINT race_category_fk FOREIGN KEY (category) "
             "     REFERENCES category (id),"
             "  CONSTRAINT race_event_fk FOREIGN KEY (event_id) "
-            "     REFERENCES event (id) ON DELETE CASCADE,"
+            "     REFERENCES event (id),"
             "  CONSTRAINT race_map_fk FOREIGN KEY (map_id) "
             "     REFERENCES racemap (id),"
             "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
