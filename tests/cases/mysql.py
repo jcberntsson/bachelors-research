@@ -10,7 +10,12 @@ class MySQL(Base):
     # connect to authenticated graph database
     cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
     
-    def raceOne_createTables(cnx):
+    ####################################
+    ####	DATA INITIALIZATION		####
+    ####################################
+
+    def initRaceOne(self):
+        ##Create tables
         print("creating tables")
         cursor = cnx.cursor()
         TABLES = {}
@@ -149,12 +154,6 @@ class MySQL(Base):
             else:
                 print("OK")
         cursor.close()
-    ####################################
-    ####	DATA INITIALIZATION		####
-    ####################################
-
-    def initRaceOne(self):
-        raceOne_createTables(self.cnx)
         '''cursor = self.cnx.cursor()
 
         # Users
