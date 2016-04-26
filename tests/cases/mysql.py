@@ -60,24 +60,6 @@ class MySQL(Base):
             "  name varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['tag'] = (
-            "CREATE TABLE tag ("
-            "  id int NOT NULL AUTO_INCREMENT,"
-            "  name varchar(50),"
-            "  race bigint,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT tag_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
-            ") ENGINE=InnoDB")
-        TABLES['racegroup'] = (
-            "CREATE TABLE racegroup ("
-            "  id int NOT NULL AUTO_INCREMENT,"
-            "  name varchar(50),"
-            "  race bigint,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
-            ") ENGINE=InnoDB")
         TABLES['map'] = (
             "CREATE TABLE map ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
@@ -105,9 +87,9 @@ class MySQL(Base):
             "  CONSTRAINT racemap_map_fk FOREIGN KEY (map) "
             "     REFERENCES map (id),"
             "  CONSTRAINT racemap_startpoint_fk FOREIGN KEY (start_point) "
-            "     REFERENCES map (id),"
+            "     REFERENCES point (id),"
             "  CONSTRAINT racemap_goalpoint_fk FOREIGN KEY (goal_point) "
-            "     REFERENCES map (id)"
+            "     REFERENCES point (id)"
             ") ENGINE=InnoDB")
         TABLES['eventmap'] = (
             "CREATE TABLE eventmap ("
@@ -143,6 +125,24 @@ class MySQL(Base):
             "     REFERENCES racemap (id),"
             "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
             "     REFERENCES raceprofile (id)"
+            ") ENGINE=InnoDB")
+        TABLES['tag'] = (
+            "CREATE TABLE tag ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  race bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT tag_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
+        TABLES['racegroup'] = (
+            "CREATE TABLE racegroup ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  race bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
         for name, ddl in TABLES.items():
             try:
