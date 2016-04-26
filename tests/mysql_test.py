@@ -64,7 +64,7 @@ def reddit_createTables(cnx):
             '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                 print("already exists.")'''
             '''else:'''
-                print(err.msg)
+            print(err.msg)
         else:
             print("OK")
         cursor.close()
