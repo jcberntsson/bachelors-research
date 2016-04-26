@@ -155,7 +155,7 @@ class MySQL(Base):
 
     def initRaceOne(self):
         raceOne_createTables(self.cnx)
- '''       cursor = self.cnx.cursor()
+        '''cursor = self.cnx.cursor()
 
         # Users
         users = []
