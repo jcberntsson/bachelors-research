@@ -38,6 +38,7 @@ class MySQL(Base):
             "  logoUrl varchar(50),"
             "  organizer_id bigint,"
             "  successor_id bigint,"
+            "  predecessor_id bigint,"
             "  preview varchar(50),"
             "  PRIMARY KEY (id),"
             "  CONSTRAINT event_organizer_fk FOREIGN KEY (organizer_id) "
