@@ -18,7 +18,7 @@ def reddit_createTables(cnx):
         "  title varchar(100) NOT NULL,"
         "  created_at date NOT NULL,"
         "  PRIMARY KEY (id),"
-        "  CONSTRAINT account_fk FOREIGN KEY (creator_id) "
+        "  CONSTRAINT account_post_fk FOREIGN KEY (creator_id) "
         "     REFERENCES account (id) ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['comment'] = (
@@ -29,9 +29,9 @@ def reddit_createTables(cnx):
         "  content text NOT NULL,"
         "  created_at date NOT NULL,"
         "  PRIMARY KEY (id),"
-        "  CONSTRAINT account_fk FOREIGN KEY (creator_id) "
+        "  CONSTRAINT account_comment_fk FOREIGN KEY (creator_id) "
         "     REFERENCES account (id) ON DELETE CASCADE,"
-        "  CONSTRAINT post_fk FOREIGN KEY (post_id) "
+        "  CONSTRAINT post_comment_fk FOREIGN KEY (post_id) "
         "     REFERENCES post (id) ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['upvote'] = (
@@ -40,9 +40,9 @@ def reddit_createTables(cnx):
         "  post_id int(11) NOT NULL,"
         "  created_at date NOT NULL,"
         "  PRIMARY KEY (creator_id,post_id),"
-        "  CONSTRAINT account_fk FOREIGN KEY (creator_id) "
+        "  CONSTRAINT account_upvote_fk FOREIGN KEY (creator_id) "
         "     REFERENCES account (id) ON DELETE CASCADE,"
-        "  CONSTRAINT post_fk FOREIGN KEY (post_id) "
+        "  CONSTRAINT post_upvote_fk FOREIGN KEY (post_id) "
         "     REFERENCES post (id) ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['downvote'] = (
@@ -51,9 +51,9 @@ def reddit_createTables(cnx):
         "  post_id int(11) NOT NULL,"
         "  created_at date NOT NULL,"
         "  PRIMARY KEY (creator_id,post_id),"
-        "  CONSTRAINT account_fk FOREIGN KEY (creator_id) "
+        "  CONSTRAINT account_downvote_fk FOREIGN KEY (creator_id) "
         "     REFERENCES account (id) ON DELETE CASCADE,"
-        "  CONSTRAINT post_fk FOREIGN KEY (post_id) "
+        "  CONSTRAINT post_downvote_fk FOREIGN KEY (post_id) "
         "     REFERENCES post (id) ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     for name, ddl in TABLES.items():
