@@ -86,6 +86,8 @@ def reddit_testLog(cnx):
     cursor = cnx.cursor()
     userQuery = ("SELECT * FROM account")
     cursor.execute(userQuery)
+    results = cursor.fetchall()
+    print results
     cursor.close()
     
 def main():
