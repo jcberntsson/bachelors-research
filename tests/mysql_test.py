@@ -63,7 +63,7 @@ def reddit_createTables(cnx):
         except mysql.connector.Error as err:
             '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                 print("already exists.")'''
-            else:
+            '''else:'''
                 print(err.msg)
         else:
             print("OK")
