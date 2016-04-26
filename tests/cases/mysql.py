@@ -426,13 +426,3 @@ class MySQL(Base):
     def insertMaps(self):
         pass
 
-if __name__ == '__main__':
-    neo = Neo4j()
-    #neo.init("skim")
-    # clearData()
-    # initData("raceone")
-    # dump(fetchUsers())
-    testCase = neo.pairImageSKU()
-    testCase.setup()
-    testCase.run()
-    testCase.teardown()
