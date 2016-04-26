@@ -5,8 +5,8 @@ def reddit_createTables(cnx):
     print("creating tables")
     cursor = cnx.cursor()
     TABLES = {}
-    TABLES['user'] = (
-        "CREATE TABLE 'user' ("
+    TABLES['account'] = (
+        "CREATE TABLE 'account' ("
         "  'id' int(11) NOT NULL AUTO_INCREMENT,"
         "  'username' varchar(20) NOT NULL,"
         "  PRIMARY KEY ('id')"
@@ -18,8 +18,8 @@ def reddit_createTables(cnx):
         "  'title' varchar(100) NOT NULL,"
         "  'created_at' date NOT NULL,"
         "  PRIMARY KEY ('id')"
-        "  CONSTRAINT 'user_fk' FOREIGN KEY ('creator_id') "
-        "     REFERENCES 'user' ('id') ON DELETE CASCADE"
+        "  CONSTRAINT 'account_fk' FOREIGN KEY ('creator_id') "
+        "     REFERENCES 'account' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
     TABLES['comment'] = (
         "CREATE TABLE 'comment' ("
@@ -29,8 +29,8 @@ def reddit_createTables(cnx):
         "  'content' text NOT NULL,"
         "  'created_at' date NOT NULL,"
         "  PRIMARY KEY ('id')"
-        "  CONSTRAINT 'user_fk' FOREIGN KEY ('creator_id') "
-        "     REFERENCES 'user' ('id') ON DELETE CASCADE"
+        "  CONSTRAINT 'account_fk' FOREIGN KEY ('creator_id') "
+        "     REFERENCES 'account' ('id') ON DELETE CASCADE"
         "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
@@ -40,8 +40,8 @@ def reddit_createTables(cnx):
         "  'post_id' int(11) NOT NULL,"
         "  'created_at' date NOT NULL,"
         "  PRIMARY KEY ('creator_id,post_id')"
-        "  CONSTRAINT 'user_fk' FOREIGN KEY ('creator_id') "
-        "     REFERENCES 'user' ('id') ON DELETE CASCADE"
+        "  CONSTRAINT 'account_fk' FOREIGN KEY ('creator_id') "
+        "     REFERENCES 'account' ('id') ON DELETE CASCADE"
         "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
@@ -51,8 +51,8 @@ def reddit_createTables(cnx):
         "  'post_id' int(11) NOT NULL,"
         "  'created_at' date NOT NULL,"
         "  PRIMARY KEY ('creator_id,post_id')"
-        "  CONSTRAINT 'user_fk' FOREIGN KEY ('creator_id') "
-        "     REFERENCES 'user' ('id') ON DELETE CASCADE"
+        "  CONSTRAINT 'account_fk' FOREIGN KEY ('creator_id') "
+        "     REFERENCES 'account' ('id') ON DELETE CASCADE"
         "  CONSTRAINT 'post_fk' FOREIGN KEY (`post_id`) "
         "     REFERENCES 'post' ('id') ON DELETE CASCADE"
         ") ENGINE=InnoDB")
@@ -72,20 +72,20 @@ def reddit_createTables(cnx):
         
 def reddit_insertData(cnx):
     cursor = cnx.cursor()
-    add_user = ("INSERT INTO user "
+    add_account = ("INSERT INTO account "
                "(username) "
                "VALUES (")
     usernames = [("simon"),("takman"),("nordmark"),("jcb-it"),("pedro"),("virre")]
     userIDs = []
     for username in usernames:
-        cursor.execute(add_user + username + ")")
+        cursor.execute(add_account + username + ")")
         userIDs.append(cursor.lastrowid)
     cursor.close()
     
     
 def reddit_testLog(cnx):
     cursor = cnx.cursor()
-    userQuery = ("SELECT * FROM users")
+    userQuery = ("SELECT * FROM account")
     cursor.execute(userQuery)
     cursor.close()
     
