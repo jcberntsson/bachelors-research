@@ -26,8 +26,8 @@ class MySQL(Base):
             print("Dropping OK")
         ##Create tables
         print("creating tables")
-        TABLES = {}
-        TABLES['organizer'] = (
+        TABLES = []
+        TABLES.append(
             "CREATE TABLE organizer ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  username varchar(20),"
@@ -39,7 +39,7 @@ class MySQL(Base):
             "  url varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['event'] = (
+        TABLES.append(
             "CREATE TABLE event ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -56,25 +56,25 @@ class MySQL(Base):
             "  CONSTRAINT event_predecessor_fk FOREIGN KEY (predecessor_id) "
             "     REFERENCES event (id)"
             ") ENGINE=InnoDB")
-        TABLES['category'] = (
+        TABLES.append(
             "CREATE TABLE category ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['raceprofile'] = (
+        TABLES.append(
             "CREATE TABLE raceprofile ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['map'] = (
+        TABLES.append(
             "CREATE TABLE map ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['point'] = (
+        TABLES.append(
             "CREATE TABLE point ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  lat DECIMAL(11, 8),"
@@ -85,7 +85,7 @@ class MySQL(Base):
             "  CONSTRAINT point_map_fk FOREIGN KEY (map) "
             "     REFERENCES map (id)"
             ") ENGINE=InnoDB")
-        TABLES['racemap'] = (
+        TABLES.append(
             "CREATE TABLE racemap ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  map bigint,"
@@ -99,7 +99,7 @@ class MySQL(Base):
             "  CONSTRAINT racemap_goalpoint_fk FOREIGN KEY (goal_point) "
             "     REFERENCES point (id)"
             ") ENGINE=InnoDB")
-        TABLES['eventmap'] = (
+        TABLES.append(
             "CREATE TABLE eventmap ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  map bigint,"
@@ -110,7 +110,7 @@ class MySQL(Base):
             "  CONSTRAINT eventmap_event_fk FOREIGN KEY (event) "
             "     REFERENCES event (id)"
             ") ENGINE=InnoDB")
-        TABLES['race'] = (
+        TABLES.append(
             "CREATE TABLE race ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -134,7 +134,7 @@ class MySQL(Base):
             "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
             "     REFERENCES raceprofile (id)"
             ") ENGINE=InnoDB")
-        TABLES['tag'] = (
+        TABLES.append(
             "CREATE TABLE tag ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -143,7 +143,7 @@ class MySQL(Base):
             "  CONSTRAINT tag_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
-        TABLES['racegroup'] = (
+        TABLES.append(
             "CREATE TABLE racegroup ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -152,13 +152,13 @@ class MySQL(Base):
             "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
-        TABLES['participant'] = (
+        TABLES.append(
             "CREATE TABLE participant ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  username varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['activity'] = (
+        TABLES.append(
             "CREATE TABLE activity ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  participant bigint,"
@@ -170,10 +170,9 @@ class MySQL(Base):
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
-        for name, ddl in TABLES.items():
+        for ddl in TABLES:
             try:
                 cursor = self.cnx.cursor()
-                print("Creating table {}: ".format(name), end='')
                 cursor.execute(ddl)
                 self.cnx.commit()
                 cursor.close()
