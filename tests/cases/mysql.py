@@ -394,7 +394,7 @@ class MySQL(Base):
                 # Images
                 nbr = x + 5 + y
                 cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
-                    "VALUES('image_"+str(bnr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
+                    "VALUES('image_"+str(nbr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
 
                 ''''# SKUS
                 sku = Node("SKU",
