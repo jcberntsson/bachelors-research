@@ -227,7 +227,7 @@ class MySQL(Base):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 49)
                     
-                    cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(races[10*x+y])+"','"+str(datetime.datetime.now())+"')")
+                    cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
 
             #tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
