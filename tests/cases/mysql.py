@@ -106,6 +106,24 @@ class MySQL(Base):
             "  CONSTRAINT eventmap_event_fk FOREIGN KEY (event) "
             "     REFERENCES event (id)"
             ") ENGINE=InnoDB")
+        TABLES['participant'] = (
+            "CREATE TABLE participant ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  username varchar(50),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES['activity'] = (
+            "CREATE TABLE activity ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  participant bigint,"
+            "  race bigint,"
+            "  joinedAt datetime,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
+            "     REFERENCES participant (id),"
+            "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
         TABLES['race'] = (
             "CREATE TABLE race ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
@@ -129,24 +147,6 @@ class MySQL(Base):
             "     REFERENCES racemap (id),"
             "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
             "     REFERENCES raceprofile (id)"
-            ") ENGINE=InnoDB")
-        TABLES['participant'] = (
-            "CREATE TABLE participant ("
-            "  id bigint NOT NULL AUTO_INCREMENT,"
-            "  username varchar(50),"
-            "  PRIMARY KEY (id)"
-            ") ENGINE=InnoDB")
-        TABLES['activity'] = (
-            "CREATE TABLE activity ("
-            "  id int NOT NULL AUTO_INCREMENT,"
-            "  participant bigint,"
-            "  race bigint,"
-            "  joinedAt datetime,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
-            "     REFERENCES participant (id),"
-            "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
         TABLES['tag'] = (
             "CREATE TABLE tag ("
