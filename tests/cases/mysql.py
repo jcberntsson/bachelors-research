@@ -18,9 +18,9 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE activity")
-            self.cnx.commit();
             cursor.execute("DROP TABLE participant")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE activity")
             self.cnx.commit();
             cursor.execute("DROP TABLE tag")
             self.cnx.commit();
