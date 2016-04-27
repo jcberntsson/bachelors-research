@@ -262,7 +262,7 @@ class MySQL(Base):
             cursor.execute("DROP TABLE header")
             cursor.execute("DROP TABLE sku")
             cursor.execute("DROP TABLE contribution")
-            cursor.execute("DROP TABLE user")
+            cursor.execute("DROP TABLE contributor")
             cursor.execute("DROP TABLE project")
             self.cnx.commit();
         except mysql.connector.Error as err:
