@@ -166,6 +166,7 @@ class MySQL(Base):
             try:
                 print("Creating table {}: ".format(name), end='')
                 cursor.execute(ddl)
+                self.cnx.commit()
             except mysql.connector.Error as err:
                 '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                     print("already exists.")'''
