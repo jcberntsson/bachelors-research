@@ -34,11 +34,11 @@ class MySQL(Base):
             self.cnx.commit();
             cursor.close()
             cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE racemap")
+            cursor.execute("DROP TABLE race")
             self.cnx.commit();
             cursor.close()
             cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE race")
+            cursor.execute("DROP TABLE racemap")
             self.cnx.commit();
             cursor.close()
             cursor = self.cnx.cursor()
