@@ -373,43 +373,30 @@ class MySQL(Base):
                 '''else:'''
                 print(err)
 
-        '''# Users
+        # Users
         users = []
+        cursor = self.cnx.cursor()
         for x in range(50):
-            users.append(Node("USER",
-                              username="user_" + str(x),
-                              email="user_" + str(x) + "@mail.com",
-                              password="xpassx"))
-            tx.create(users[x])
+            cursor.execute("INSERT INTO contributor (username,email,password) VALUES ('user_"+str(x)+"','user_"+str(x)+"@mail.com','xpassx'))
+            users.append(cursor.lastrowid)
+        self.cnx.commit()
+        cursor.close()
 
         # Projects and images
+        cursor = self.cnx.cursor()
         for x in range(8):
-            project = Node("PROJECT",
-                           name="project_" + str(x))
-            tx.create(project)
-            tx.create(Relationship(project, "COLLABORATOR", users[x * 2]))
-            tx.create(Relationship(project, "COLLABORATOR", users[x * 3]))
-            tx.create(Relationship(project, "COLLABORATOR", users[x * 4]))
+            cursor.execute("INSERT INTO project (name) VALUES('project_"+str(x)+"')")
+            project_id = cursor.lastrowid
+            
+            for c in range(10)
+                cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*(c+1)*2])+"','"+project_id+"')")
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
-                image = Node("IMAGE",
-                             name="image_" + str(nbr),
-                             originalName="original_name",
-                             extension="jpg",
-                             encoding="PNG/SFF",
-                             size=1024,
-                             height=1080,
-                             width=720,
-                             verticalDPI=40,
-                             horizontalDPI=50,
-                             bitDepth=15,
-                             createdAt="2016-03-03",
-                             accepted=False)
-                tx.create(image)
-                tx.create(Relationship(image, "IN", project))
+                cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
+                    "VALUES('image_"+str(bnr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+project_id+"')")
 
-                # SKUS
+                ''''# SKUS
                 sku = Node("SKU",
                            name="sku_" + str(nbr))
                 tx.create(sku)
