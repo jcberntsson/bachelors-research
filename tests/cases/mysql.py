@@ -169,6 +169,8 @@ class MySQL(Base):
             "CREATE TABLE participant ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  username varchar(50),"
+            "  fullname varchar(50),"
+            "  password varchar(20),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
         TABLES.append(
@@ -203,9 +205,9 @@ class MySQL(Base):
         for x in range(50):
             username = "user_" + str(random.randint(1, 50))
             participant_name = "participant_" + str(random.randint(1, 50))
-            cursor.execute("INSERT INTO organizer (username) VALUES('"+ username +"')")
+            cursor.execute("INSERT INTO organizer (username,fullname,password) VALUES('"+ username +"','Tester','SuperHash')")
             organizers.append(cursor.lastrowid)
-            cursor.execute("INSERT INTO participant (username) VALUES('"+ participant_name +"')")
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('"+ participant_name +"','Tester','SuperHash')")
             participants.append(cursor.lastrowid)
         cursor.close()
         self.cnx.commit()
