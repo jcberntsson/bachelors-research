@@ -130,24 +130,6 @@ class MySQL(Base):
             "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
             "     REFERENCES raceprofile (id)"
             ") ENGINE=InnoDB")
-        TABLES['tag'] = (
-            "CREATE TABLE tag ("
-            "  id int NOT NULL AUTO_INCREMENT,"
-            "  name varchar(50),"
-            "  race bigint,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT tag_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
-            ") ENGINE=InnoDB")
-        TABLES['racegroup'] = (
-            "CREATE TABLE racegroup ("
-            "  id int NOT NULL AUTO_INCREMENT,"
-            "  name varchar(50),"
-            "  race bigint,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
-            ") ENGINE=InnoDB")
         TABLES['participant'] = (
             "CREATE TABLE participant ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
@@ -164,6 +146,24 @@ class MySQL(Base):
             "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
             "     REFERENCES participant (id),"
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
+        TABLES['tag'] = (
+            "CREATE TABLE tag ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  race bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT tag_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
+        TABLES['racegroup'] = (
+            "CREATE TABLE racegroup ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  race bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
         table_creation_ddl = ""
