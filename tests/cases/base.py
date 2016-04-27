@@ -5,10 +5,6 @@ from core import Case
 
 
 class Base:
-    # Data
-    raceone = {'users': [], 'events': [], 'races': [], 'coordinates': [], 'activities': []}
-
-    skim = {'users': [], 'projects': [], 'images': [], 'skus': [], 'comments': []}
 
     def init(self, company):
         self.clearData()
