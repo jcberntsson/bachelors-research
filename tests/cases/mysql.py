@@ -153,12 +153,12 @@ class MySQL(Base):
         TABLES['activity'] = (
             "CREATE TABLE activity ("
             "  id int NOT NULL AUTO_INCREMENT,"
-            "  user bigint,"
+            "  participant bigint,"
             "  race bigint,"
             "  joinedAt datetime,"
             "  PRIMARY KEY (id),"
-            "  CONSTRAINT activity_user_fk FOREIGN KEY (user) "
-            "     REFERENCES user (id),"
+            "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
+            "     REFERENCES participant (id),"
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
@@ -227,7 +227,7 @@ class MySQL(Base):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 49)
                     
-                    cursor.execute("INSERT INTO activity (user,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(races[10*x+y])+"','"+str(datetime.datetime.now())+"')")
+                    cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(races[10*x+y])+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
 
             #tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
