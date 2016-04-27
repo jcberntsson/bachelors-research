@@ -156,15 +156,15 @@ class MySQL(Base):
             else:
                 print("OK")
         cursor.close()
-        '''cursor = self.cnx.cursor()
+        cursor = self.cnx.cursor()
 
         # Users
         users = []
         for x in range(50):
-            users.append(Node("USER", username="user_" + str(random.randint(1, 50))))
-            tx.create(users[x])
+            username = "user_" + str(random.randint(1, 50));
+            cursor.execute("INSERT INTO Organizer (username) VALUES('"+ username +"')")
 
-        # Events & Races
+        '''# Events & Races
         events = []
         races = []
         coordinates = []
@@ -200,7 +200,7 @@ class MySQL(Base):
 
             tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
 
-        tx.commit()
+        tx.commit()'''
 
     def initSkim(self):
         tx = self.graph.begin()
@@ -256,7 +256,7 @@ class MySQL(Base):
                     tx.create(row)
                     tx.create(Relationship(row, "OF", sku))
 
-        tx.commit()'''
+        tx.commit()
 
     def initReddit(self):
         pass
