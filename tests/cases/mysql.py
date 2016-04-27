@@ -174,9 +174,9 @@ class MySQL(Base):
             else:
                 print("OK")
         cursor.close()
-        cursor = self.cnx.cursor()
-
+        
         # Users
+        cursor = self.cnx.cursor()
         print("Inserting organizers and participants.")
         organizers = []
         participants = []
@@ -227,6 +227,7 @@ class MySQL(Base):
                     activities.append(cursor.lastrowid)
 
             #tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
+        cursor.close()
         self.cnx.commit()
 
     def initSkim(self):
