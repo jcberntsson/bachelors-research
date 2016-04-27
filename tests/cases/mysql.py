@@ -159,6 +159,7 @@ class MySQL(Base):
         cursor = self.cnx.cursor()
 
         # Users
+        print("Inserting users.")
         users = []
         for x in range(50):
             username = "user_" + str(random.randint(1, 50));
