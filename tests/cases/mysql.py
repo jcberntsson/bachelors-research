@@ -17,7 +17,7 @@ class MySQL(Base):
     def initRaceOne(self):
         ##Drop old tables
         cursor = self.cnx.cursor()
-        cursor.execute("DROP TABLE activity;DROP TABLE participant;DROP TABLE tag;DROP TABLE racegroup;DROP TABLE racemap;DROP TABLE race;DROP TABLE eventmap;DROP TABLE event;DROP TABLE racemap;DROP TABLE raceprofile;DROP TABLE point;DROP TABLE map;DROP TABLE category;DROP TABLE organizer;")
+        cursor.execute("DROP TABLE activity;DROP TABLE participant;DROP TABLE tag;DROP TABLE racegroup;DROP TABLE racemap;DROP TABLE race;DROP TABLE eventmap;DROP TABLE event;DROP TABLE racemap;DROP TABLE raceprofile;DROP TABLE point;DROP TABLE map;DROP TABLE category;DROP TABLE organizer;",multi=True)
         cursor.commit()
         ##Create tables
         print("creating tables")
@@ -168,9 +168,9 @@ class MySQL(Base):
             ") ENGINE=InnoDB")
         table_creation_ddl = ""
         for name, ddl in TABLES.items():
-            table_creation_ddl = table_creation_ddl+" "+ddl
+            table_creation_ddl = table_creation_ddl+"; "+ddl
         try:
-            cursor.execute(table_creation_ddl)
+            cursor.execute(table_creation_ddl,multi=True)
             self.cnx.commit()
         except mysql.connector.Error as err:
             '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
