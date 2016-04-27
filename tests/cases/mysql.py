@@ -26,7 +26,6 @@ class MySQL(Base):
             cursor.execute("DROP TABLE racemap")
             cursor.execute("DROP TABLE eventmap")
             cursor.execute("DROP TABLE event")
-            cursor.execute("DROP TABLE racemap")
             cursor.execute("DROP TABLE raceprofile")
             cursor.execute("DROP TABLE point")
             cursor.execute("DROP TABLE map")
