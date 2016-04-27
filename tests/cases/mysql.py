@@ -163,7 +163,7 @@ class MySQL(Base):
         users = []
         for x in range(50):
             username = "user_" + str(random.randint(1, 50));
-            cursor.execute("INSERT INTO organizer (username) VALUES('"+ username +"')")
+            cursor.execute("INSERT INTO organizer (username) VALUES('pung')")
         cursor.close()
 
         '''# Events & Races
