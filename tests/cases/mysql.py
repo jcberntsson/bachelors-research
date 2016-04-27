@@ -388,7 +388,7 @@ class MySQL(Base):
             cursor.execute("INSERT INTO project (name) VALUES('project_"+str(x)+"')")
             project_id = cursor.lastrowid
             
-            for c in range(10)
+            for c in range(10):
                 cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*(c+1)*2])+"','"+project_id+"')")
             for y in range(4):
                 # Images
