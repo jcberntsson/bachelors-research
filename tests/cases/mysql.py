@@ -26,7 +26,6 @@ class MySQL(Base):
             print("Dropping OK")
         ##Create tables
         print("creating tables")
-        cursor = self.cnx.cursor()
         TABLES = {}
         TABLES['organizer'] = (
             "CREATE TABLE organizer ("
@@ -173,9 +172,11 @@ class MySQL(Base):
             ") ENGINE=InnoDB")
         for name, ddl in TABLES.items():
             try:
+                cursor = self.cnx.cursor()
                 print("Creating table {}: ".format(name), end='')
                 cursor.execute(ddl)
                 self.cnx.commit()
+                cursor.close()
             except mysql.connector.Error as err:
                 '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                     print("already exists.")'''
@@ -183,7 +184,6 @@ class MySQL(Base):
                 print(err)
             else:
                 print("OK")
-        cursor.close()
         
         # Users
         cursor = self.cnx.cursor()
