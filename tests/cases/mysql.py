@@ -53,9 +53,9 @@ class MySQL(Base):
             "  CONSTRAINT event_organizer_fk FOREIGN KEY (organizer_id) "
             "     REFERENCES organizer (id) ON DELETE CASCADE,"
             "  CONSTRAINT event_successor_fk FOREIGN KEY (successor_id) "
-            "     REFERENCES event (id) ON DELETE CASCADE,"
+            "     REFERENCES event (id),"
             "  CONSTRAINT event_predecessor_fk FOREIGN KEY (predecessor_id) "
-            "     REFERENCES event (id) ON DELETE CASCADE"
+            "     REFERENCES event (id)"
             ") ENGINE=InnoDB")
         TABLES['category'] = (
             "CREATE TABLE category ("
