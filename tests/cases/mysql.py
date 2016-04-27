@@ -200,7 +200,7 @@ class MySQL(Base):
         maps = []
         for x in range(10):
             eventname = "event_" + str(x)
-            cursor.execute("INSERT INTO event (name,organizer) VALUES('"+eventname+"','"+str(organizers[x])+"')")
+            cursor.execute("INSERT INTO event (name,organizer_id) VALUES('"+eventname+"','"+str(organizers[x])+"')")
             event_id = cursor.lastrowid
             events.append(event_id)
             for y in range(5):
@@ -215,7 +215,7 @@ class MySQL(Base):
                 coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33.2,44.2,'"+map_id+"')")
                 coordinates.append(cursor.lastrowid)
-                cursor.execute("INSERT INTO race (name,map,event) VALUES('"+racename+"','"+map_id+"','"+event_id+"')")  
+                cursor.execute("INSERT INTO race (name,map_id,event_id) VALUES('"+racename+"','"+map_id+"','"+event_id+"')")  
                 race_id=cursor.lastrowid
                 races.append(race_id)            
                 rands = []
