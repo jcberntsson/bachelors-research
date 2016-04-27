@@ -223,7 +223,7 @@ class MySQL(Base):
         racemaps = []
         for x in range(10):
             eventname = "event_" + str(x)
-            cursor.execute("INSERT INTO event (name,organizer_id) VALUES('"+eventname+"','"+str(organizers[x])+"')")
+            cursor.execute("INSERT INTO event (name,organizer_id,logoUrl) VALUES('"+eventname+"','"+str(organizers[x])+"','google.se/img.png')")
             event_id = cursor.lastrowid
             events.append(event_id)
             for y in range(5):
