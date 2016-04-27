@@ -197,26 +197,33 @@ class MySQL(Base):
         races = []
         coordinates = []
         activities = []
+        maps = []
         for x in range(10):
             eventname = "event_" + str(x)
-            cursor.execute("INSERT INTO event (name,organizer) VALUES('"+eventname+"','"+organizers[x]+"')")
+            cursor.execute("INSERT INTO event (name,organizer) VALUES('"+eventname+"','"+str(organizers[x])+"')")
             event_id = cursor.lastrowid
+            events.append(event_id)
             for y in range(5):
                 racename = "race_" + str(random.randint(1, 500))
                 mapname = "map_" + str(random.randint(1, 500))
                 cursor.execute("INSERT INTO map (name) VALUES('"+mapname+"')")
                 map_id = cursor.lastrowid
+                maps.append(map_id)
                 cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33,44,'"+map_id+"')")
+                coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33.1,44.1,'"+map_id+"')")
+                coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33.2,44.2,'"+map_id+"')")
+                coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO race (name,map,event) VALUES('"+racename+"','"+map_id+"','"+event_id+"')")  
-                race_id=cursor.lastrowid             
+                race_id=cursor.lastrowid
+                races.append(race_id)            
                 rands = []
                 for z in range(random.randint(0, 5)):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 49)
                     
-                    cursor.execute("INSERT INTO activity (user,race,joinedAt) VALUES('+participants[rand]+','+race_id+','+datetime.datetime.now()+')")
+                    cursor.execute("INSERT INTO activity (user,race,joinedAt) VALUES('+str(participants[rand])+','+race_id+','+datetime.datetime.now()+')")
                     activities.append(cursor.lastrowid)
 
             #tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
