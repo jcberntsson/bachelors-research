@@ -181,8 +181,6 @@ class MySQL(Base):
                     print("already exists.")'''
                 '''else:'''
                 print(err)
-            else:
-                print("OK")
         
         # Users
         cursor = self.cnx.cursor()
