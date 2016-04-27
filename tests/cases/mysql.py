@@ -18,7 +18,33 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE activity;DROP TABLE participant;DROP TABLE tag;DROP TABLE racegroup;DROP TABLE racemap;DROP TABLE race;DROP TABLE eventmap;DROP TABLE event;DROP TABLE racemap;DROP TABLE raceprofile;DROP TABLE point;DROP TABLE map;DROP TABLE category;DROP TABLE organizer",multi=True)
+            cursor.execute("DROP TABLE activity")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE participant")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE tag")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE racegroup")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE racemap")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE race")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE eventmap")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE event")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE racemap")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE raceprofile")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE point")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE map")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE category")
+            self.cnx.commit();
+            cursor.execute("DROP TABLE organizer")
             self.cnx.commit();
             cursor.close()
         except mysql.connector.Error as err:
