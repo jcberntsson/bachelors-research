@@ -16,99 +16,21 @@ class MySQL(Base):
 
     def initRaceOne(self):
         ##Drop old tables
-        cursor = self.cnx.cursor()
         try:
+            cursor = self.cnx.cursor()
             cursor.execute("DROP TABLE activity")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE participant")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE tag")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE racegroup")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE race")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE racemap")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE eventmap")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE event")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE racemap")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE raceprofile")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE point")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE map")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE category")
-            self.cnx.commit();
-        except mysql.connector.Error as err:
-            print(err.msg)
-        else:
-            print("Dropping OK")
-        try:
             cursor.execute("DROP TABLE organizer")
             self.cnx.commit();
         except mysql.connector.Error as err:
