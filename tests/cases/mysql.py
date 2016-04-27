@@ -17,8 +17,8 @@ class MySQL(Base):
     def initRaceOne(self):
         ##Drop old tables
         cursor = self.cnx.cursor()
-        cursor.execute("DROP TABLE activity;DROP TABLE participant;DROP TABLE tag;DROP TABLE racegroup;DROP TABLE racemap;DROP TABLE race;DROP TABLE eventmap;DROP TABLE event;DROP TABLE racemap;DROP TABLE raceprofile;DROP TABLE point;DROP TABLE map;DROP TABLE category;DROP TABLE organizer;",multi=True)
-        self.cnx.commit()
+        cursor.execute("DROP TABLE activity;DROP TABLE participant;DROP TABLE tag;DROP TABLE racegroup;DROP TABLE racemap;DROP TABLE race;DROP TABLE eventmap;DROP TABLE event;DROP TABLE racemap;DROP TABLE raceprofile;DROP TABLE point;DROP TABLE map;DROP TABLE category;DROP TABLE organizer;")
+        cursor.commit();
         ##Create tables
         print("creating tables")
         cursor = self.cnx.cursor()
@@ -106,24 +106,6 @@ class MySQL(Base):
             "  CONSTRAINT eventmap_event_fk FOREIGN KEY (event) "
             "     REFERENCES event (id)"
             ") ENGINE=InnoDB")
-        TABLES['participant'] = (
-            "CREATE TABLE participant ("
-            "  id bigint NOT NULL AUTO_INCREMENT,"
-            "  username varchar(50),"
-            "  PRIMARY KEY (id)"
-            ") ENGINE=InnoDB")
-        TABLES['activity'] = (
-            "CREATE TABLE activity ("
-            "  id int NOT NULL AUTO_INCREMENT,"
-            "  participant bigint,"
-            "  race bigint,"
-            "  joinedAt datetime,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
-            "     REFERENCES participant (id),"
-            "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
-            ") ENGINE=InnoDB")
         TABLES['race'] = (
             "CREATE TABLE race ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
@@ -166,19 +148,36 @@ class MySQL(Base):
             "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
-        table_creation_ddl = ""
+        TABLES['participant'] = (
+            "CREATE TABLE participant ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  username varchar(50),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES['activity'] = (
+            "CREATE TABLE activity ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  participant bigint,"
+            "  race bigint,"
+            "  joinedAt datetime,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
+            "     REFERENCES participant (id),"
+            "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
         for name, ddl in TABLES.items():
-            table_creation_ddl = table_creation_ddl+"; "+ddl
-        try:
-            cursor.execute(table_creation_ddl,multi=True)
-            self.cnx.commit()
-        except mysql.connector.Error as err:
-            '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")'''
-            '''else:'''
-            print(err.msg)
-        else:
-            print("OK")
+            try:
+                print("Creating table {}: ".format(name), end='')
+                cursor.execute(ddl)
+                self.cnx.commit()
+            except mysql.connector.Error as err:
+                '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                    print("already exists.")'''
+                '''else:'''
+                print(err.msg)
+            else:
+                print("OK")
         cursor.close()
         
         # Users
