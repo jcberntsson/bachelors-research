@@ -389,7 +389,7 @@ class MySQL(Base):
             project_id = cursor.lastrowid
             
             for c in range(10):
-                cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*c*2])+"','"+str(project_id)+"')")
+                cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*2+c])+"','"+str(project_id)+"')")
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
