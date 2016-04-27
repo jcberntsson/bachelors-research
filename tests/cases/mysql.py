@@ -146,7 +146,7 @@ class MySQL(Base):
             ") ENGINE=InnoDB")
         TABLES['participant'] = (
             "CREATE TABLE participant ("
-            "  id int NOT NULL AUTO_INCREMENT,"
+            "  id bigint NOT NULL AUTO_INCREMENT,"
             "  username varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
