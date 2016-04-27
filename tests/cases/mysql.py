@@ -241,7 +241,7 @@ class MySQL(Base):
                 coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33.2,44.2,'"+str(map_id)+"')")
                 coordinates.append(cursor.lastrowid)
-                cursor.execute("INSERT INTO race (name,map_id,event_id) VALUES('"+racename+"','"+str(racemap_id)+"','"+str(events[x])+"')")  
+                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,map_id,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(racemap_id)+"','"+str(events[x])+"')")  
                 race_id=cursor.lastrowid
                 races.append(race_id)            
                 rands = []
@@ -252,7 +252,6 @@ class MySQL(Base):
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
 
-            #tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
         cursor.close()
         self.cnx.commit()
 
