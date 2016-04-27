@@ -144,6 +144,24 @@ class MySQL(Base):
             "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
+        TABLES['participant'] = (
+            "CREATE TABLE participant ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  username varchar(50),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES['activity'] = (
+            "CREATE TABLE activity ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  user bigint,"
+            "  race bigint,"
+            "  joinedAt datetime,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT activity_user_fk FOREIGN KEY (user) "
+            "     REFERENCES user (id),"
+            "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
         for name, ddl in TABLES.items():
             try:
                 print("Creating table {}: ".format(name), end='')
@@ -159,51 +177,50 @@ class MySQL(Base):
         cursor = self.cnx.cursor()
 
         # Users
-        print("Inserting users.")
-        users = []
+        print("Inserting organizers and participants.")
+        organizers = []
+        participants = []
         for x in range(50):
-            username = "user_" + str(random.randint(1, 50));
+            username = "user_" + str(random.randint(1, 50))
+            participant_name = "participant_" + str(random.randint(1, 50))
             cursor.execute("INSERT INTO organizer (username) VALUES('"+ username +"')")
+            organizers.append(cursor.lastrowid)
+            cursor.execute("INSERT INTO participant (username) VALUES('"+ participant_name +"')")
+            participants.append(cursor.lastrowid)
         cursor.close()
         self.cnx.commit()
 
-        '''# Events & Races
+        # Events & Races
+        print("Inserting events and races.")
+        cursor = self.cnx.cursor()
         events = []
         races = []
         coordinates = []
         activities = []
         for x in range(10):
-            events.append(Node("EVENT", name="event_" + str(x)))
-            tx.create(events[x])
+            eventname = "event_" + str(x)
+            cursor.execute("INSERT INTO event (name,organizer) VALUES('"+eventname+"','"+organizers[x]+"')")
+            event_id = cursor.lastrowid
             for y in range(5):
-                race = Node("RACE", name="race_" + str(random.randint(1, 500)))
-                tx.create(race)
-                races.append(race)
-                tx.create(Relationship(race, "IN", events[x]))
-                # Coordinates
-                coord1 = Node("COORDINATE", lat=33, lng=44)
-                coordinates.append(coord1)
-                coord2 = Node("COORDINATE", lat=33.1, lng=44.1)
-                coordinates.append(coord2)
-                coord3 = Node("COORDINATE", lat=33.2, lng=44.2)
-                coordinates.append(coord3)
-                tx.create(
-                    Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race))
-
+                racename = "race_" + str(random.randint(1, 500))
+                mapname = "map_" + str(random.randint(1, 500))
+                cursor.execute("INSERT INTO map (name) VALUES('"+mapname+"')")
+                map_id = cursor.lastrowid
+                cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33,44,'"+map_id+"')")
+                cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33.1,44.1,'"+map_id+"')")
+                cursor.execute("INSERT INTO point (lat,lng,map) VALUES(33.2,44.2,'"+map_id+"')")
+                cursor.execute("INSERT INTO race (name,map,event) VALUES('"+racename+"','"+map_id+"','"+event_id+"')")  
+                race_id=cursor.lastrowid             
                 rands = []
                 for z in range(random.randint(0, 5)):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 49)
+                    
+                    cursor.execute("INSERT INTO activity (user,race,joinedAt) VALUES('+participants[rand]+','+race_id+','+datetime.datetime.now()+')")
+                    activities.append(cursor.lastrowid)
 
-                    rands.append(rand)
-                    activity = Node("ACTIVITY", joinedAt=str(datetime.datetime.now()))
-                    tx.create(activity)
-                    activities.append(activity)
-                    tx.create(Path(users[rand], "PARTICIPATING_IN", activity, "OF", race))
-
-            tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
-
-        tx.commit()'''
+            #tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
+        self.cnx.commit()
 
     def initSkim(self):
         tx = self.graph.begin()
