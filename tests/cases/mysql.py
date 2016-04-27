@@ -168,7 +168,7 @@ class MySQL(Base):
             ") ENGINE=InnoDB")
         table_creation_ddl = ""
         for name, ddl in TABLES.items():
-            table_creation_ddl = table_creation_ddl+"; "+ddl
+            table_creation_ddl = table_creation_ddl+" "+ddl
         try:
             cursor.execute(table_creation_ddl)
             self.cnx.commit()
