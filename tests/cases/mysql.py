@@ -166,18 +166,19 @@ class MySQL(Base):
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
+        table_creation_ddl = ""
         for name, ddl in TABLES.items():
-            try:
-                print("Creating table {}: ".format(name), end='')
-                cursor.execute(ddl)
-                self.cnx.commit()
-            except mysql.connector.Error as err:
-                '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                    print("already exists.")'''
-                '''else:'''
-                print(err.msg)
-            else:
-                print("OK")
+            table_creation_ddl = table_creation_ddl+"; "+ddl
+        try:
+            cursor.execute(table_creation_ddl)
+            self.cnx.commit()
+        except mysql.connector.Error as err:
+            '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                print("already exists.")'''
+            '''else:'''
+            print(err.msg)
+        else:
+            print("OK")
         cursor.close()
         
         # Users
