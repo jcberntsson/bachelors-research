@@ -377,7 +377,7 @@ class MySQL(Base):
         users = []
         cursor = self.cnx.cursor()
         for x in range(50):
-            cursor.execute("INSERT INTO contributor (username,email,password) VALUES ('user_"+str(x)+"','user_"+str(x)+"@mail.com','xpassx'))
+            cursor.execute("INSERT INTO contributor (username,email,password) VALUES ('user_"+str(x)+"','user_"+str(x)+"@mail.com','xpassx')")
             users.append(cursor.lastrowid)
         self.cnx.commit()
         cursor.close()
