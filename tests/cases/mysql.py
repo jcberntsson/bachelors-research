@@ -253,60 +253,200 @@ class MySQL(Base):
         self.cnx.commit()
 
     def initSkim(self):
-        tx = self.graph.begin()
+        ##Drop old tables
+        try:
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE comment")
+            cursor.execute("DROP TABLE image")
+            cursor.execute("DROP TABLE sku")
+            cursor.execute("DROP TABLE contribution")
+            cursor.execute("DROP TABLE user")
+            cursor.execute("DROP TABLE project")
+            self.cnx.commit();
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("Dropping OK")
+        cursor.close()
+        
+        ##Create tables
+        print("Creating tables")
+        TABLES = []
+        TABLES.append(
+            "CREATE TABLE project ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE contributor ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  username varchar(20),"
+            "  email varchar(50),"
+            "  password varchar(20),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE contribution ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  contributor bigint,"
+            "  project bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT contribution_contributor_fk FOREIGN KEY (contributor) "
+            "     REFERENCES contributor (id),"
+            "  CONSTRAINT contribution_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE sku ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  project bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT sku_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE header ("
+            "  sku_id bigint,"
+            "  name varchar(50),"
+            "  PRIMARY KEY (sku_id,name),"
+            "  CONSTRAINT header_sku_fk FOREIGN KEY (sku_id) "
+            "     REFERENCES sku (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE skuValue ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  sku_id bigint,"
+            "  value varchar(100),"
+            "  header_name varchar(50),"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT skuValue_header_fk FOREIGN KEY (sku_id,header_name) "
+            "     REFERENCES header (sku_id,name)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE image ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  sku bigint,"
+            "  project bigint,"
+            "  name varchar(40),"
+            "  original_name varchar(40),"
+            "  extension varchar(10),"
+            "  encoding varchar(10),"
+            "  size int,"
+            "  height int,"
+            "  width int,"
+            "  verticalDPI int,"
+            "  horizontalDPI int,"
+            "  bitDepth int,"
+            "  createdAt datetime,"
+            "  accepted Boolean,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT image_sku_fk FOREIGN KEY (sku) "
+            "     REFERENCES sku (id),"
+            "  CONSTRAINT image_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE comment ("
+            "  id bigint,"
+            "  creator bigint,"
+            "  image bigint,"
+            "  text varchar(300),"
+            "  createdAt datetime,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT comment_contributor_fk FOREIGN KEY (creator) "
+            "     REFERENCES contributor (id),"
+            "  CONSTRAINT comment_image_fk FOREIGN KEY (image) "
+            "     REFERENCES image (id)"
+            ") ENGINE=InnoDB")     
+        for ddl in TABLES:
+            try:
+                cursor = self.cnx.cursor()
+                cursor.execute(ddl)
+                self.cnx.commit()
+                cursor.close()
+            except mysql.connector.Error as err:
+                '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                    print("already exists.")'''
+                '''else:'''
+                print(err)
 
-        # Users
+        '''# Users
         users = []
         for x in range(50):
-            users.append(
-                Node("USER", username="user_" + str(x), email="user_" + str(x) + "@mail.com"))
+            users.append(Node("USER",
+                              username="user_" + str(x),
+                              email="user_" + str(x) + "@mail.com",
+                              password="xpassx"))
             tx.create(users[x])
 
         # Projects and images
-        projects = []
-        images = []
-        skus = []
-        comments = []
         for x in range(8):
-            projects.append(Node("PROJECT", name="project_" + str(x)))
-            tx.create(projects[x])
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 2]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 3]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 4]))
+            project = Node("PROJECT",
+                           name="project_" + str(x))
+            tx.create(project)
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 2]))
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 3]))
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 4]))
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
-                image = Node("IMAGE", name="image_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
+                image = Node("IMAGE",
+                             name="image_" + str(nbr),
+                             originalName="original_name",
+                             extension="jpg",
+                             encoding="PNG/SFF",
+                             size=1024,
+                             height=1080,
+                             width=720,
+                             verticalDPI=40,
+                             horizontalDPI=50,
+                             bitDepth=15,
+                             createdAt="2016-03-03",
+                             accepted=False)
                 tx.create(image)
-                images.append(image)
-                tx.create(Relationship(image, "IN", projects[x]))
-                # Inner images
-                nbr = x + 5 + y
-                image = Node("IMAGE", name="innerimage_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
-                tx.create(image)
-                images.append(image)
-                for z in range(2):
-                    # Comments
-                    comment = Node("COMMENT", text="Haha, cool image", createdAt=str(datetime.datetime.now()))
-                    tx.create(comment)
-                    comments.append(comment)
-                    tx.create(Relationship(comment, "ON", image))
-                    tx.create(Relationship(comment, "MADE_BY", users[x * 2]))
+                tx.create(Relationship(image, "IN", project))
+
                 # SKUS
-                sku = Node("SKU", name="sku_" + str(nbr))
+                sku = Node("SKU",
+                           name="sku_" + str(nbr))
                 tx.create(sku)
-                skus.append(sku)
-                tx.create(Relationship(sku, "IN", projects[x]))
-                tx.create(Relationship(image, "BELONGS_TO", sku))
-                for z in range(5):
+                tx.create(Relationship(sku, "IN", project))
+                for z in range(10):
                     # Rows
-                    row = Node("ROW", header="header_" + str(z), value=str(z))
+                    row = Node("ROW",
+                               header="header_" + str(z),
+                               value=str(z))
                     tx.create(row)
                     tx.create(Relationship(row, "OF", sku))
 
-        tx.commit()
+                # SKU images
+                nbr = x + 5 + y
+                image = Node("IMAGE",
+                             name="sku_image_" + str(nbr),
+                             originalName="original_name",
+                             extension="jpg",
+                             encoding="PNG/SFF",
+                             size=1024,
+                             height=1080,
+                             width=720,
+                             verticalDPI=40,
+                             horizontalDPI=50,
+                             bitDepth=15,
+                             createdAt="2016-03-03",
+                             accepted=False)
+                tx.create(image)
+                tx.create(Relationship(image, "BELONGS_TO", sku))
+                for z in range(2):
+                    # Comments
+                    comment = Node("COMMENT",
+                                   text="Haha, cool image",
+                                   createdAt="2016-04-04")
+                    tx.create(comment)
+                    tx.create(Relationship(comment, "ON", image))
+                    tx.create(Relationship(comment, "MADE_BY", users[x * 2 + z]))
+
+        tx.commit()'''
 
     def initReddit(self):
         pass

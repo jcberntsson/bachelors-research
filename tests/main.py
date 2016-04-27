@@ -5,7 +5,7 @@ from cases import MySQL
 # Run
 if __name__ == '__main__':
     m = MySQL()
-    m.init("raceone")
+    m.init("skim")
     #testCase = neo.commentOnImage()
     #testCase.setup()
     #testCase.run()
