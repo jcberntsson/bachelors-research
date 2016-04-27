@@ -389,12 +389,12 @@ class MySQL(Base):
             project_id = cursor.lastrowid
             
             for c in range(10):
-                cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*(c+1)*2])+"','"+project_id+"')")
+                cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*(c+1)*2])+"','"+str(project_id)+"')")
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
                 cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
-                    "VALUES('image_"+str(bnr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+project_id+"')")
+                    "VALUES('image_"+str(bnr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
 
                 ''''# SKUS
                 sku = Node("SKU",
