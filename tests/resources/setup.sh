@@ -8,6 +8,8 @@ pip install python-gflags oauth2client
 
 pip install gspread
 
+pip install py2neo
+
 apt-get install python3-pip
 
 apt-get install python-mysqldb

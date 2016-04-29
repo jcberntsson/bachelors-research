@@ -15,11 +15,32 @@ class MySQL(Base):
     ####################################
 
     def initRaceOne(self):
+        ##Drop old tables
+        try:
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE activity")
+            cursor.execute("DROP TABLE participant")
+            cursor.execute("DROP TABLE tag")
+            cursor.execute("DROP TABLE racegroup")
+            cursor.execute("DROP TABLE race")
+            cursor.execute("DROP TABLE racemap")
+            cursor.execute("DROP TABLE eventmap")
+            cursor.execute("DROP TABLE event")
+            cursor.execute("DROP TABLE raceprofile")
+            cursor.execute("DROP TABLE point")
+            cursor.execute("DROP TABLE map")
+            cursor.execute("DROP TABLE category")
+            cursor.execute("DROP TABLE organizer")
+            self.cnx.commit();
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("Dropping OK")
+        cursor.close()
         ##Create tables
         print("creating tables")
-        cursor = self.cnx.cursor()
-        TABLES = {}
-        TABLES['organizer'] = (
+        TABLES = []
+        TABLES.append(
             "CREATE TABLE organizer ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  username varchar(20),"
@@ -31,7 +52,7 @@ class MySQL(Base):
             "  url varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['event'] = (
+        TABLES.append(
             "CREATE TABLE event ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -44,29 +65,29 @@ class MySQL(Base):
             "  CONSTRAINT event_organizer_fk FOREIGN KEY (organizer_id) "
             "     REFERENCES organizer (id) ON DELETE CASCADE,"
             "  CONSTRAINT event_successor_fk FOREIGN KEY (successor_id) "
-            "     REFERENCES event (id) ON DELETE CASCADE,"
+            "     REFERENCES event (id),"
             "  CONSTRAINT event_predecessor_fk FOREIGN KEY (predecessor_id) "
-            "     REFERENCES event (id) ON DELETE CASCADE"
+            "     REFERENCES event (id)"
             ") ENGINE=InnoDB")
-        TABLES['category'] = (
+        TABLES.append(
             "CREATE TABLE category ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['raceprofile'] = (
+        TABLES.append(
             "CREATE TABLE raceprofile ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['map'] = (
+        TABLES.append(
             "CREATE TABLE map ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
             "  PRIMARY KEY (id)"
             ") ENGINE=InnoDB")
-        TABLES['point'] = (
+        TABLES.append(
             "CREATE TABLE point ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  lat DECIMAL(11, 8),"
@@ -77,7 +98,7 @@ class MySQL(Base):
             "  CONSTRAINT point_map_fk FOREIGN KEY (map) "
             "     REFERENCES map (id)"
             ") ENGINE=InnoDB")
-        TABLES['racemap'] = (
+        TABLES.append(
             "CREATE TABLE racemap ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  map bigint,"
@@ -91,7 +112,7 @@ class MySQL(Base):
             "  CONSTRAINT racemap_goalpoint_fk FOREIGN KEY (goal_point) "
             "     REFERENCES point (id)"
             ") ENGINE=InnoDB")
-        TABLES['eventmap'] = (
+        TABLES.append(
             "CREATE TABLE eventmap ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  map bigint,"
@@ -102,7 +123,7 @@ class MySQL(Base):
             "  CONSTRAINT eventmap_event_fk FOREIGN KEY (event) "
             "     REFERENCES event (id)"
             ") ENGINE=InnoDB")
-        TABLES['race'] = (
+        TABLES.append(
             "CREATE TABLE race ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -126,7 +147,7 @@ class MySQL(Base):
             "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
             "     REFERENCES raceprofile (id)"
             ") ENGINE=InnoDB")
-        TABLES['tag'] = (
+        TABLES.append(
             "CREATE TABLE tag ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -135,7 +156,7 @@ class MySQL(Base):
             "  CONSTRAINT tag_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
-        TABLES['racegroup'] = (
+        TABLES.append(
             "CREATE TABLE racegroup ("
             "  id int NOT NULL AUTO_INCREMENT,"
             "  name varchar(50),"
@@ -144,117 +165,275 @@ class MySQL(Base):
             "  CONSTRAINT racegroup_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
-        for name, ddl in TABLES.items():
+        TABLES.append(
+            "CREATE TABLE participant ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  username varchar(50),"
+            "  fullname varchar(50),"
+            "  password varchar(20),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE activity ("
+            "  id int NOT NULL AUTO_INCREMENT,"
+            "  participant bigint,"
+            "  race bigint,"
+            "  joinedAt datetime,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
+            "     REFERENCES participant (id),"
+            "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
+        for ddl in TABLES:
             try:
-                print("Creating table {}: ".format(name), end='')
+                cursor = self.cnx.cursor()
                 cursor.execute(ddl)
+                self.cnx.commit()
+                cursor.close()
             except mysql.connector.Error as err:
                 '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                     print("already exists.")'''
                 '''else:'''
-                print(err.msg)
-            else:
-                print("OK")
-        cursor.close()
-        '''cursor = self.cnx.cursor()
-
+                print(err)
+        
         # Users
-        users = []
+        cursor = self.cnx.cursor()
+        print("Inserting organizers and participants.")
+        organizers = []
+        participants = []
         for x in range(50):
-            users.append(Node("USER", username="user_" + str(random.randint(1, 50))))
-            tx.create(users[x])
+            username = "user_" + str(random.randint(1, 50))
+            participant_name = "participant_" + str(random.randint(1, 50))
+            cursor.execute("INSERT INTO organizer (username,fullname,password,email) VALUES('"+ username +"','Tester','SuperHash','test@mail.com')")
+            organizers.append(cursor.lastrowid)
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('"+ participant_name +"','Tester','SuperHash')")
+            participants.append(cursor.lastrowid)
+        cursor.close()
+        self.cnx.commit()
 
         # Events & Races
+        print("Inserting events and races.")
+        cursor = self.cnx.cursor()
         events = []
         races = []
         coordinates = []
         activities = []
+        maps = []
+        racemaps = []
         for x in range(10):
-            events.append(Node("EVENT", name="event_" + str(x)))
-            tx.create(events[x])
+            eventname = "event_" + str(x)
+            cursor.execute("INSERT INTO event (name,organizer_id,logoUrl) VALUES('"+eventname+"','"+str(organizers[x])+"','google.se/img.png')")
+            event_id = cursor.lastrowid
+            events.append(event_id)
             for y in range(5):
-                race = Node("RACE", name="race_" + str(random.randint(1, 500)))
-                tx.create(race)
-                races.append(race)
-                tx.create(Relationship(race, "IN", events[x]))
-                # Coordinates
-                coord1 = Node("COORDINATE", lat=33, lng=44)
-                coordinates.append(coord1)
-                coord2 = Node("COORDINATE", lat=33.1, lng=44.1)
-                coordinates.append(coord2)
-                coord3 = Node("COORDINATE", lat=33.2, lng=44.2)
-                coordinates.append(coord3)
-                tx.create(
-                    Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race))
-
+                racename = "race_" + str(random.randint(1, 500))
+                mapname = "map_" + str(random.randint(1, 500))
+                cursor.execute("INSERT INTO map (name) VALUES('"+mapname+"')")
+                map_id = cursor.lastrowid
+                maps.append(map_id)
+                cursor.execute("INSERT INTO racemap (map) VALUES('"+str(map_id)+"')")
+                racemap_id = cursor.lastrowid
+                racemaps.append(racemap_id)
+                for p in range(100):
+                    cursor.execute("INSERT INTO point (lat,lng,alt,map) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"')")
+                    coordinates.append(cursor.lastrowid)
+                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,map_id,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(racemap_id)+"','"+str(events[x])+"')")  
+                race_id=cursor.lastrowid
+                races.append(race_id)            
                 rands = []
                 for z in range(random.randint(0, 5)):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 49)
+                    
+                    cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
+                    activities.append(cursor.lastrowid)
 
-                    rands.append(rand)
-                    activity = Node("ACTIVITY", joinedAt=str(datetime.datetime.now()))
-                    tx.create(activity)
-                    activities.append(activity)
-                    tx.create(Path(users[rand], "PARTICIPATING_IN", activity, "OF", race))
-
-            tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
-
-        tx.commit()
+        cursor.close()
+        self.cnx.commit()
 
     def initSkim(self):
-        tx = self.graph.begin()
+        ##Drop old tables
+        try:
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE comment")
+            cursor.execute("DROP TABLE image")
+            cursor.execute("DROP TABLE skuValue")
+            cursor.execute("DROP TABLE header")
+            cursor.execute("DROP TABLE sku")
+            cursor.execute("DROP TABLE contribution")
+            cursor.execute("DROP TABLE contributor")
+            cursor.execute("DROP TABLE project")
+            self.cnx.commit();
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("Dropping OK")
+        cursor.close()
+        
+        ##Create tables
+        print("Creating tables")
+        TABLES = []
+        TABLES.append(
+            "CREATE TABLE project ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE contributor ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  username varchar(20),"
+            "  email varchar(50),"
+            "  password varchar(20),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE contribution ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  contributor bigint,"
+            "  project bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT contribution_contributor_fk FOREIGN KEY (contributor) "
+            "     REFERENCES contributor (id),"
+            "  CONSTRAINT contribution_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE sku ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  project bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT sku_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE header ("
+            "  sku_id bigint,"
+            "  name varchar(50),"
+            "  PRIMARY KEY (sku_id,name),"
+            "  CONSTRAINT header_sku_fk FOREIGN KEY (sku_id) "
+            "     REFERENCES sku (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE skuValue ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  sku_id bigint,"
+            "  value varchar(100),"
+            "  header_name varchar(50),"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT skuValue_header_fk FOREIGN KEY (sku_id,header_name) "
+            "     REFERENCES header (sku_id,name)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE image ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  sku bigint,"
+            "  project bigint,"
+            "  name varchar(40),"
+            "  original_name varchar(40),"
+            "  extension varchar(10),"
+            "  encoding varchar(10),"
+            "  size int,"
+            "  height int,"
+            "  width int,"
+            "  verticalDPI int,"
+            "  horizontalDPI int,"
+            "  bitDepth int,"
+            "  createdAt datetime,"
+            "  accepted Boolean,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT image_sku_fk FOREIGN KEY (sku) "
+            "     REFERENCES sku (id),"
+            "  CONSTRAINT image_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE comment ("
+            "  id bigint,"
+            "  creator bigint,"
+            "  image bigint,"
+            "  text varchar(300),"
+            "  createdAt datetime,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT comment_contributor_fk FOREIGN KEY (creator) "
+            "     REFERENCES contributor (id),"
+            "  CONSTRAINT comment_image_fk FOREIGN KEY (image) "
+            "     REFERENCES image (id)"
+            ") ENGINE=InnoDB")     
+        for ddl in TABLES:
+            try:
+                cursor = self.cnx.cursor()
+                cursor.execute(ddl)
+                self.cnx.commit()
+                cursor.close()
+            except mysql.connector.Error as err:
+                '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                    print("already exists.")'''
+                '''else:'''
+                print(err)
 
         # Users
         users = []
+        cursor = self.cnx.cursor()
         for x in range(50):
-            users.append(
-                Node("USER", username="user_" + str(x), email="user_" + str(x) + "@mail.com"))
-            tx.create(users[x])
+            cursor.execute("INSERT INTO contributor (username,email,password) VALUES ('user_"+str(x)+"','user_"+str(x)+"@mail.com','xpassx')")
+            users.append(cursor.lastrowid)
+        self.cnx.commit()
+        cursor.close()
 
         # Projects and images
-        projects = []
-        images = []
-        skus = []
-        comments = []
+        cursor = self.cnx.cursor()
         for x in range(8):
-            projects.append(Node("PROJECT", name="project_" + str(x)))
-            tx.create(projects[x])
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 2]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 3]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 4]))
+            cursor.execute("INSERT INTO project (name) VALUES('project_"+str(x)+"')")
+            project_id = cursor.lastrowid
+            
+            for c in range(10):
+                cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*2+c])+"','"+str(project_id)+"')")
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
-                image = Node("IMAGE", name="image_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
-                tx.create(image)
-                images.append(image)
-                tx.create(Relationship(image, "IN", projects[x]))
-                # Inner images
-                nbr = x + 5 + y
-                image = Node("IMAGE", name="innerimage_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
-                tx.create(image)
-                images.append(image)
-                for z in range(2):
-                    # Comments
-                    comment = Node("COMMENT", text="Haha, cool image", createdAt=str(datetime.datetime.now()))
-                    tx.create(comment)
-                    comments.append(comment)
-                    tx.create(Relationship(comment, "ON", image))
-                    tx.create(Relationship(comment, "MADE_BY", users[x * 2]))
-                # SKUS
-                sku = Node("SKU", name="sku_" + str(nbr))
+                cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
+                    "VALUES('image_"+str(nbr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
+
+                ''''# SKUS
+                sku = Node("SKU",
+                           name="sku_" + str(nbr))
                 tx.create(sku)
-                skus.append(sku)
-                tx.create(Relationship(sku, "IN", projects[x]))
-                tx.create(Relationship(image, "BELONGS_TO", sku))
-                for z in range(5):
+                tx.create(Relationship(sku, "IN", project))
+                for z in range(10):
                     # Rows
-                    row = Node("ROW", header="header_" + str(z), value=str(z))
+                    row = Node("ROW",
+                               header="header_" + str(z),
+                               value=str(z))
                     tx.create(row)
                     tx.create(Relationship(row, "OF", sku))
+
+                # SKU images
+                nbr = x + 5 + y
+                image = Node("IMAGE",
+                             name="sku_image_" + str(nbr),
+                             originalName="original_name",
+                             extension="jpg",
+                             encoding="PNG/SFF",
+                             size=1024,
+                             height=1080,
+                             width=720,
+                             verticalDPI=40,
+                             horizontalDPI=50,
+                             bitDepth=15,
+                             createdAt="2016-03-03",
+                             accepted=False)
+                tx.create(image)
+                tx.create(Relationship(image, "BELONGS_TO", sku))
+                for z in range(2):
+                    # Comments
+                    comment = Node("COMMENT",
+                                   text="Haha, cool image",
+                                   createdAt="2016-04-04")
+                    tx.create(comment)
+                    tx.create(Relationship(comment, "ON", image))
+                    tx.create(Relationship(comment, "MADE_BY", users[x * 2 + z]))
 
         tx.commit()'''
 

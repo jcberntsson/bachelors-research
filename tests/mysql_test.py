@@ -98,3 +98,19 @@ def main():
     cnx.close()
 
 main()
+
+
+
+DROP TABLE activity;
+DROP TABLE participant;
+DROP TABLE tag;
+DROP TABLE racegroup;
+DROP TABLE race;
+DROP TABLE racemap;
+DROP TABLE eventmap;
+DROP TABLE event;
+DROP TABLE raceprofile;
+DROP TABLE point;
+DROP TABLE map;
+DROP TABLE category;
+DROP TABLE organizer;

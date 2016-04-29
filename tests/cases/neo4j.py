@@ -19,51 +19,53 @@ class Neo4j(Base):
 
         # Users
         users = []
+        organizers = []
         for x in range(50):
             users.append(Node("USER",
-                              username="user_" + str(random.randint(1, 50)),
+                              username="user_" + str(x),
                               fullname="Tester",
                               password="SuperHash"))
             tx.create(users[x])
+            organizer = Node("ORGANIZER",
+                             username="organizer_" + str(x),
+                             fullname="Tester",
+                             password="xpassx",
+                             email="mail_" + str(x) + "@mail.se")
+            tx.create(organizer)
+            organizers.append(organizer)
 
         # Events & Races
-        events = []
-        races = []
-        coordinates = []
-        activities = []
         for x in range(10):
-            events.append(Node("EVENT",
-                               name="event_" + str(x),
-                               logoURL="google.se/img.png"))
-            tx.create(events[x])
+            event = Node("EVENT",
+                         name="event_" + str(x),
+                         logoURL="google.se/img.png")
+            tx.create(event)
+            tx.create(Relationship(event, "MADE_BY", organizers[x * 5]))
             for y in range(5):
                 race = Node("RACE",
                             name="race_" + str(random.randint(1, 500)),
-                            description="A nice race to participate in",
+                            description="A nice race to participate in.",
                             date="2016-06-13",
                             maxDuration=3,
                             preview="linktoimage.png",
                             location="Gothenburg, Sweden",
                             logoURL="google.se/img.png")
                 tx.create(race)
-                races.append(race)
-                tx.create(Relationship(race, "IN", events[x]))
+                tx.create(Relationship(race, "IN", event))
                 # Coordinates
-                coord1 = Node("COORDINATE", lat=33, lng=44, alt=100)
-                coordinates.append(coord1)
-                coord2 = Node("COORDINATE", lat=33.1, lng=44.1, alt=100)
-                coordinates.append(coord2)
-                coord3 = Node("COORDINATE", lat=33.2, lng=44.2, alt=100)
-                coordinates.append(coord3)
-                #map = Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race)
-                prev = coord3
-                for i in range(100):
-                    coord = Node("COORDINATE", lat=33, lng=44, alt=100)
+                prev = Node("COORDINATE",
+                            lat=33,
+                            lng=44,
+                            alt=100)
+                for i in range(99):
+                    coord = Node("COORDINATE",
+                                 lat=10 + i,
+                                 lng=11 + i,
+                                 alt=20 + i)
                     tx.create(coord)
                     tx.create(Relationship(prev, "FOLLOWED_BY", coord))
                     prev = coord
                 tx.create(Relationship(prev, "END_FOR", race))
-                #tx.create(Path(race, "STARTS_AT", coord1, "FOLLOWED_BY", coord2, "FOLLOWED_BY", coord3, "END_FOR", race))
 
                 rands = []
                 for z in range(random.randint(0, 5)):
@@ -71,12 +73,10 @@ class Neo4j(Base):
                     rand = self.new_rand_int(rands, 0, 49)
 
                     rands.append(rand)
-                    activity = Node("ACTIVITY", joinedAt=str(datetime.datetime.now()))
+                    activity = Node("ACTIVITY",
+                                    joinedAt="2016-08-08")
                     tx.create(activity)
-                    activities.append(activity)
                     tx.create(Path(users[rand], "PARTICIPATING_IN", activity, "OF", race))
-
-            tx.create(Relationship(events[x], "MADE_BY", users[x * 5]))
 
         tx.commit()
 
@@ -86,53 +86,77 @@ class Neo4j(Base):
         # Users
         users = []
         for x in range(50):
-            users.append(
-                Node("USER", username="user_" + str(x), email="user_" + str(x) + "@mail.com"))
+            users.append(Node("USER",
+                              username="user_" + str(x),
+                              email="user_" + str(x) + "@mail.com",
+                              password="xpassx"))
             tx.create(users[x])
 
         # Projects and images
-        projects = []
-        images = []
-        skus = []
-        comments = []
         for x in range(8):
-            projects.append(Node("PROJECT", name="project_" + str(x)))
-            tx.create(projects[x])
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 2]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 3]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 4]))
+            project = Node("PROJECT",
+                           name="project_" + str(x))
+            tx.create(project)
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 2]))
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 3]))
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 4]))
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
-                image = Node("IMAGE", name="image_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
+                image = Node("IMAGE",
+                             name="image_" + str(nbr),
+                             originalName="original_name",
+                             extension="jpg",
+                             encoding="PNG/SFF",
+                             size=1024,
+                             height=1080,
+                             width=720,
+                             verticalDPI=40,
+                             horizontalDPI=50,
+                             bitDepth=15,
+                             createdAt="2016-03-03",
+                             accepted=False)
                 tx.create(image)
-                images.append(image)
-                tx.create(Relationship(image, "IN", projects[x]))
-                # Inner images
-                nbr = x + 5 + y
-                image = Node("IMAGE", name="innerimage_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
-                tx.create(image)
-                images.append(image)
-                for z in range(2):
-                    # Comments
-                    comment = Node("COMMENT", text="Haha, cool image", createdAt=str(datetime.datetime.now()))
-                    tx.create(comment)
-                    comments.append(comment)
-                    tx.create(Relationship(comment, "ON", image))
-                    tx.create(Relationship(comment, "MADE_BY", users[x * 2]))
+                tx.create(Relationship(image, "IN", project))
+
                 # SKUS
-                sku = Node("SKU", name="sku_" + str(nbr))
+                sku = Node("SKU",
+                           name="sku_" + str(nbr))
                 tx.create(sku)
-                skus.append(sku)
-                tx.create(Relationship(sku, "IN", projects[x]))
-                tx.create(Relationship(image, "BELONGS_TO", sku))
-                for z in range(5):
+                tx.create(Relationship(sku, "IN", project))
+                for z in range(10):
                     # Rows
-                    row = Node("ROW", header="header_" + str(z), value=str(z))
+                    row = Node("ROW",
+                               header="header_" + str(z),
+                               value=str(z))
                     tx.create(row)
                     tx.create(Relationship(row, "OF", sku))
+
+                # SKU images
+                nbr = x + 5 + y
+                image = Node("IMAGE",
+                             name="sku_image_" + str(nbr),
+                             originalName="original_name",
+                             extension="jpg",
+                             encoding="PNG/SFF",
+                             size=1024,
+                             height=1080,
+                             width=720,
+                             verticalDPI=40,
+                             horizontalDPI=50,
+                             bitDepth=15,
+                             createdAt="2016-03-03",
+                             accepted=False)
+                tx.create(image)
+                tx.create(Relationship(image, "BELONGS_TO", sku))
+                for z in range(2):
+                    # Comments
+                    comment = Node("COMMENT",
+                                   text="Haha, cool image",
+                                   createdAt="2016-04-04")
+                    tx.create(comment)
+                    tx.create(Relationship(comment, "ON", image))
+                    tx.create(Relationship(comment, "MADE_BY", users[x * 2 + z]))
 
         tx.commit()
 
@@ -165,7 +189,7 @@ class Neo4j(Base):
                 'MATCH (row:ROW)-[of:OF]->(sku:SKU) '
                 'WHERE ID(sku)=%d '
                 'RETURN sku,of,row' % inner_self.sku_id
-            ) #.dump()
+            )  # .dump()
 
         def teardown(inner_self):
             self.graph.run(
@@ -198,7 +222,7 @@ class Neo4j(Base):
                 'RETURN ID(user) AS user_id, ID(project) AS project_id, ID(image) AS image_id'
             )
             if out.forward():
-                #print(out.current)
+                # print(out.current)
                 inner_self.user_id = out.current['user_id']
                 inner_self.project_id = out.current['project_id']
                 inner_self.image_id = out.current['image_id']
@@ -209,7 +233,7 @@ class Neo4j(Base):
                 'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
                 'RETURN comment' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
-            ) #.dump()
+            )  # .dump()
 
         def teardown(inner_self):
             self.graph.run(
@@ -224,35 +248,35 @@ class Neo4j(Base):
 
     def pairImageSKU(self):
         def setup(inner_self):
-            #print("Setup")
+            # print("Setup")
             out = self.graph.run(
                 'CREATE (sku:SKU { name: "test_sku" })-[:IN]->(project:PROJECT { name: "test_project" })<-[in:IN]-(image:IMAGE { name:"test_image" }) '
                 'RETURN ID(sku) AS sku_id, ID(project) AS project_id, ID(image) AS image_id'
             )
             if out.forward():
-                #print(out.current)
+                # print(out.current)
                 inner_self.sku_id = out.current['sku_id']
                 inner_self.project_id = out.current['project_id']
                 inner_self.image_id = out.current['image_id']
 
         def run(inner_self):
-            #print("Run")
+            # print("Run")
             self.graph.run(
                 'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)-[b:BELONGS_TO]->(sku) '
                 'DELETE in '
                 'RETURN ID(b) AS ID' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )#.dump()
+            )  # .dump()
 
         def teardown(inner_self):
-            #print("Teardown")
+            # print("Teardown")
             self.graph.run(
                 'MATCH (image:IMAGE)-[b:BELONGS_TO]->(sku:SKU)-[in:IN]->(project:PROJECT) '
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
                 'DELETE b, image, in, sku, project '
                 'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )#.dump()
+            )  # .dump()
 
         return self.create_case("pairImageSKU", setup, run, teardown)
 
