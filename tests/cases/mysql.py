@@ -397,7 +397,7 @@ class MySQL(Base):
                     "VALUES('image_"+str(nbr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
 
                 # SKUS
-                cursor.execute("INSERT INTO sku (project) VALUES('"+project_id+"')")
+                cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
                 sku_id = cursor.lastrowid
                 for z in range(10):
                     # Rows
@@ -411,7 +411,7 @@ class MySQL(Base):
                 image_id = cursor.lastrowid
                 for z in range(2):
                     # Comments
-                    cursor.execute("INSERT INTO comment (text,createdAt,creator,image) VALUES('Haha, cool image','2016-04-04','"+str(users[x*2+z])+"','"+image_id+"')")
+                    cursor.execute("INSERT INTO comment (text,createdAt,creator,image) VALUES('Haha, cool image','2016-04-04','"+str(users[x*2+z])+"','"+str(image_id)+"')")
         self.cnx.commit()
         cursor.close()
 
