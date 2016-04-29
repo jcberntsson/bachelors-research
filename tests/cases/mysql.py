@@ -401,7 +401,7 @@ class MySQL(Base):
                 sku_id = cursor.lastrowid
                 for z in range(10):
                     # Rows
-                    cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+sku_id+"','header_"+str(z)+"')")
+                    cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
                     cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
 
                 # SKU images
