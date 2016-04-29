@@ -411,6 +411,8 @@ class MySQL(Base):
                 image_id = cursor.lastrowid
                 for z in range(2):
                     # Comments
+                    print(users[x*2+z])
+                    print(image_id)
                     cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
                         "VALUES('Haha, cool image','2016-04-04','"+str(users[x*2+z])+"','"+str(image_id)+"')")
         self.cnx.commit()
