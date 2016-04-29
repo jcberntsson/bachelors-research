@@ -396,46 +396,24 @@ class MySQL(Base):
                 cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
                     "VALUES('image_"+str(nbr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
 
-                ''''# SKUS
-                sku = Node("SKU",
-                           name="sku_" + str(nbr))
-                tx.create(sku)
-                tx.create(Relationship(sku, "IN", project))
+                # SKUS
+                cursor.execute("INSERT INTO sku (project) VALUES('"+project_id+"')")
+                sku_id = cursor.lastrowid
                 for z in range(10):
                     # Rows
-                    row = Node("ROW",
-                               header="header_" + str(z),
-                               value=str(z))
-                    tx.create(row)
-                    tx.create(Relationship(row, "OF", sku))
+                    cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+sku_id+"','header_"+str(z)+"')")
+                    cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+sku_id+"','header_"+str(z)+"','"+str(z)+"')")
 
                 # SKU images
                 nbr = x + 5 + y
-                image = Node("IMAGE",
-                             name="sku_image_" + str(nbr),
-                             originalName="original_name",
-                             extension="jpg",
-                             encoding="PNG/SFF",
-                             size=1024,
-                             height=1080,
-                             width=720,
-                             verticalDPI=40,
-                             horizontalDPI=50,
-                             bitDepth=15,
-                             createdAt="2016-03-03",
-                             accepted=False)
-                tx.create(image)
-                tx.create(Relationship(image, "BELONGS_TO", sku))
+                cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,sku) "
+                    "VALUES('image_"+str(nbr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(sku_id)+"')")
+                image_id = cursor.lastrowid
                 for z in range(2):
                     # Comments
-                    comment = Node("COMMENT",
-                                   text="Haha, cool image",
-                                   createdAt="2016-04-04")
-                    tx.create(comment)
-                    tx.create(Relationship(comment, "ON", image))
-                    tx.create(Relationship(comment, "MADE_BY", users[x * 2 + z]))
-
-        tx.commit()'''
+                    cursor.execute("INSERT INTO comment (text,createdAt,creator,image) VALUES('Haha, cool image','2016-04-04','"+str(users[x*2+z])+"','"+image_id+"')")
+        self.cnx.commit()
+        cursor.close()
 
     def initReddit(self):
         pass
