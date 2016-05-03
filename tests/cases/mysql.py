@@ -487,7 +487,7 @@ class MySQL(Base):
             cursor.execute("INSERT INTO contributor (username) VALUES ('test_user')")
             user_id = cursor.lastrowid
             #Project
-            cursor.execute("INSERT INTO project (name) VALUES (test_project)")
+            cursor.execute("INSERT INTO project (name) VALUES ('test_project')")
             project_id = cursor.lastrowid
             #Contribution
             cursor.execute("INSERT INTO contribution () VALUES ('"+str(user_id)+"','"+str(project_id)+"')")
