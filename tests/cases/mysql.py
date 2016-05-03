@@ -712,7 +712,7 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT participant.id, count(*) FROM participant "
-                "INNER JOIN activity ON activity.participant=participant.id AND activity.race='"+inner_self.race_id+"' "
+                "INNER JOIN activity ON activity.participant=participant.id "
                 "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id")
             result = cursor.fetchall()
             print(result)
