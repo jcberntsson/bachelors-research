@@ -189,16 +189,13 @@ class MySQL(Base):
         TABLES.append(
             "CREATE TABLE follow ("
             "  follower bigint,"
-            "  participant bigint,"
-            "  race bigint,"
+            "  activity bigint,"
             "  followedAt datetime,"
             "  PRIMARY KEY (follower,participant,race),"
             "  CONSTRAINT follow_follower_fk FOREIGN KEY (follower) "
             "     REFERENCES participant (id),"
-            "  CONSTRAINT follow_participant_fk FOREIGN KEY (participant) "
-            "     REFERENCES participant (id),"
-            "  CONSTRAINT follow_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
+            "  CONSTRAINT follow_activity_fk FOREIGN KEY (activity) "
+            "     REFERENCES activity (id)"
             ") ENGINE=InnoDB")
         for ddl in TABLES:
             try:
@@ -263,12 +260,12 @@ class MySQL(Base):
                     
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
+                rand2 = self.new_rand_int(rands, 0, 44)
                 for z in range(random.randint(0, 5)):
                     # Participants
-                    rand = self.new_rand_int(rands, 0, 25)
-                    rand2 = self.new_rand_int(rands, 25, 49)
+                    rand = self.new_rand_int(rands, 0, len(activities))
                     
-                    cursor.execute("INSERT INTO follow (follower,participant,race,followedAt) VALUES('"+str(participants[rand2])+"','"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
+                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[rand2+z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
 
         cursor.close()
@@ -605,16 +602,19 @@ class MySQL(Base):
             result = cursor.fetchall()
             rand = random.randint(0,len(result))
             race_id = result[rand][0]
+            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"'")
+            activity_id = cursor.lastrowid
             cursor.close()
             self.cnx.commit()
             inner_self.follower_id = str(follower_id)
             inner_self.participant_id = str(participant_id)
             inner_self.race_id = str(race_id)
+            inner_self.activity_id = str(activity_id)
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("INSERT INTO follow (follower,participant,race,followedAt) VALUES ('"+inner_self.follower_id+"','"
-                +inner_self.participant_id+"','"+inner_self.race_id+"','"+str(datetime.datetime.now())+"')")
+            cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES ('"+inner_self.follower_id+"','"
+                +inner_self.activity_id+"','"+str(datetime.datetime.now())+"')")
             cursor.close()
             self.cnx.commit()
                         
@@ -622,21 +622,52 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
                 +"' AND participant='"+inner_self.participant_id+"' AND race='"+inner_self.race_id+"'")
+            cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
             cursor.close()
             self.cnx.commit()
 
-        return self.create_case("fetchUsers", setup, run, teardown)
+        return self.create_case("follow", setup, run, teardown)
 
     def unfollow(self):
-        self.graph.run(
-            'MATCH (:USER)-[:PARTICIPATING_IN]->(activity:ACTIVITY)-[:OF]->(:RACE) '
-            'WHERE ID(activity) = 6168 '
-            'WITH * LIMIT 1 '
-            'DETACH DELETE activity '
-            'RETURN count(*)'
-        ).dump()
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_follower','Tester','SuperHash')")
+            follower_id = cursor.lastrowid
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_participant','Tester','SuperHash')")
+            participant_id = cursor.lastrowid
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            race_id = result[rand][0]
+            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"'")
+            activity_id = cursor.lastrowid
+            cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES ('"+str(follower_id)+"','"
+                +str(activity_id)+"','"+str(datetime.datetime.now())+"')")
+            cursor.close()
+            self.cnx.commit()
+            inner_self.follower_id = str(follower_id)
+            inner_self.participant_id = str(participant_id)
+            inner_self.race_id = str(race_id)
+            inner_self.activity_id = str(activity_id)
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
+                +"' AND activity='"+inner_self.activity_id+"'")
+            cursor.close()
+            self.cnx.commit()
+                        
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("unfollow", setup, run, teardown)
 
     def fetchComments(self):
         pass
