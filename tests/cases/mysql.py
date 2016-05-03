@@ -266,7 +266,6 @@ class MySQL(Base):
                     rand = random.randint( 0, len(activities)-1)
                     print("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
                     cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
-                    activities.append(cursor.lastrowid)
 
         cursor.close()
         self.cnx.commit()
