@@ -451,7 +451,6 @@ class MySQL(Base):
                 "INNER JOIN skuValue ON skuValue.sku_id = s.id AND skuValue.header_name=header.name "
                 "WHERE s.ID = '"+str(inner_self.sku_id)+"'")
             result = cursor.fetchall()
-            print(result)
             cursor.close()
 
         def teardown(inner_self):
@@ -475,7 +474,6 @@ class MySQL(Base):
             cursor.execute("SELECT * FROM contributor")
             result = cursor.fetchall()
             cursor.close()
-            print(result)
 
         def teardown(inner_self):
             pass
@@ -484,32 +482,45 @@ class MySQL(Base):
 
     def commentOnImage(self):
         def setup(inner_self):
-            out = self.graph.run(
-                'CREATE (user:USER { username: "test_user" })<-[:COLLABORATOR]-(project:PROJECT { name: "test_project" })<-[:IN]-(image:IMAGE { name: "test_image" }) '
-                'RETURN ID(user) AS user_id, ID(project) AS project_id, ID(image) AS image_id'
-            )
-            if out.forward():
-                # print(out.current)
-                inner_self.user_id = out.current['user_id']
-                inner_self.project_id = out.current['project_id']
-                inner_self.image_id = out.current['image_id']
+            cursor = self.cnx.cursor()
+            #Contributor
+            cursor.execute("INSERT INTO contributor (username) VALUES ('test_user')")
+            user_id = cursor.lastrowid
+            #Project
+            cursor.execute("INSERT INTO project (name) VALUES (test_project)")
+            project_id = cursor.lastrowid
+            #Contribution
+            cursor.execute("INSERT INTO contribution () VALUES ('"+str(user_id)"','"+str(project_id)+"')")
+            contribution_id = cursor.lastrowid
+            #Image
+            cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
+                "VALUES('test_image','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
+            image_id = cursor.lastrowid        
+            #Output
+            inner_self.user_id = user_id
+            inner_self.project_id = project_id
+            inner_self.image_id = image_id
+            inner_self.contribution_id = contribution_id
+            cursor.close()
+            self.cnx.commit()
 
         def run(inner_self):
-            self.graph.run(
-                'MATCH (user:USER)<-[:COLLABORATOR]-(project:PROJECT)<-[:IN]-(image:IMAGE) '
-                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
-                'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
-                'RETURN comment' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
+                "VALUES('Haha, cool image','2016-04-04','"+str(inner_self.user_id)+"','"+str(inner_self.image_id)+"')")
+            inner_self.comment_id = cursor.lastrowid 
+            cursor.close()
+            self.cnx.commit()       
 
         def teardown(inner_self):
-            self.graph.run(
-                'MATCH (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
-                '      (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
-                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE collaborator,in,made,on,user,project,image,comment '
-                'RETURN count(*) AS deleted_rows' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
-            ).dump()
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM comment WHERE id='"+str(inner_self.comment_id)+"'")
+            cursor.execute("DELETE FROM image WHERE id='"+str(inner_self.image_id)+"'")
+            cursor.execute("DELETE FROM contribution WHERE id='"+str(inner_self.contribution_id)+"'")
+            cursor.execute("DELETE FROM contributor WHERE id='"+str(inner_self.user_id)+"'")
+            cursor.execute("DELETE FROM project WHERE id='"+str(inner_self.project_id)+"'")
+            cursor.close()
+            self.cnx.commit()
 
         return self.create_case("commentOnImage", setup, run, teardown)
 
