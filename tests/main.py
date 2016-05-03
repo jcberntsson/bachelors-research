@@ -1,11 +1,13 @@
 #!/usr/bin/python
 
-from cases import MySQL
+from cases import Neo4j
 
 # Run
 if __name__ == '__main__':
-    m = MySQL()
-    m.init("raceone")
+    neo = Neo4j()
+    #neo.init("raceone")
+    case = neo.fetchUsers()
+    case.run()
     #testCase = neo.commentOnImage()
     #testCase.setup()
     #testCase.run()

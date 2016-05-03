@@ -1,38 +1,67 @@
+import datetime
 import random
 
-from py2neo import Relationship, Graph, Node, Path
+from couchdb import client
 
 from cases import Base
 
 
-class Neo4j(Base):
+class Couch(Base):
     # connect to authenticated graph database
-    graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
+    server = client.Server(url="http://admin:mysecretpassword@46.101.118.239:5984")
+    db = server['raceone'] if ('raceone' in server) else server.create('raceone')
 
     ####################################
     ####	DATA INITIALIZATION		####
     ####################################
 
     def initRaceOne(self):
-        tx = self.graph.begin()
-
-        # Users
         users = []
         organizers = []
         for x in range(50):
-            users.append(Node("USER",
-                              username="user_" + str(x),
-                              fullname="Tester",
-                              password="SuperHash"))
-            tx.create(users[x])
-            organizer = Node("ORGANIZER",
-                             username="organizer_" + str(x),
-                             fullname="Tester",
-                             password="xpassx",
-                             email="mail_" + str(x) + "@mail.se")
-            tx.create(organizer)
+            # User
+            name = "user_" + str(x)
+            user = dict(
+                type='USER',
+                fullname=name,
+                password="SuperHash")
+            self.db[name] = user
+            users.append(user)
+
+            # Organizer
+            name = "organizer_" + str(x)
+            organizer = dict(
+                type='ORGANIZER',
+                username=name,
+                password="SuperHash",
+                email="mail@mail.se")
+            self.db[name] = organizer
             organizers.append(organizer)
 
+        for x in range(10):
+            name = "event_" + str(x)
+            event = dict(
+                type='EVENT',
+                name=name,
+                logoURL='google.se/img.png',
+                created_by='<<user_id>>')
+            self.db[name] = event
+            for y in range(5):
+                nbr = x * 5 + y
+                name = "race_" + str(nbr)
+                race = dict(
+                    type='RACE',
+                    name=name,
+                    event_id='',
+                    description="A nice race to participate in.",
+                    date="2016-06-13",
+                    maxDuration=x + y if nbr < 24 else 24,
+                    preview="linktoimage.png",
+                    location="Gothenburg, Sweden",
+                    logoURL="google.se/img.png")
+                self.db[name] = race
+
+        '''
         # Events & Races
         for x in range(10):
             event = Node("EVENT",
@@ -78,8 +107,11 @@ class Neo4j(Base):
                     tx.create(Path(users[rand], "PARTICIPATING_IN", activity, "OF", race))
 
         tx.commit()
+        '''
 
     def initSkim(self):
+        pass
+        """
         tx = self.graph.begin()
 
         # Users
@@ -96,9 +128,9 @@ class Neo4j(Base):
             project = Node("PROJECT",
                            name="project_" + str(x))
             tx.create(project)
-            for y in range(10):
-                tx.create(Relationship(project, "COLLABORATOR", users[x * 2 + y]))
-
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 2]))
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 3]))
+            tx.create(Relationship(project, "COLLABORATOR", users[x * 4]))
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
@@ -158,13 +190,22 @@ class Neo4j(Base):
                     tx.create(Relationship(comment, "MADE_BY", users[x * 2 + z]))
 
         tx.commit()
+        """
 
     def initReddit(self):
         pass
 
     def clearData(self):
+        if 'raceone' in self.server:
+            del self.server['raceone']
+            self.db = self.server.create('raceone')
+
         # Dangerous
-        self.graph.delete_all()
+        #
+        # if self.server['skim']:
+        #    del self.server['skim']
+        # if self.server['reddit']:
+        #    del self.server['reddit']
 
     ############################
     ####	TEST METHODS	####
@@ -173,6 +214,22 @@ class Neo4j(Base):
 
     # SKIM
     def fetchSKU(self):
+        map_fun = """
+                function(doc) {
+                    if (doc.type === 'RACE') {
+                        emit([doc.type, doc.maxDuration], 1);
+                    }
+                }
+                """
+        reduce_fun = """
+                function(keys, values) {
+                    return sum(values);
+                }
+                """
+        for row in self.db.query(map_fun, reduce_fun=reduce_fun, group=True):
+            print(row)
+
+        '''
         def setup(inner_self):
             # print("Setup")
             out = self.graph.run(
@@ -198,16 +255,22 @@ class Neo4j(Base):
                 'RETURN count(*) AS deleted_rows' % inner_self.sku_id
             )  # .dump()
 
-        return self.create_case("fetchSKU", setup, run, teardown)
+        return self.create_case("fetchSKU", setup, run, teardown)'''
 
     def fetchUsers(self):
         def setup(inner_self):
             pass
 
         def run(inner_self):
-            self.graph.run(
-                'MATCH (user:USER) RETURN user'
-            ).dump()
+            map_fun = """
+                    function(doc) {
+                        if (doc.type === 'USER') {
+                            emit(doc.name, doc);
+                        }
+                    }
+                    """
+            for row in self.db.query(map_fun):
+                print(row)
 
         def teardown(inner_self):
             pass
@@ -215,6 +278,7 @@ class Neo4j(Base):
         return self.create_case("fetchUsers", setup, run, teardown)
 
     def commentOnImage(self):
+        '''
         def setup(inner_self):
             out = self.graph.run(
                 'CREATE (user:USER { username: "test_user" })<-[:COLLABORATOR]-(project:PROJECT { name: "test_project" })<-[:IN]-(image:IMAGE { name: "test_image" }) '
@@ -243,9 +307,10 @@ class Neo4j(Base):
                 'RETURN count(*) AS deleted_rows' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
             ).dump()
 
-        return self.create_case("commentOnImage", setup, run, teardown)
+        return self.create_case("commentOnImage", setup, run, teardown)'''
 
     def pairImageSKU(self):
+        '''
         def setup(inner_self):
             # print("Setup")
             out = self.graph.run(
@@ -277,21 +342,10 @@ class Neo4j(Base):
                 'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
             )  # .dump()
 
-        return self.create_case("pairImageSKU", setup, run, teardown)
+        return self.create_case("pairImageSKU", setup, run, teardown)'''
 
     # RaceOne
     def follow(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("follow", setup, run, teardown)
-
         '''
         self.graph.run(
             'MATCH (user:USER),(race:RACE) '
@@ -299,20 +353,9 @@ class Neo4j(Base):
             'CREATE UNIQUE (user)-[:PARTICIPATING_IN]->'
             '(activity:ACTIVITY {joinedAt:"2015-03-02@13:37"} )-[:OF]->(race) '
             'RETURN ID(activity)'
-        ).dump()
-        '''
+        ).dump()'''
 
     def unfollow(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("unfollow", setup, run, teardown)
         '''
         self.graph.run(
             'MATCH (:USER)-[:PARTICIPATING_IN]->(activity:ACTIVITY)-[:OF]->(:RACE) '
@@ -320,257 +363,67 @@ class Neo4j(Base):
             'WITH * LIMIT 1 '
             'DETACH DELETE activity '
             'RETURN count(*)'
-        ).dump()
-        '''
+        ).dump()'''
 
     def fetchComments(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchComments", setup, run, teardown)
+        pass
 
     def fetchHotPosts(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchHotPosts", setup, run, teardown)
+        pass
 
     def insertCoords(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("insertCoords", setup, run, teardown)
+        pass
 
     def fetchParticipants(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchParticipants", setup, run, teardown)
+        pass
 
     def createComment(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("createComment", setup, run, teardown)
+        pass
 
     def fetchBestFriend(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchBestFriend", setup, run, teardown)
+        pass
 
     def fetchUsersAndComments(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchUsersAndComments", setup, run, teardown)
+        pass
 
     def fetchHotPostsInSub(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchHotPostsInSub", setup, run, teardown)
+        pass
 
     def duplicateEvent(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("duplicateEvent", setup, run, teardown)
+        pass
 
     def fetchParticipants2(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchParticipants2", setup, run, teardown)
+        pass
 
     def fetchMapLength(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchMapLength", setup, run, teardown)
+        pass
 
     def unparticipate(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("unparticipate", setup, run, teardown)
+        pass
 
     def updateCoords(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("updateCoords", setup, run, teardown)
+        pass
 
     def fetchPostLength(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchPostLength", setup, run, teardown)
+        pass
 
     def fetchCommentedPosts(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchCommentedPosts", setup, run, teardown)
+        pass
 
     def upvote(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("upvote", setup, run, teardown)
+        pass
 
     def updateRace(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("updateRace", setup, run, teardown)
+        pass
 
     def fetchCoords(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchCoords", setup, run, teardown)
+        pass
 
     def removeCoords(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("removeCoords", setup, run, teardown)
+        pass
 
     def removeRace(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("removeRace", setup, run, teardown)
+        pass
 
     def insertMaps(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("insertMaps", setup, run, teardown)
+        pass
