@@ -263,7 +263,7 @@ class MySQL(Base):
                 rand2 = random.randint( 0, len(participants)-5)
                 for z in range(random.randint(0, 5)):
                     # Participants
-                    rand = random.randint( 0, len(activities)-1)
+                    rand = random.randint( 0, 4)
                     
                     cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[rand2+z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
