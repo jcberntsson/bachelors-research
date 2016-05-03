@@ -261,11 +261,11 @@ class MySQL(Base):
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
                 rand2 = random.randint( 0, len(participants)-5)
-                for z in range(5):
-                    # Participants
-                    rand = random.randint( 0, len(activities)-1)
-                    print("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
-                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
+        for z in range(5):
+            # Participants
+            rand = random.randint( 0, len(activities)-1)
+            print("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
+            cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")   
 
         cursor.close()
         self.cnx.commit()
