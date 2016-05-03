@@ -265,8 +265,8 @@ class MySQL(Base):
                     activities.append(cursor.lastrowid)
                 for z in range(random.randint(0, 5)):
                     # Participants
-                    rand = self.new_rand_int(rands, 0, 49)
-                    rand2 = self.new_rand_int(rands, 0, 49)
+                    rand = self.new_rand_int(rands, 0, 25)
+                    rand2 = self.new_rand_int(rands, 25, 49)
                     
                     cursor.execute("INSERT INTO follow (follower,participant,race,followedAt) VALUES('"+str(participants[rand2])+"','"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
