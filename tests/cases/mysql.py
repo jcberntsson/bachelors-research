@@ -750,7 +750,7 @@ class MySQL(Base):
                 str(inner_self.activity[0])+"','"+str(inner_self.activity[1])+"','"+str(inner_self.activity[2])+"','"+str(inner_self.activity[3])+"')")
             for f in inner_self.follows:
                 cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+
-                    str(f[0])+"','"+activity_id+"','"+str(f[1])+"')")
+                    str(f[0])+"','"+inner_self.activity_id+"','"+str(f[1])+"')")
             cursor.close()
             self.cnx.commit()
         return self.create_case("unparticipate", setup, run, teardown)
