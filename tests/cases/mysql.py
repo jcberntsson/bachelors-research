@@ -684,7 +684,6 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT participant.id, count(*) FROM participant INNER JOIN activity ON activity.participant=participant.id GROUP BY participant.id")
             result = cursor.fetchall()
-            print(result)
             cursor.close()
 
         def teardown(inner_self):
@@ -708,7 +707,21 @@ class MySQL(Base):
         pass
 
     def fetchParticipants2(self):
-        pass
+        def setup(inner_self):
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT participant.id, count(*) FROM participant "
+                "INNER JOIN activity ON activity.participant=participant.id AND activity.race='"+inner_self.race_id+"' "
+                "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id")
+            result = cursor.fetchall()
+            print(result)
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def fetchMapLength(self):
         pass

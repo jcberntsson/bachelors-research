@@ -14,5 +14,5 @@ from cases import Neo4j'''
 if __name__ == '__main__':
     m = MySQL()
     m.init("raceone")
-    case = m.fetchParticipants()
+    case = m.fetchParticipants2()
     case.run()
