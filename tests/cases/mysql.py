@@ -731,22 +731,23 @@ class MySQL(Base):
             cursor.execute("SELECT activity.id, activity.participant,activity.race,activity.joinedAt FROM activity INNER JOIN follow WHERE activity.id=follow.activity")
             result = cursor.fetchall()
             rand = random.randint(0,len(result))
-            inner_self.activity = result
+            inner_self.activity = result[rand]
             activity_id = result[rand][0]
             cursor.execute("SELECT follower,followedAt FROM follow WHERE activity='"+str(activity_id)+"'")
             result = cursor.fetchall()
-            inner_self.activity_id = activity_id
+            inner_self.activity_id = str(activity_id)
             inner_self.follows = result
             cursor.close()
         def run(inner_self):
             cursor = self.cnx.cursor()
-            '''cursor.execute("DELETE FROM activity WHERE activity_id = '"+inner_self.activity_id+"'")  '''
+            cursor.execute("DELETE FROM activity WHERE activity_id = '"+inner_self.activity_id+"'") 
             cursor.close()
             self.cnx.commit()
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            print(inner_self.activity)
+            cursor.execute("INSERT INTO activity (id,participant,race,joinedAt) VALUES('"+
+                inner_self.activity[0]+"','"+inner_self.activity[1]+"','"+inner_self.activity[2]+"','"+inner_self.activity[3]+"')")
             cursor.close()
             self.cnx.commit()
         return self.create_case("unparticipate", setup, run, teardown)
