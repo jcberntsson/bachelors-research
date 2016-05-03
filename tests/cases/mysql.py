@@ -456,7 +456,7 @@ class MySQL(Base):
             cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+str(inner_self.sku_id)+"'")
             cursor.execute ("DELETE FROM header WHERE sku_id='"+str(inner_self.sku_id)+"'")
             cursor.execute ("DELETE FROM sku WHERE id='"+str(inner_self.sku_id)+"'")
-            rc = rowcount
+            rc = cursor.rowcount
             cursor.close()
             self.cnx.commit()
             return rc
