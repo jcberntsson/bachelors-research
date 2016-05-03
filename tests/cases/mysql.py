@@ -604,23 +604,28 @@ class MySQL(Base):
             cursor.execute("SELECT id FROM race")
             result = cursor.fetchall()
             rand = random.randint(0,len(result))
-            print(result[rand][0])
-            
+            race_id = result[rand][0]
             cursor.close()
             self.cnx.commit()
+            inner_self.follower_id = str(follower_id)
+            inner_self.participant_id = str(participant_id)
+            inner_self.race_id = str(race_id)
 
         def run(inner_self):
-            pass
-            '''            self.graph.run(
-            'MATCH (user:USER),(race:RACE) '
-            'WITH * LIMIT 1 '
-            'CREATE UNIQUE (user)-[:PARTICIPATING_IN]->'
-            '(activity:ACTIVITY {joinedAt:"2015-03-02@13:37"} )-[:OF]->(race) '
-            'RETURN ID(activity)'.dump()
-            '''
-
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO follow (follower,participant,race,followedAt) VALUES ('"+inner_self.follower_id+"','"
+                +inner_self.participant_id+"','"+inner_self.race_id+"','"+str(datetime.datetime.now())+"')")
+            cursor.close()
+            self.cnx.commit()
+                        
         def teardown(inner_self):
-            pass
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
+                +"' AND participant='"+inner_self.participant_id+"' AND race='"+inner_self.race_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
+            cursor.close()
+            self.cnx.commit()
 
         return self.create_case("fetchUsers", setup, run, teardown)
 
