@@ -427,82 +427,117 @@ class MySQL(Base):
     ############################
     ####	TEST METHODS	####
     ############################
-    # TODO: All inserting methods should first find the nodes that it is relating for
 
     # SKIM
     def fetchSKU(self):
-        self.graph.run(
-            'MATCH (row:ROW)-[of:OF]->(sku:SKU) WHERE sku.name="sku_7" RETURN sku,of,row'
-        ).dump()
+        def setup(inner_self):
+            # print("Setup")
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO project (name) VALUE('test_project')")
+            project_id = cursor.lastrowid
+            cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
+            sku_id = cursor.lastrowid
+            for z in range(10):
+                # Rows
+                cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
+                cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
+            inner_self.sku_id = sku_id
+            cursor.close()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM Sku WHERE ID = '"+inner_self.sku_id+"'")
+            result = cursor.fetchAll()
+            print(result)
+
+        def teardown(inner_self):
+            self.graph.run(
+                'MATCH (sku:SKU) '
+                'WHERE ID(sku)=%d '
+                'DELETE sku '
+                'RETURN count(*) AS deleted_rows' % inner_self.sku_id
+            )  # .dump()
+
+        return self.create_case("fetchSKU", setup, run, teardown)
 
     def fetchUsers(self):
-        self.graph.run(
-            'MATCH (user:USER) RETURN user'
-        ).dump()
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            self.graph.run(
+                'MATCH (user:USER) RETURN user'
+            ).dump()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchUsers", setup, run, teardown)
 
     def commentOnImage(self):
-        # TODO: Maybe better to create all three in one create?
-        self.graph.run(
-            'MATCH (user:USER)<-[:COLLABORATOR]-(:PROJECT)<-[:IN]-(image:IMAGE) '
-            'WITH * LIMIT 1 '
-            'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
-            'RETURN comment'
-        ).dump()
+        def setup(inner_self):
+            out = self.graph.run(
+                'CREATE (user:USER { username: "test_user" })<-[:COLLABORATOR]-(project:PROJECT { name: "test_project" })<-[:IN]-(image:IMAGE { name: "test_image" }) '
+                'RETURN ID(user) AS user_id, ID(project) AS project_id, ID(image) AS image_id'
+            )
+            if out.forward():
+                # print(out.current)
+                inner_self.user_id = out.current['user_id']
+                inner_self.project_id = out.current['project_id']
+                inner_self.image_id = out.current['image_id']
+
+        def run(inner_self):
+            self.graph.run(
+                'MATCH (user:USER)<-[:COLLABORATOR]-(project:PROJECT)<-[:IN]-(image:IMAGE) '
+                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
+                'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
+                'RETURN comment' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
+            )  # .dump()
+
+        def teardown(inner_self):
+            self.graph.run(
+                'MATCH (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
+                '      (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
+                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
+                'DELETE collaborator,in,made,on,user,project,image,comment '
+                'RETURN count(*) AS deleted_rows' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
+            ).dump()
+
+        return self.create_case("commentOnImage", setup, run, teardown)
 
     def pairImageSKU(self):
-
         def setup(inner_self):
-            #print("Setup")
+            # print("Setup")
             out = self.graph.run(
                 'CREATE (sku:SKU { name: "test_sku" })-[:IN]->(project:PROJECT { name: "test_project" })<-[in:IN]-(image:IMAGE { name:"test_image" }) '
                 'RETURN ID(sku) AS sku_id, ID(project) AS project_id, ID(image) AS image_id'
             )
             if out.forward():
-                #print(out.current)
+                # print(out.current)
                 inner_self.sku_id = out.current['sku_id']
                 inner_self.project_id = out.current['project_id']
                 inner_self.image_id = out.current['image_id']
 
         def run(inner_self):
-            #print("Run")
+            # print("Run")
             self.graph.run(
                 'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)-[b:BELONGS_TO]->(sku) '
                 'DELETE in '
                 'RETURN ID(b) AS ID' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )#.dump()
+            )  # .dump()
 
         def teardown(inner_self):
-            #print("Teardown")
+            # print("Teardown")
             self.graph.run(
                 'MATCH (image:IMAGE)-[b:BELONGS_TO]->(sku:SKU)-[in:IN]->(project:PROJECT) '
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
                 'DELETE b, image, in, sku, project '
                 'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )#.dump()
+            )  # .dump()
 
-        return self.create_case("PairImageAndSKUCase", setup, run, teardown)
-
-        '''
-        rel = self.graph.run(
-            'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
-            'WITH * SKIP 55 LIMIT 1 '
-            'CREATE (image)-[b:BELONGS_TO]->(sku) '
-            'DELETE in '
-            'RETURN ID(b) AS ID'
-        )
-
-        relation_id = str(rel.evaluate())
-
-        self.graph.run(
-            'MATCH (image:IMAGE)-[b:BELONGS_TO]->(:SKU)-[:IN]->(project:PROJECT)'
-            'WHERE ID(b) = ' + relation_id + ' '
-            'CREATE (image)-[:IN]->(project) '
-            'DELETE b '
-            'RETURN count(*)'
-        ).dump()
-        '''
+        return self.create_case("pairImageSKU", setup, run, teardown)
 
     # RaceOne
     def follow(self):
@@ -585,4 +620,3 @@ class MySQL(Base):
 
     def insertMaps(self):
         pass
-
