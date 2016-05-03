@@ -615,7 +615,8 @@ class MySQL(Base):
             'WITH * LIMIT 1 '
             'CREATE UNIQUE (user)-[:PARTICIPATING_IN]->'
             '(activity:ACTIVITY {joinedAt:"2015-03-02@13:37"} )-[:OF]->(race) '
-            'RETURN ID(activity)''''
+            'RETURN ID(activity)'.dump()
+            '''
 
         def teardown(inner_self):
             pass
