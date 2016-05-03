@@ -446,17 +446,17 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM Sku WHERE ID = '"+inner_self.sku_id+"'")
+            cursor.execute("SELECT * FROM Sku WHERE ID = '"+str(inner_self.sku_id)+"'")
             result = cursor.fetchAll()
             print(result)
 
         def teardown(inner_self):
-            self.graph.run(
+            '''     self.graph.run(
                 'MATCH (sku:SKU) '
                 'WHERE ID(sku)=%d '
                 'DELETE sku '
                 'RETURN count(*) AS deleted_rows' % inner_self.sku_id
-            )  # .dump()
+            )  # .dump()'''
 
         return self.create_case("fetchSKU", setup, run, teardown)
 
