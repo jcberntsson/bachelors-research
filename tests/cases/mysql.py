@@ -193,7 +193,7 @@ class MySQL(Base):
             "  followedAt datetime,"
             "  PRIMARY KEY (follower,activity),"
             "  CONSTRAINT follow_follower_fk FOREIGN KEY (follower) "
-            "     REFERENCES follower (id),"
+            "     REFERENCES participant (id),"
             "  CONSTRAINT follow_activity_fk FOREIGN KEY (activity) "
             "     REFERENCES activity (id)"
             ") ENGINE=InnoDB")
