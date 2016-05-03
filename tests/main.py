@@ -6,7 +6,7 @@ from cases import MySQL
 if __name__ == '__main__':
     m = MySQL()
     m.init("skim")
-    testCase = m.fetchSKU()
+    testCase = m.fetchUsers()
     #testCase = neo.commentOnImage()
     testCase.setup()
     testCase.run()

@@ -449,8 +449,7 @@ class MySQL(Base):
             cursor.execute("SELECT s.ID,s.project,header.name,skuValue.value FROM sku as s "
                 "INNER JOIN header ON s.id=header.sku_id "
                 "INNER JOIN skuValue ON skuValue.sku_id = s.id AND skuValue.header_name=header.name "
-                "GROUP BY s.ID "
-                "HAVING s.ID = '"+str(inner_self.sku_id)+"'")
+                "WHERE s.ID = '"+str(inner_self.sku_id)+"'")
             result = cursor.fetchall()
             print(result)
             cursor.close()
@@ -472,9 +471,11 @@ class MySQL(Base):
             pass
 
         def run(inner_self):
-            self.graph.run(
-                'MATCH (user:USER) RETURN user'
-            ).dump()
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM contributor")
+            result = cursor.fetchall()
+            cursor.close()
+            print(result)
 
         def teardown(inner_self):
             pass
