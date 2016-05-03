@@ -711,11 +711,10 @@ class MySQL(Base):
             pass
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT participant.id, count(*) FROM participant "
+            cursor.execute("SELECT activity.race, participant.id, count(*) FROM participant "
                 "INNER JOIN activity ON activity.participant=participant.id "
-                "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id")
+                "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id,activity.race")
             result = cursor.fetchall()
-            print(result)
             cursor.close()
 
         def teardown(inner_self):
@@ -727,7 +726,26 @@ class MySQL(Base):
         pass
 
     def unparticipate(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM activity")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            activity_id = result[rand][0]
+            cursor.execute("SELECT follower,followedAt FROM follow WHERE activity='"+str(activity_id)+"'")
+            result = cursor.fetchall()
+            inner_self.activity_id = activity_id
+            inner_self.follows = result
+            print(result)
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("unparticipate", setup, run, teardown)
 
     def updateCoords(self):
         pass
