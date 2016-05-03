@@ -447,16 +447,18 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM sku WHERE ID = '"+str(inner_self.sku_id)+"'")
-            result = cursor.fetchAll()
+            result = cursor.fetchall()
             print(result)
+            cursor.close()
 
         def teardown(inner_self):
-            '''     self.graph.run(
-                'MATCH (sku:SKU) '
-                'WHERE ID(sku)=%d '
-                'DELETE sku '
-                'RETURN count(*) AS deleted_rows' % inner_self.sku_id
-            )  # .dump()'''
+            cursor = self.cnx.cursor()
+            cursor.execute ("DELETE FROM header WHERE sku_id='"+str(inner_self.sku_id)+"'")
+            cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+str(inner_self.sku_id)+"'")
+            res = cursor.execute ("DELETE FROM sku WHERE id='"+str(inner_self.sku_id)+"'")
+            cursor.close()
+            self.cnx.commit()
+            return res.rowcount
 
         return self.create_case("fetchSKU", setup, run, teardown)
 
