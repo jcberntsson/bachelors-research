@@ -18,6 +18,7 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE follow")
             cursor.execute("DROP TABLE activity")
             cursor.execute("DROP TABLE participant")
             cursor.execute("DROP TABLE tag")
@@ -175,7 +176,7 @@ class MySQL(Base):
             ") ENGINE=InnoDB")
         TABLES.append(
             "CREATE TABLE activity ("
-            "  id int NOT NULL AUTO_INCREMENT,"
+            "  id bigint NOT NULL AUTO_INCREMENT,"
             "  participant bigint,"
             "  race bigint,"
             "  joinedAt datetime,"
@@ -184,6 +185,17 @@ class MySQL(Base):
             "     REFERENCES participant (id),"
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE follow ("
+            "  follower bigint,"
+            "  activity bigint,"
+            "  followedAt datetime,"
+            "  PRIMARY KEY (follower,activity),"
+            "  CONSTRAINT follow_follower_fk FOREIGN KEY (follower) "
+            "     REFERENCES participant (id),"
+            "  CONSTRAINT follow_activity_fk FOREIGN KEY (activity) "
+            "     REFERENCES activity (id)"
             ") ENGINE=InnoDB")
         for ddl in TABLES:
             try:
@@ -248,65 +260,178 @@ class MySQL(Base):
                     
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
+                rand2 = random.randint( 0, len(participants)-5)
+        for z in range(5):
+            # Participants
+            rand = random.randint( 0, len(activities)-1)
+            cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")   
 
         cursor.close()
         self.cnx.commit()
 
     def initSkim(self):
-        tx = self.graph.begin()
+        ##Drop old tables
+        try:
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE comment")
+            cursor.execute("DROP TABLE image")
+            cursor.execute("DROP TABLE skuValue")
+            cursor.execute("DROP TABLE header")
+            cursor.execute("DROP TABLE sku")
+            cursor.execute("DROP TABLE contribution")
+            cursor.execute("DROP TABLE contributor")
+            cursor.execute("DROP TABLE project")
+            self.cnx.commit();
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("Dropping OK")
+        cursor.close()
+        
+        ##Create tables
+        print("Creating tables")
+        TABLES = []
+        TABLES.append(
+            "CREATE TABLE project ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE contributor ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  username varchar(20),"
+            "  email varchar(50),"
+            "  password varchar(20),"
+            "  PRIMARY KEY (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE contribution ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  contributor bigint,"
+            "  project bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT contribution_contributor_fk FOREIGN KEY (contributor) "
+            "     REFERENCES contributor (id),"
+            "  CONSTRAINT contribution_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE sku ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  project bigint,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT sku_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE header ("
+            "  sku_id bigint,"
+            "  name varchar(50),"
+            "  PRIMARY KEY (sku_id,name),"
+            "  CONSTRAINT header_sku_fk FOREIGN KEY (sku_id) "
+            "     REFERENCES sku (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE skuValue ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  sku_id bigint,"
+            "  value varchar(100),"
+            "  header_name varchar(50),"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT skuValue_header_fk FOREIGN KEY (sku_id,header_name) "
+            "     REFERENCES header (sku_id,name)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE image ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  sku bigint,"
+            "  project bigint,"
+            "  name varchar(40),"
+            "  original_name varchar(40),"
+            "  extension varchar(10),"
+            "  encoding varchar(10),"
+            "  size int,"
+            "  height int,"
+            "  width int,"
+            "  verticalDPI int,"
+            "  horizontalDPI int,"
+            "  bitDepth int,"
+            "  createdAt datetime,"
+            "  accepted Boolean,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT image_sku_fk FOREIGN KEY (sku) "
+            "     REFERENCES sku (id),"
+            "  CONSTRAINT image_project_fk FOREIGN KEY (project) "
+            "     REFERENCES project (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE comment ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  creator bigint,"
+            "  image bigint,"
+            "  text varchar(300),"
+            "  createdAt datetime,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT comment_contributor_fk FOREIGN KEY (creator) "
+            "     REFERENCES contributor (id),"
+            "  CONSTRAINT comment_image_fk FOREIGN KEY (image) "
+            "     REFERENCES image (id)"
+            ") ENGINE=InnoDB")     
+        for ddl in TABLES:
+            try:
+                cursor = self.cnx.cursor()
+                cursor.execute(ddl)
+                self.cnx.commit()
+                cursor.close()
+            except mysql.connector.Error as err:
+                '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                    print("already exists.")'''
+                '''else:'''
+                print(err)
 
         # Users
         users = []
+        cursor = self.cnx.cursor()
         for x in range(50):
-            users.append(
-                Node("USER", username="user_" + str(x), email="user_" + str(x) + "@mail.com"))
-            tx.create(users[x])
+            cursor.execute("INSERT INTO contributor (username,email,password) VALUES ('user_"+str(x)+"','user_"+str(x)+"@mail.com','xpassx')")
+            users.append(cursor.lastrowid)
+        self.cnx.commit()
+        cursor.close()
 
         # Projects and images
-        projects = []
-        images = []
-        skus = []
-        comments = []
+        cursor = self.cnx.cursor()
         for x in range(8):
-            projects.append(Node("PROJECT", name="project_" + str(x)))
-            tx.create(projects[x])
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 2]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 3]))
-            tx.create(Relationship(projects[x], "COLLABORATOR", users[x * 4]))
+            cursor.execute("INSERT INTO project (name) VALUES('project_"+str(x)+"')")
+            project_id = cursor.lastrowid
+            
+            for c in range(10):
+                cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*2+c])+"','"+str(project_id)+"')")
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
-                image = Node("IMAGE", name="image_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
-                tx.create(image)
-                images.append(image)
-                tx.create(Relationship(image, "IN", projects[x]))
-                # Inner images
+                cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
+                    "VALUES('image_"+str(nbr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
+
+                # SKUS
+                cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
+                sku_id = cursor.lastrowid
+                for z in range(10):
+                    # Rows
+                    cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
+                    cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
+
+                # SKU images
                 nbr = x + 5 + y
-                image = Node("IMAGE", name="innerimage_" + str(nbr), height="100", width="100", extension="png",
-                             createdAt=str(datetime.datetime.now()))
-                tx.create(image)
-                images.append(image)
+                cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,sku) "
+                    "VALUES('image_"+str(nbr)+"','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(sku_id)+"')")
+                image_id = cursor.lastrowid
                 for z in range(2):
                     # Comments
-                    comment = Node("COMMENT", text="Haha, cool image", createdAt=str(datetime.datetime.now()))
-                    tx.create(comment)
-                    comments.append(comment)
-                    tx.create(Relationship(comment, "ON", image))
-                    tx.create(Relationship(comment, "MADE_BY", users[x * 2]))
-                # SKUS
-                sku = Node("SKU", name="sku_" + str(nbr))
-                tx.create(sku)
-                skus.append(sku)
-                tx.create(Relationship(sku, "IN", projects[x]))
-                tx.create(Relationship(image, "BELONGS_TO", sku))
-                for z in range(5):
-                    # Rows
-                    row = Node("ROW", header="header_" + str(z), value=str(z))
-                    tx.create(row)
-                    tx.create(Relationship(row, "OF", sku))
-
-        tx.commit()
+                    cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
+                        "VALUES('Haha, cool image','2016-04-04','"+str(users[x*2+z])+"','"+str(image_id)+"')")
+        self.cnx.commit()
+        cursor.close()
 
     def initReddit(self):
         pass
@@ -319,101 +444,228 @@ class MySQL(Base):
     ############################
     ####	TEST METHODS	####
     ############################
-    # TODO: All inserting methods should first find the nodes that it is relating for
 
     # SKIM
     def fetchSKU(self):
-        self.graph.run(
-            'MATCH (row:ROW)-[of:OF]->(sku:SKU) WHERE sku.name="sku_7" RETURN sku,of,row'
-        ).dump()
-
-    def fetchUsers(self):
-        self.graph.run(
-            'MATCH (user:USER) RETURN user'
-        ).dump()
-
-    def commentOnImage(self):
-        # TODO: Maybe better to create all three in one create?
-        self.graph.run(
-            'MATCH (user:USER)<-[:COLLABORATOR]-(:PROJECT)<-[:IN]-(image:IMAGE) '
-            'WITH * LIMIT 1 '
-            'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
-            'RETURN comment'
-        ).dump()
-
-    def pairImageSKU(self):
-
         def setup(inner_self):
-            #print("Setup")
-            out = self.graph.run(
-                'CREATE (sku:SKU { name: "test_sku" })-[:IN]->(project:PROJECT { name: "test_project" })<-[in:IN]-(image:IMAGE { name:"test_image" }) '
-                'RETURN ID(sku) AS sku_id, ID(project) AS project_id, ID(image) AS image_id'
-            )
-            if out.forward():
-                #print(out.current)
-                inner_self.sku_id = out.current['sku_id']
-                inner_self.project_id = out.current['project_id']
-                inner_self.image_id = out.current['image_id']
+            # print("Setup")
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO project (name) VALUE('test_project')")
+            project_id = cursor.lastrowid
+            cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
+            sku_id = cursor.lastrowid
+            for z in range(10):
+                # Rows
+                cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
+                cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
+            inner_self.sku_id = str(sku_id)
+            cursor.close()
 
         def run(inner_self):
-            #print("Run")
-            self.graph.run(
-                'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
-                'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
-                'CREATE (image)-[b:BELONGS_TO]->(sku) '
-                'DELETE in '
-                'RETURN ID(b) AS ID' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )#.dump()
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT s.ID,s.project,header.name,skuValue.value FROM sku as s "
+                "INNER JOIN header ON s.id=header.sku_id "
+                "INNER JOIN skuValue ON skuValue.sku_id = s.id AND skuValue.header_name=header.name "
+                "WHERE s.ID = '"+inner_self.sku_id+"'")
+            result = cursor.fetchall()
+            cursor.close()
 
         def teardown(inner_self):
-            #print("Teardown")
-            self.graph.run(
-                'MATCH (image:IMAGE)-[b:BELONGS_TO]->(sku:SKU)-[in:IN]->(project:PROJECT) '
-                'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE b, image, in, sku, project '
-                'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )#.dump()
+            cursor = self.cnx.cursor()
+            cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute ("DELETE FROM header WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute ("DELETE FROM sku WHERE id='"+inner_self.sku_id+"'")
+            rc = cursor.rowcount
+            cursor.close()
+            self.cnx.commit()
+            return rc
 
-        return self.create_case("PairImageAndSKUCase", setup, run, teardown)
+        return self.create_case("fetchSKU", setup, run, teardown)
 
-        '''
-        rel = self.graph.run(
-            'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
-            'WITH * SKIP 55 LIMIT 1 '
-            'CREATE (image)-[b:BELONGS_TO]->(sku) '
-            'DELETE in '
-            'RETURN ID(b) AS ID'
-        )
+    def fetchUsers(self):
+        def setup(inner_self):
+            pass
 
-        relation_id = str(rel.evaluate())
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM contributor")
+            result = cursor.fetchall()
+            cursor.close()
 
-        self.graph.run(
-            'MATCH (image:IMAGE)-[b:BELONGS_TO]->(:SKU)-[:IN]->(project:PROJECT)'
-            'WHERE ID(b) = ' + relation_id + ' '
-            'CREATE (image)-[:IN]->(project) '
-            'DELETE b '
-            'RETURN count(*)'
-        ).dump()
-        '''
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchUsers", setup, run, teardown)
+
+    def commentOnImage(self):
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            #Contributor
+            cursor.execute("INSERT INTO contributor (username) VALUES ('test_user')")
+            user_id = cursor.lastrowid
+            #Project
+            cursor.execute("INSERT INTO project (name) VALUES ('test_project')")
+            project_id = cursor.lastrowid
+            #Contribution
+            cursor.execute("INSERT INTO contribution (contributor,project) VALUES ('"+str(user_id)+"','"+str(project_id)+"')")
+            contribution_id = cursor.lastrowid
+            #Image
+            cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
+                "VALUES('test_image','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
+            image_id = cursor.lastrowid        
+            #Output
+            inner_self.user_id = str(user_id)
+            inner_self.project_id = str(project_id)
+            inner_self.image_id = str(image_id)
+            inner_self.contribution_id = str(contribution_id)
+            cursor.close()
+            self.cnx.commit()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
+                "VALUES('Haha, cool image','2016-04-04','"+inner_self.user_id+"','"+inner_self.image_id+"')")
+            inner_self.comment_id = cursor.lastrowid 
+            cursor.close()
+            self.cnx.commit()       
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM comment WHERE id='"+inner_self.comment_id+"'")
+            cursor.execute("DELETE FROM image WHERE id='"+inner_self.image_id+"'")
+            cursor.execute("DELETE FROM contribution WHERE id='"+inner_self.contribution_id+"'")
+            cursor.execute("DELETE FROM contributor WHERE id='"+inner_self.user_id+"'")
+            cursor.execute("DELETE FROM project WHERE id='"+inner_self.project_id+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("commentOnImage", setup, run, teardown)
+
+    def pairImageSKU(self):
+        def setup(inner_self):
+            # print("Setup")
+            cursor = self.cnx.cursor()
+            #Project
+            cursor.execute("INSERT INTO project (name) VALUES ('test_project')")
+            project_id = cursor.lastrowid
+            #Image
+            cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
+                "VALUES('test_image','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
+            image_id = cursor.lastrowid
+            #SKU
+            cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
+            sku_id = cursor.lastrowid
+            for z in range(10):
+                # Rows
+                cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
+                cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
+            
+            cursor.close()
+            self.cnx.commit()
+            #OUTPUT
+            inner_self.sku_id = str(sku_id)
+            inner_self.project_id = str(project_id)
+            inner_self.image_id = str(image_id)
+
+        def run(inner_self):
+            # print("Run")
+            cursor = self.cnx.cursor()
+            cursor.execute("UPDATE image SET sku='"+inner_self.sku_id+"' WHERE project='"+inner_self.project_id+"' AND id='"+inner_self.image_id+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            # print("Teardown")
+            cursor = self.cnx.cursor()
+            cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute ("DELETE FROM header WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute("DELETE FROM image WHERE id='"+inner_self.image_id+"'")
+            cursor.execute ("DELETE FROM sku WHERE id='"+inner_self.sku_id+"'")
+            cursor.execute("DELETE FROM project WHERE id='"+inner_self.project_id+"'")
+            
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("pairImageSKU", setup, run, teardown)
 
     # RaceOne
     def follow(self):
-        self.graph.run(
-            'MATCH (user:USER),(race:RACE) '
-            'WITH * LIMIT 1 '
-            'CREATE UNIQUE (user)-[:PARTICIPATING_IN]->'
-            '(activity:ACTIVITY {joinedAt:"2015-03-02@13:37"} )-[:OF]->(race) '
-            'RETURN ID(activity)'
-        ).dump()
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_follower','Tester','SuperHash')")
+            follower_id = cursor.lastrowid
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_participant','Tester','SuperHash')")
+            participant_id = cursor.lastrowid
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            race_id = result[rand][0]
+            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"'")
+            activity_id = cursor.lastrowid
+            cursor.close()
+            self.cnx.commit()
+            inner_self.follower_id = str(follower_id)
+            inner_self.participant_id = str(participant_id)
+            inner_self.race_id = str(race_id)
+            inner_self.activity_id = str(activity_id)
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES ('"+inner_self.follower_id+"','"
+                +inner_self.activity_id+"','"+str(datetime.datetime.now())+"')")
+            cursor.close()
+            self.cnx.commit()
+                        
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
+                +"' AND participant='"+inner_self.participant_id+"' AND race='"+inner_self.race_id+"'")
+            cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("follow", setup, run, teardown)
 
     def unfollow(self):
-        self.graph.run(
-            'MATCH (:USER)-[:PARTICIPATING_IN]->(activity:ACTIVITY)-[:OF]->(:RACE) '
-            'WHERE ID(activity) = 6168 '
-            'WITH * LIMIT 1 '
-            'DETACH DELETE activity '
-            'RETURN count(*)'
-        ).dump()
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_follower','Tester','SuperHash')")
+            follower_id = cursor.lastrowid
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_participant','Tester','SuperHash')")
+            participant_id = cursor.lastrowid
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            race_id = result[rand][0]
+            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
+            activity_id = cursor.lastrowid
+            cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES ('"+str(follower_id)+"','"
+                +str(activity_id)+"','"+str(datetime.datetime.now())+"')")
+            cursor.close()
+            self.cnx.commit()
+            inner_self.follower_id = str(follower_id)
+            inner_self.participant_id = str(participant_id)
+            inner_self.race_id = str(race_id)
+            inner_self.activity_id = str(activity_id)
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
+                +"' AND activity='"+inner_self.activity_id+"'")
+            cursor.close()
+            self.cnx.commit()
+                        
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("unfollow", setup, run, teardown)
 
     def fetchComments(self):
         pass
@@ -477,4 +729,3 @@ class MySQL(Base):
 
     def insertMaps(self):
         pass
-

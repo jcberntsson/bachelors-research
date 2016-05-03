@@ -9,6 +9,3 @@ if __name__ == '__main__':
     case = neo.fetchUsers()
     case.run()
     #testCase = neo.commentOnImage()
-    #testCase.setup()
-    #testCase.run()
-    #testCase.teardown()
