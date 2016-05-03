@@ -730,7 +730,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT activity.id, activity.participant,activity.race,activity.joinedAt FROM activity INNER JOIN follow WHERE activity.id=follow.activity")
             result = cursor.fetchall()
-            rand = random.randint(0,len(result))
+            rand = random.randint(0,len(result)-1)
             inner_self.activity = result[rand]
             activity_id = result[rand][0]
             cursor.execute("SELECT follower,followedAt FROM follow WHERE activity='"+str(activity_id)+"'")
@@ -748,6 +748,9 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("INSERT INTO activity (id,participant,race,joinedAt) VALUES('"+
                 str(inner_self.activity[0])+"','"+str(inner_self.activity[1])+"','"+str(inner_self.activity[2])+"','"+str(inner_self.activity[3])+"')")
+            for f in follows:
+                cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+
+                    str(f[0])+"','"+activity_id+"','"+str(f[1])+"')")
             cursor.close()
             self.cnx.commit()
         return self.create_case("unparticipate", setup, run, teardown)
