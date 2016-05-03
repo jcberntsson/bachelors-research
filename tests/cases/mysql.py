@@ -677,7 +677,20 @@ class MySQL(Base):
         pass
 
     def fetchParticipants(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT participant.id, count(*) FROM participant INNER JOIN activity ON activity.participant=participant.id GROUP BY participant_id")
+            result = cursor.fetchall()
+            print(result)
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants", setup, run, teardown)
 
     def createComment(self):
         pass
