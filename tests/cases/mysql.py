@@ -728,7 +728,7 @@ class MySQL(Base):
     def unparticipate(self):
         def setup(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM activity")
+            cursor.execute("SELECT * FROM activity INNER JOIN follow WHERE activity.id=follow.activity")
             result = cursor.fetchall()
             rand = random.randint(0,len(result))
             activity_id = result[rand][0]
