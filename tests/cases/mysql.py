@@ -639,8 +639,7 @@ class MySQL(Base):
             result = cursor.fetchall()
             rand = random.randint(0,len(result))
             race_id = result[rand][0]
-            print("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"'")
-            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"'")
+            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
             activity_id = cursor.lastrowid
             cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES ('"+str(follower_id)+"','"
                 +str(activity_id)+"','"+str(datetime.datetime.now())+"')")
