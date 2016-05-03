@@ -455,10 +455,11 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+str(inner_self.sku_id)+"'")
             cursor.execute ("DELETE FROM header WHERE sku_id='"+str(inner_self.sku_id)+"'")
-            res = cursor.execute ("DELETE FROM sku WHERE id='"+str(inner_self.sku_id)+"'")
+            cursor.execute ("DELETE FROM sku WHERE id='"+str(inner_self.sku_id)+"'")
+            rc = rowcount
             cursor.close()
             self.cnx.commit()
-            return res.rowcount
+            return rc
 
         return self.create_case("fetchSKU", setup, run, teardown)
 
