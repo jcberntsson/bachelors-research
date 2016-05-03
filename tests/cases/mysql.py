@@ -490,7 +490,7 @@ class MySQL(Base):
             cursor.execute("INSERT INTO project (name) VALUES ('test_project')")
             project_id = cursor.lastrowid
             #Contribution
-            cursor.execute("INSERT INTO contribution () VALUES ('"+str(user_id)+"','"+str(project_id)+"')")
+            cursor.execute("INSERT INTO contribution (contributor,project) VALUES ('"+str(user_id)+"','"+str(project_id)+"')")
             contribution_id = cursor.lastrowid
             #Image
             cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
