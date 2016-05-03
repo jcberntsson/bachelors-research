@@ -490,7 +490,7 @@ class MySQL(Base):
             cursor.execute("INSERT INTO project (name) VALUES (test_project)")
             project_id = cursor.lastrowid
             #Contribution
-            cursor.execute("INSERT INTO contribution () VALUES ('"+str(user_id)"','"+str(project_id)+"')")
+            cursor.execute("INSERT INTO contribution () VALUES ('"+str(user_id)+"','"+str(project_id)+"')")
             contribution_id = cursor.lastrowid
             #Image
             cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
@@ -506,7 +506,8 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("INSERT INTO comment (text,createdAt,creator,image) VALUES('Haha, cool image','2016-04-04','"+str(inner_self.user_id)+"','"+str(inner_self.image_id)+"')")
+            cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
+                "VALUES('Haha, cool image','2016-04-04','"+str(inner_self.user_id)+"','"+str(inner_self.image_id)+"')")
             inner_self.comment_id = cursor.lastrowid 
             cursor.close()
             self.cnx.commit()       
