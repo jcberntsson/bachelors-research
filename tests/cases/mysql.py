@@ -747,7 +747,7 @@ class MySQL(Base):
         def teardown(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("INSERT INTO activity (id,participant,race,joinedAt) VALUES('"+
-                inner_self.activity[0]+"','"+inner_self.activity[1]+"','"+inner_self.activity[2]+"','"+inner_self.activity[3]+"')")
+                str(inner_self.activity[0])+"','"+str(inner_self.activity[1])+"','"+str(inner_self.activity[2])+"','"+str(inner_self.activity[3])+"')")
             cursor.close()
             self.cnx.commit()
         return self.create_case("unparticipate", setup, run, teardown)
