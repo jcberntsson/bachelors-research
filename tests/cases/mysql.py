@@ -18,7 +18,7 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE follow")
+            '''            cursor.execute("DROP TABLE follow")'''
             cursor.execute("DROP TABLE activity")
             cursor.execute("DROP TABLE participant")
             cursor.execute("DROP TABLE tag")
