@@ -191,7 +191,7 @@ class MySQL(Base):
             "  follower bigint,"
             "  activity bigint,"
             "  followedAt datetime,"
-            "  PRIMARY KEY (follower,participant,race),"
+            "  PRIMARY KEY (follower,activity),"
             "  CONSTRAINT follow_follower_fk FOREIGN KEY (follower) "
             "     REFERENCES follower (id),"
             "  CONSTRAINT follow_activity_fk FOREIGN KEY (activity) "
