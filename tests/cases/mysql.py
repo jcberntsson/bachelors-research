@@ -446,7 +446,7 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM Ssu WHERE ID = '"+str(inner_self.sku_id)+"'")
+            cursor.execute("SELECT * FROM sku WHERE ID = '"+str(inner_self.sku_id)+"'")
             result = cursor.fetchAll()
             print(result)
 
