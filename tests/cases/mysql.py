@@ -748,7 +748,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("INSERT INTO activity (id,participant,race,joinedAt) VALUES('"+
                 str(inner_self.activity[0])+"','"+str(inner_self.activity[1])+"','"+str(inner_self.activity[2])+"','"+str(inner_self.activity[3])+"')")
-            for f in follows:
+            for f in inner_self.follows:
                 cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+
                     str(f[0])+"','"+activity_id+"','"+str(f[1])+"')")
             cursor.close()
