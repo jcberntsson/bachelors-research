@@ -727,7 +727,6 @@ class MySQL(Base):
 
     def unparticipate(self):
         def setup(inner_self):
-            print('setup')
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM activity")
             result = cursor.fetchall()
@@ -737,10 +736,9 @@ class MySQL(Base):
             result = cursor.fetchall()
             inner_self.activity_id = activity_id
             inner_self.follows = result
-            print(result)
             cursor.close()
         def run(inner_self):
-            print('run')
+            print(inner_self.follows)
             cursor = self.cnx.cursor()
             cursor.close()
 
