@@ -176,7 +176,7 @@ class MySQL(Base):
             ") ENGINE=InnoDB")
         TABLES.append(
             "CREATE TABLE activity ("
-            "  id int NOT NULL AUTO_INCREMENT,"
+            "  id bigint NOT NULL AUTO_INCREMENT,"
             "  participant bigint,"
             "  race bigint,"
             "  joinedAt datetime,"
