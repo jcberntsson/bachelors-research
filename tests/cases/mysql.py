@@ -449,7 +449,7 @@ class MySQL(Base):
             cursor.execute("SELECT * FROM sku as s "
                 "INNER JOIN header ON s.id=header.sku_id "
                 "INNER JOIN skuValue ON skuValue.sku_id = s.id AND skuValue.header_name=header.name "
-                "WHERE ID = '"+str(inner_self.sku_id)+"'")
+                "WHERE s.ID = '"+str(inner_self.sku_id)+"'")
             result = cursor.fetchall()
             print(result)
             cursor.close()
