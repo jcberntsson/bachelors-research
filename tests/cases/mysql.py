@@ -740,6 +740,7 @@ class MySQL(Base):
             print(result)
             cursor.close()
         def run(inner_self):
+            print('run')
             cursor = self.cnx.cursor()
             cursor.close()
 
