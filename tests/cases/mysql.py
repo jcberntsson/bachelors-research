@@ -18,6 +18,7 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE follow")
             cursor.execute("DROP TABLE activity")
             cursor.execute("DROP TABLE participant")
             cursor.execute("DROP TABLE tag")
@@ -185,6 +186,20 @@ class MySQL(Base):
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
             "     REFERENCES race (id)"
             ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE follow ("
+            "  follower bigint,"
+            "  participant bigint,"
+            "  race bigint,"
+            "  followedAt datetime,"
+            "  PRIMARY KEY (follower,participant,race),"
+            "  CONSTRAINT follow_follower_fk FOREIGN KEY (follower) "
+            "     REFERENCES participant (id),"
+            "  CONSTRAINT follow_participant_fk FOREIGN KEY (participant) "
+            "     REFERENCES participant (id),"
+            "  CONSTRAINT follow_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id)"
+            ") ENGINE=InnoDB")
         for ddl in TABLES:
             try:
                 cursor = self.cnx.cursor()
@@ -247,6 +262,13 @@ class MySQL(Base):
                     rand = self.new_rand_int(rands, 0, 49)
                     
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
+                    activities.append(cursor.lastrowid)
+                for z in range(random.randint(0, 5)):
+                    # Participants
+                    rand = self.new_rand_int(rands, 0, 49)
+                    rand2 = self.new_rand_int(rands, 0, 49)
+                    
+                    cursor.execute("INSERT INTO follow (follower,participant,race,followedAt) VALUES('"+str(participants[rand2])+"','"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
 
         cursor.close()
@@ -573,13 +595,32 @@ class MySQL(Base):
 
     # RaceOne
     def follow(self):
-        self.graph.run(
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_follower','Tester','SuperHash')")
+            follower_id = cursor.lastrowid
+            cursor.execute("INSERT INTO participant (username,fullname,password) VALUES('test_participant','Tester','SuperHash')")
+            participant_id = cursor.lastrowid
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            print(result)
+            
+            cursor.close()
+            self.cnx.commit()
+
+        def run(inner_self):
+            pass
+            '''            self.graph.run(
             'MATCH (user:USER),(race:RACE) '
             'WITH * LIMIT 1 '
             'CREATE UNIQUE (user)-[:PARTICIPATING_IN]->'
             '(activity:ACTIVITY {joinedAt:"2015-03-02@13:37"} )-[:OF]->(race) '
-            'RETURN ID(activity)'
-        ).dump()
+            'RETURN ID(activity)''''
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchUsers", setup, run, teardown)
 
     def unfollow(self):
         self.graph.run(
