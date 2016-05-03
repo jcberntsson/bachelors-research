@@ -708,7 +708,7 @@ class MySQL(Base):
 
     def fetchParticipants2(self):
         def setup(inner_self):
-
+            pass
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT participant.id, count(*) FROM participant "
