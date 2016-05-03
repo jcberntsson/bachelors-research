@@ -261,7 +261,7 @@ class MySQL(Base):
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activity_id = cursor.lastrowid
                     activities.append(activity_id)
-                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[(rand+1)%49])+"','"+str(activity_id)+"','"+str(datetime.datetime.now())+"')")
+                    '''                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[(rand+1)%49])+"','"+str(activity_id)+"','"+str(datetime.datetime.now())+"')")'''
 
         cursor.close()
         self.cnx.commit()
