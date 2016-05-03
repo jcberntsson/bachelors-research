@@ -453,8 +453,8 @@ class MySQL(Base):
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute ("DELETE FROM header WHERE sku_id='"+str(inner_self.sku_id)+"'")
             cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+str(inner_self.sku_id)+"'")
+            cursor.execute ("DELETE FROM header WHERE sku_id='"+str(inner_self.sku_id)+"'")
             res = cursor.execute ("DELETE FROM sku WHERE id='"+str(inner_self.sku_id)+"'")
             cursor.close()
             self.cnx.commit()
