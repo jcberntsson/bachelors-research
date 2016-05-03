@@ -182,9 +182,9 @@ class MySQL(Base):
             "  joinedAt datetime,"
             "  PRIMARY KEY (id),"
             "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
-            "     REFERENCES participant (id),"
+            "     REFERENCES participant (id) ON DELETE CASCADE,"
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
+            "     REFERENCES race (id) ON DELETE CASCADE"
             ") ENGINE=InnoDB")
         TABLES.append(
             "CREATE TABLE follow ("
@@ -193,9 +193,9 @@ class MySQL(Base):
             "  followedAt datetime,"
             "  PRIMARY KEY (follower,activity),"
             "  CONSTRAINT follow_follower_fk FOREIGN KEY (follower) "
-            "     REFERENCES participant (id),"
+            "     REFERENCES participant (id) ON DELETE CASCADE,"
             "  CONSTRAINT follow_activity_fk FOREIGN KEY (activity) "
-            "     REFERENCES activity (id)"
+            "     REFERENCES activity (id) ON DELETE CASCADE"
             ") ENGINE=InnoDB")
         for ddl in TABLES:
             try:
@@ -738,9 +738,11 @@ class MySQL(Base):
             inner_self.follows = result
             cursor.close()
         def run(inner_self):
-            print(inner_self.follows)
             cursor = self.cnx.cursor()
+            cursor.execute()
+            
             cursor.close()
+            self.cnx.commit()
 
         def teardown(inner_self):
             pass
