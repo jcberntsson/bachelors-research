@@ -446,7 +446,7 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM sku as s "
+            cursor.execute("SELECT s.ID,s.project_id,header.name,skuValue.value FROM sku as s "
                 "INNER JOIN header ON s.id=header.sku_id "
                 "INNER JOIN skuValue ON skuValue.sku_id = s.id AND skuValue.header_name=header.name "
                 "WHERE s.ID = '"+str(inner_self.sku_id)+"'")
