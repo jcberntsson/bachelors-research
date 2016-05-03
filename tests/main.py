@@ -17,3 +17,4 @@ if __name__ == '__main__':
     case = m.unparticipate()
     case.setup()
     case.run()
+    case.teardown()
