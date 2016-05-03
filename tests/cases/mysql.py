@@ -259,14 +259,9 @@ class MySQL(Base):
                     rand = self.new_rand_int(rands, 0, 49)
                     
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
-                    activities.append(cursor.lastrowid)
-                rand2 = random.randint( 0, len(participants)-5)
-                for z in range(random.randint(0, 5)):
-                    # Participants
-                    rand = random.randint( 0, 4)
-                    
-                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[rand2+z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")
-                    activities.append(cursor.lastrowid)
+                    activity_id = cursor.lastrowid
+                    activities.append(activity_id)
+                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[(rand+1)%49])+"','"+str(activity_id)+"','"+str(datetime.datetime.now())+"')")
 
         cursor.close()
         self.cnx.commit()
