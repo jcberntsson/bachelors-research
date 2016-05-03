@@ -603,7 +603,8 @@ class MySQL(Base):
             participant_id = cursor.lastrowid
             cursor.execute("SELECT id FROM race")
             result = cursor.fetchall()
-            print(result)
+            rand = random.randint(0,len(result))
+            print(result[rand])
             
             cursor.close()
             self.cnx.commit()
