@@ -740,7 +740,6 @@ class MySQL(Base):
             cursor.close()
         def run(inner_self):
             cursor = self.cnx.cursor()
-            console.log
             '''cursor.execute("DELETE FROM activity WHERE activity_id = '"+inner_self.activity_id+"'")  '''
             cursor.close()
             self.cnx.commit()
