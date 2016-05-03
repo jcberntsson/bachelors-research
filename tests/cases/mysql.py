@@ -738,7 +738,7 @@ class MySQL(Base):
             inner_self.follows = result
             cursor.close()
         def run(inner_self):
-            print(inner_self)
+            print(inner_self.follows)
             cursor = self.cnx.cursor()
             cursor.close()
 

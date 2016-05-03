@@ -15,4 +15,5 @@ if __name__ == '__main__':
     m = MySQL()
     m.init("raceone")
     case = m.unparticipate()
+    case.setup()
     case.run()
