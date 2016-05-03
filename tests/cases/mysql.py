@@ -441,7 +441,7 @@ class MySQL(Base):
                 # Rows
                 cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
                 cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
-            inner_self.sku_id = sku_id
+            inner_self.sku_id = str(sku_id)
             cursor.close()
 
         def run(inner_self):
@@ -449,15 +449,15 @@ class MySQL(Base):
             cursor.execute("SELECT s.ID,s.project,header.name,skuValue.value FROM sku as s "
                 "INNER JOIN header ON s.id=header.sku_id "
                 "INNER JOIN skuValue ON skuValue.sku_id = s.id AND skuValue.header_name=header.name "
-                "WHERE s.ID = '"+str(inner_self.sku_id)+"'")
+                "WHERE s.ID = '"+inner_self.sku_id+"'")
             result = cursor.fetchall()
             cursor.close()
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+str(inner_self.sku_id)+"'")
-            cursor.execute ("DELETE FROM header WHERE sku_id='"+str(inner_self.sku_id)+"'")
-            cursor.execute ("DELETE FROM sku WHERE id='"+str(inner_self.sku_id)+"'")
+            cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute ("DELETE FROM header WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute ("DELETE FROM sku WHERE id='"+inner_self.sku_id+"'")
             rc = cursor.rowcount
             cursor.close()
             self.cnx.commit()
@@ -497,28 +497,28 @@ class MySQL(Base):
                 "VALUES('test_image','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
             image_id = cursor.lastrowid        
             #Output
-            inner_self.user_id = user_id
-            inner_self.project_id = project_id
-            inner_self.image_id = image_id
-            inner_self.contribution_id = contribution_id
+            inner_self.user_id = str(user_id)
+            inner_self.project_id = str(project_id)
+            inner_self.image_id = str(image_id)
+            inner_self.contribution_id = str(contribution_id)
             cursor.close()
             self.cnx.commit()
 
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
-                "VALUES('Haha, cool image','2016-04-04','"+str(inner_self.user_id)+"','"+str(inner_self.image_id)+"')")
+                "VALUES('Haha, cool image','2016-04-04','"+inner_self.user_id+"','"+inner_self.image_id+"')")
             inner_self.comment_id = cursor.lastrowid 
             cursor.close()
             self.cnx.commit()       
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM comment WHERE id='"+str(inner_self.comment_id)+"'")
-            cursor.execute("DELETE FROM image WHERE id='"+str(inner_self.image_id)+"'")
-            cursor.execute("DELETE FROM contribution WHERE id='"+str(inner_self.contribution_id)+"'")
-            cursor.execute("DELETE FROM contributor WHERE id='"+str(inner_self.user_id)+"'")
-            cursor.execute("DELETE FROM project WHERE id='"+str(inner_self.project_id)+"'")
+            cursor.execute("DELETE FROM comment WHERE id='"+inner_self.comment_id+"'")
+            cursor.execute("DELETE FROM image WHERE id='"+inner_self.image_id+"'")
+            cursor.execute("DELETE FROM contribution WHERE id='"+inner_self.contribution_id+"'")
+            cursor.execute("DELETE FROM contributor WHERE id='"+inner_self.user_id+"'")
+            cursor.execute("DELETE FROM project WHERE id='"+inner_self.project_id+"'")
             cursor.close()
             self.cnx.commit()
 
@@ -527,34 +527,47 @@ class MySQL(Base):
     def pairImageSKU(self):
         def setup(inner_self):
             # print("Setup")
-            out = self.graph.run(
-                'CREATE (sku:SKU { name: "test_sku" })-[:IN]->(project:PROJECT { name: "test_project" })<-[in:IN]-(image:IMAGE { name:"test_image" }) '
-                'RETURN ID(sku) AS sku_id, ID(project) AS project_id, ID(image) AS image_id'
-            )
-            if out.forward():
-                # print(out.current)
-                inner_self.sku_id = out.current['sku_id']
-                inner_self.project_id = out.current['project_id']
-                inner_self.image_id = out.current['image_id']
+            cursor = self.cnx.cursor()
+            #Project
+            cursor.execute("INSERT INTO project (name) VALUES ('test_project')")
+            project_id = cursor.lastrowid
+            #Image
+            cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
+                "VALUES('test_image','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
+            image_id = cursor.lastrowid
+            #SKU
+            cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
+            sku_id = cursor.lastrowid
+            for z in range(10):
+                # Rows
+                cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
+                cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
+            
+            cursor.close()
+            self.cnx.commit()
+            #OUTPUT
+            inner_self.sku_id = str(sku_id)
+            inner_self.project_id = str(project_id)
+            inner_self.image_id = str(image_id)
 
         def run(inner_self):
             # print("Run")
-            self.graph.run(
-                'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
-                'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
-                'CREATE (image)-[b:BELONGS_TO]->(sku) '
-                'DELETE in '
-                'RETURN ID(b) AS ID' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            cursor = self.cnx.cursor()
+            cursor.execute("UPDATE image SET sku='"+inner_self.sku_id+"' WHERE project='"+inner_self.project_id+"' AND id='"+inner_self.image_id+"'")
+            cursor.close()
+            self.cnx.commit()
 
         def teardown(inner_self):
             # print("Teardown")
-            self.graph.run(
-                'MATCH (image:IMAGE)-[b:BELONGS_TO]->(sku:SKU)-[in:IN]->(project:PROJECT) '
-                'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE b, image, in, sku, project '
-                'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            cursor = self.cnx.cursor()
+            cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute ("DELETE FROM header WHERE sku_id='"+inner_self.sku_id+"'")
+            cursor.execute("DELETE FROM image WHERE id='"+inner_self.image_id+"'")
+            cursor.execute ("DELETE FROM sku WHERE id='"+inner_self.sku_id+"'")
+            cursor.execute("DELETE FROM project WHERE id='"+inner_self.project_id+"'")
+            
+            cursor.close()
+            self.cnx.commit()
 
         return self.create_case("pairImageSKU", setup, run, teardown)
 
