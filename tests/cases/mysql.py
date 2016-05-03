@@ -257,7 +257,7 @@ class MySQL(Base):
                 for z in range(random.randint(0, 5)):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 49)
-                    
+                    print("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
                 rand2 = random.randint( 0, len(participants)-5)
