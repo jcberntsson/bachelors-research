@@ -727,6 +727,7 @@ class MySQL(Base):
 
     def unparticipate(self):
         def setup(inner_self):
+            print('setup')
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM activity")
             result = cursor.fetchall()
