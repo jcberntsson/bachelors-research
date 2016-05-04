@@ -718,6 +718,7 @@ class MySQL(Base):
             for r in result:
                 race_ids = race_ids +"'"+ str(r[0]) + "',"
             race_ids = race_ids[:-1]
+            race_ids = race_ids + ")"
             print(race_ids)
             cursor.close()
         def run(inner_self):
