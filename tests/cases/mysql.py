@@ -776,7 +776,6 @@ class MySQL(Base):
         def teardown(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("DELETE FROM race WHERE id='"+inner_self.race_id+"'")
-            result = cursor.fetchall()
             cursor.close()
             self.cnx.commit()
 
@@ -794,6 +793,7 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
+            result = cursor.fetchall()
             cursor.close()
             self.cnx.commit()
 
@@ -815,6 +815,7 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
+            result = cursor.fetchall()
             cursor.close()
             self.cnx.commit()
 
