@@ -398,17 +398,17 @@ class Neo4j(Base):
                 'MATCH (race:RACE) '
                 'RETURN COUNT(race) AS nbr_of_races'
             )
-            iterations = out_count.evaluate() - 1 #randint(0, out_count.evaluate() - 1)
+            iterations = randint(0, out_count.evaluate() - 1)
             for result in out:
                 if iterations == 0:
-                    inner_self.test_id = str(result['race_id'])
+                    inner_self.test_id = result['race_id']
                     break
                 iterations -= 1
 
         def run(inner_self):
             out = self.graph.run(
                 'MATCH (race:RACE) '
-                'WHERE ID(race)=%s '
+                'WHERE ID(race)=%d '
                 'RETURN race' % inner_self.test_id
             )
             #print(str(out.current if out.forward() else "nothing here"))
