@@ -701,7 +701,19 @@ class MySQL(Base):
         pass
 
     def fetchHotPostsInSub(self):
-        pass
+        def setup(inner_self):
+            pass
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM race WHERE id=1")
+            result = cursor.fetchall()
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchHotPostsInSub", setup, run, teardown)
 
     def duplicateEvent(self):
         pass
@@ -792,7 +804,7 @@ class MySQL(Base):
             cursor.close()
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM race LIMIT 1")
+            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
             result = cursor.fetchall()
             cursor.close()
             self.cnx.commit()

@@ -16,7 +16,7 @@ test_cases = {
     'skim': [
         'pairImageSKU'
     ],
-    'raceone': ['fetchPostLength','fetchCommentedPosts','upvote'],
+    'raceone': ['fetchPostLength','fetchCommentedPosts','upvote','fetchHotPostsInSub'],
     'reddit': []
 }
 
