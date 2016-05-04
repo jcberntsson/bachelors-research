@@ -807,7 +807,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT id FROM race")
             result = cursor.fetchall()
-            rand = random.randint(0,len(result))
+            rand = random.randint(0,len(result)-1)
             race_id = result[rand][0]
             inner_self.race_id = str(race_id)
             self.cnx.commit()
