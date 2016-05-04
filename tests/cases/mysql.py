@@ -100,14 +100,38 @@ class MySQL(Base):
             "     REFERENCES map (id)"
             ") ENGINE=InnoDB")
         TABLES.append(
+            "CREATE TABLE race ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  description varchar(200),"
+            "  race_date datetime,"
+            "  max_duration int,"
+            "  preview varchar(50),"
+            "  location varchar(50),"
+            "  logo_url varchar(50),"
+            "  event_id bigint,"
+            "  raceprofile int,"
+            "  category int,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT race_category_fk FOREIGN KEY (category) "
+            "     REFERENCES category (id),"
+            "  CONSTRAINT race_event_fk FOREIGN KEY (event_id) "
+            "     REFERENCES event (id),"
+            "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
+            "     REFERENCES raceprofile (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
             "CREATE TABLE racemap ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  map bigint,"
+            "  race bigint,"
             "  start_point bigint,"
             "  goal_point bigint,"
             "  PRIMARY KEY (id),"
             "  CONSTRAINT racemap_map_fk FOREIGN KEY (map) "
             "     REFERENCES map (id),"
+            "  CONSTRAINT racemap_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id) ON DELETE CASCADE,"
             "  CONSTRAINT racemap_startpoint_fk FOREIGN KEY (start_point) "
             "     REFERENCES point (id),"
             "  CONSTRAINT racemap_goalpoint_fk FOREIGN KEY (goal_point) "
@@ -123,30 +147,6 @@ class MySQL(Base):
             "     REFERENCES map (id),"
             "  CONSTRAINT eventmap_event_fk FOREIGN KEY (event) "
             "     REFERENCES event (id)"
-            ") ENGINE=InnoDB")
-        TABLES.append(
-            "CREATE TABLE race ("
-            "  id bigint NOT NULL AUTO_INCREMENT,"
-            "  name varchar(50),"
-            "  description varchar(200),"
-            "  race_date datetime,"
-            "  max_duration int,"
-            "  preview varchar(50),"
-            "  location varchar(50),"
-            "  logo_url varchar(50),"
-            "  event_id bigint,"
-            "  map_id bigint,"
-            "  raceprofile int,"
-            "  category int,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT race_category_fk FOREIGN KEY (category) "
-            "     REFERENCES category (id),"
-            "  CONSTRAINT race_event_fk FOREIGN KEY (event_id) "
-            "     REFERENCES event (id),"
-            "  CONSTRAINT race_map_fk FOREIGN KEY (map_id) "
-            "     REFERENCES racemap (id),"
-            "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
-            "     REFERENCES raceprofile (id)"
             ") ENGINE=InnoDB")
         TABLES.append(
             "CREATE TABLE tag ("
@@ -244,15 +244,15 @@ class MySQL(Base):
                 cursor.execute("INSERT INTO map (name) VALUES('"+mapname+"')")
                 map_id = cursor.lastrowid
                 maps.append(map_id)
-                cursor.execute("INSERT INTO racemap (map) VALUES('"+str(map_id)+"')")
-                racemap_id = cursor.lastrowid
-                racemaps.append(racemap_id)
                 for p in range(100):
                     cursor.execute("INSERT INTO point (lat,lng,alt,map) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"')")
                     coordinates.append(cursor.lastrowid)
-                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,map_id,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(racemap_id)+"','"+str(events[x])+"')")  
+                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(events[x])+"')")  
                 race_id=cursor.lastrowid
-                races.append(race_id)            
+                races.append(race_id)   
+                cursor.execute("INSERT INTO racemap (map,race) VALUES('"+str(map_id)+"','"+str(race_id)+"')")
+                racemap_id = cursor.lastrowid
+                racemaps.append(racemap_id)         
                 rands = []
                 for z in range(random.randint(0, 5)):
                     # Participants
@@ -701,19 +701,7 @@ class MySQL(Base):
         pass
 
     def fetchHotPostsInSub(self):
-        def setup(inner_self):
-            pass
-        def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM race WHERE id=1")
-            result = cursor.fetchall()
-            cursor.close()
-            self.cnx.commit()
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchHotPostsInSub", setup, run, teardown)
+        pass
 
     def duplicateEvent(self):
         pass
@@ -771,70 +759,13 @@ class MySQL(Base):
         pass
 
     def fetchPostLength(self):
-        def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url) VALUES('test_race','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png')")  
-            race_id=cursor.lastrowid
-            inner_self.race_id = str(race_id)
-            self.cnx.commit()
-            cursor.close()
-        def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
-            result = cursor.fetchall()
-            cursor.close()
-            self.cnx.commit()
-
-        def teardown(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM race WHERE id='"+inner_self.race_id+"'")
-            cursor.close()
-            self.cnx.commit()
-
-        return self.create_case("fetchPostLength", setup, run, teardown)
+        pass
 
     def fetchCommentedPosts(self):
-        def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM race")
-            result = cursor.fetchall()
-            race_id=result[0][0]
-            inner_self.race_id = str(race_id)
-            self.cnx.commit()
-            cursor.close()
-        def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
-            result = cursor.fetchall()
-            cursor.close()
-            self.cnx.commit()
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchCommentedPosts", setup, run, teardown)
+        pass
 
     def upvote(self):
-        def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM race")
-            result = cursor.fetchall()
-            rand = random.randint(0,len(result)-1)
-            race_id = result[rand][0]
-            inner_self.race_id = str(race_id)
-            self.cnx.commit()
-            cursor.close()
-        def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
-            result = cursor.fetchall()
-            cursor.close()
-            self.cnx.commit()
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("upvote", setup, run, teardown)
+        pass
 
     def updateRace(self):
         pass
