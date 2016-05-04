@@ -682,7 +682,7 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT participant.id, count(*) FROM participant INNER JOIN activity ON activity.participant=participant.id GROUP BY participant.id")
+            cursor.execute("SELECT participant.id, count(*) as followCount FROM participant INNER JOIN activity ON activity.participant=participant.id GROUP BY participant.id ORDER BY followCount")
             result = cursor.fetchall()
             cursor.close()
 
@@ -759,13 +759,67 @@ class MySQL(Base):
         pass
 
     def fetchPostLength(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url) VALUES('test_race','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png')")  
+            race_id=cursor.lastrowid
+            inner_self.race_id = str(race_id)
+            self.cnx.commit()
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM race WHERE id='"+inner_self.race_id+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("fetchPostLength", setup, run, teardown)
 
     def fetchCommentedPosts(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            race_id=result[0][0]
+            inner_self.race_id = str(race_id)
+            self.cnx.commit()
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchCommentedPosts", setup, run, teardown)
 
     def upvote(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            race_id = result[rand][0]
+            inner_self.race_id = str(race_id)
+            self.cnx.commit()
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("upvote", setup, run, teardown)
 
     def updateRace(self):
         pass
@@ -777,7 +831,20 @@ class MySQL(Base):
         pass
 
     def removeRace(self):
-        pass
+        def setup(inner_self):
+            pass
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT activity.race, participant.id, count(*) FROM participant "
+                "INNER JOIN activity ON activity.participant=participant.id "
+                "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id,activity.race")
+            result = cursor.fetchall()
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def insertMaps(self):
         pass

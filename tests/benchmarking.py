@@ -16,7 +16,7 @@ test_cases = {
     'skim': [
         'pairImageSKU'
     ],
-    'raceone': [],
+    'raceone': ['fetchPostLength','fetchCommentedPosts','upvote'],
     'reddit': []
 }
 
@@ -40,6 +40,10 @@ print("Initializing database")
 if database == 'neo4j':
     from cases.neo4j import Neo4j
     testClass = Neo4j()
+    testClass.init(company)
+elif database == 'mysql':
+    from cases.mysql import MySQL
+    testClass = MySQL()
     testClass.init(company)
 else:
     from cases.neo4j import Neo4j
