@@ -792,7 +792,7 @@ class MySQL(Base):
             cursor.close()
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM race WHERE id='"+inner_self.race_id+"'")
+            cursor.execute("SELECT * FROM race LIMIT 1")
             result = cursor.fetchall()
             cursor.close()
             self.cnx.commit()
