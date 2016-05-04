@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 from cases import Neo4j
 
 # Run
@@ -10,4 +9,3 @@ if __name__ == '__main__':
     case.setup()
     case.run()
     case.teardown()
-    #testCase = neo.commentOnImage()

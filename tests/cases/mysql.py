@@ -23,8 +23,8 @@ class MySQL(Base):
             cursor.execute("DROP TABLE participant")
             cursor.execute("DROP TABLE tag")
             cursor.execute("DROP TABLE racegroup")
-            cursor.execute("DROP TABLE race")
             cursor.execute("DROP TABLE racemap")
+            cursor.execute("DROP TABLE race")
             cursor.execute("DROP TABLE eventmap")
             cursor.execute("DROP TABLE event")
             cursor.execute("DROP TABLE raceprofile")
@@ -100,14 +100,38 @@ class MySQL(Base):
             "     REFERENCES map (id)"
             ") ENGINE=InnoDB")
         TABLES.append(
+            "CREATE TABLE race ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  name varchar(50),"
+            "  description varchar(200),"
+            "  race_date datetime,"
+            "  max_duration int,"
+            "  preview varchar(50),"
+            "  location varchar(50),"
+            "  logo_url varchar(50),"
+            "  event_id bigint,"
+            "  raceprofile int,"
+            "  category int,"
+            "  PRIMARY KEY (id),"
+            "  CONSTRAINT race_category_fk FOREIGN KEY (category) "
+            "     REFERENCES category (id),"
+            "  CONSTRAINT race_event_fk FOREIGN KEY (event_id) "
+            "     REFERENCES event (id),"
+            "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
+            "     REFERENCES raceprofile (id)"
+            ") ENGINE=InnoDB")
+        TABLES.append(
             "CREATE TABLE racemap ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  map bigint,"
+            "  race bigint,"
             "  start_point bigint,"
             "  goal_point bigint,"
             "  PRIMARY KEY (id),"
             "  CONSTRAINT racemap_map_fk FOREIGN KEY (map) "
             "     REFERENCES map (id),"
+            "  CONSTRAINT racemap_race_fk FOREIGN KEY (race) "
+            "     REFERENCES race (id) ON DELETE CASCADE,"
             "  CONSTRAINT racemap_startpoint_fk FOREIGN KEY (start_point) "
             "     REFERENCES point (id),"
             "  CONSTRAINT racemap_goalpoint_fk FOREIGN KEY (goal_point) "
@@ -123,30 +147,6 @@ class MySQL(Base):
             "     REFERENCES map (id),"
             "  CONSTRAINT eventmap_event_fk FOREIGN KEY (event) "
             "     REFERENCES event (id)"
-            ") ENGINE=InnoDB")
-        TABLES.append(
-            "CREATE TABLE race ("
-            "  id bigint NOT NULL AUTO_INCREMENT,"
-            "  name varchar(50),"
-            "  description varchar(200),"
-            "  race_date datetime,"
-            "  max_duration int,"
-            "  preview varchar(50),"
-            "  location varchar(50),"
-            "  logo_url varchar(50),"
-            "  event_id bigint,"
-            "  map_id bigint,"
-            "  raceprofile int,"
-            "  category int,"
-            "  PRIMARY KEY (id),"
-            "  CONSTRAINT race_category_fk FOREIGN KEY (category) "
-            "     REFERENCES category (id),"
-            "  CONSTRAINT race_event_fk FOREIGN KEY (event_id) "
-            "     REFERENCES event (id),"
-            "  CONSTRAINT race_map_fk FOREIGN KEY (map_id) "
-            "     REFERENCES racemap (id),"
-            "  CONSTRAINT race_raceprofile_fk FOREIGN KEY (raceprofile) "
-            "     REFERENCES raceprofile (id)"
             ") ENGINE=InnoDB")
         TABLES.append(
             "CREATE TABLE tag ("
@@ -182,9 +182,9 @@ class MySQL(Base):
             "  joinedAt datetime,"
             "  PRIMARY KEY (id),"
             "  CONSTRAINT activity_participant_fk FOREIGN KEY (participant) "
-            "     REFERENCES participant (id),"
+            "     REFERENCES participant (id) ON DELETE CASCADE,"
             "  CONSTRAINT activity_race_fk FOREIGN KEY (race) "
-            "     REFERENCES race (id)"
+            "     REFERENCES race (id) ON DELETE CASCADE"
             ") ENGINE=InnoDB")
         TABLES.append(
             "CREATE TABLE follow ("
@@ -193,9 +193,9 @@ class MySQL(Base):
             "  followedAt datetime,"
             "  PRIMARY KEY (follower,activity),"
             "  CONSTRAINT follow_follower_fk FOREIGN KEY (follower) "
-            "     REFERENCES participant (id),"
+            "     REFERENCES participant (id) ON DELETE CASCADE,"
             "  CONSTRAINT follow_activity_fk FOREIGN KEY (activity) "
-            "     REFERENCES activity (id)"
+            "     REFERENCES activity (id) ON DELETE CASCADE"
             ") ENGINE=InnoDB")
         for ddl in TABLES:
             try:
@@ -244,15 +244,15 @@ class MySQL(Base):
                 cursor.execute("INSERT INTO map (name) VALUES('"+mapname+"')")
                 map_id = cursor.lastrowid
                 maps.append(map_id)
-                cursor.execute("INSERT INTO racemap (map) VALUES('"+str(map_id)+"')")
-                racemap_id = cursor.lastrowid
-                racemaps.append(racemap_id)
                 for p in range(100):
                     cursor.execute("INSERT INTO point (lat,lng,alt,map) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"')")
                     coordinates.append(cursor.lastrowid)
-                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,map_id,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(racemap_id)+"','"+str(events[x])+"')")  
+                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(events[x])+"')")  
                 race_id=cursor.lastrowid
-                races.append(race_id)            
+                races.append(race_id)   
+                cursor.execute("INSERT INTO racemap (map,race) VALUES('"+str(map_id)+"','"+str(race_id)+"')")
+                racemap_id = cursor.lastrowid
+                racemaps.append(racemap_id)         
                 rands = []
                 for z in range(random.randint(0, 5)):
                     # Participants
@@ -677,7 +677,19 @@ class MySQL(Base):
         pass
 
     def fetchParticipants(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT participant.id, count(*) as followCount FROM participant INNER JOIN activity ON activity.participant=participant.id GROUP BY participant.id ORDER BY followCount")
+            result = cursor.fetchall()
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants", setup, run, teardown)
 
     def createComment(self):
         pass
@@ -692,16 +704,85 @@ class MySQL(Base):
         pass
 
     def duplicateEvent(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM event")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            inner_self.event = result[rand]
+            event_id = result[rand][0]
+            cursor.execute("SELECT * FROM race WHERE event_id='"+str(event_id)+"'")
+            result = cursor.fetchall()
+            inner_self.races = result
+            race_ids = "("
+            for r in result:
+                race_ids = race_ids +"'"+ str(r[0]) + "',"
+            race_ids = race_ids[:-1]
+            race_ids = race_ids + ")"
+            cursor.execute("SELECT * from racemap WHERE id IN "+race_ids)
+            result = cursor.fetchall()
+            print(result)
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("")
+            cursor.close()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("")
+            cursor.close()
+
+        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def fetchParticipants2(self):
-        pass
+        def setup(inner_self):
+            pass
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT activity.race, participant.id, count(*) FROM participant "
+                "INNER JOIN activity ON activity.participant=participant.id "
+                "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id,activity.race")
+            result = cursor.fetchall()
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def fetchMapLength(self):
         pass
 
     def unparticipate(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT activity.id, activity.participant,activity.race,activity.joinedAt FROM activity INNER JOIN follow WHERE activity.id=follow.activity")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            inner_self.activity = result[rand]
+            activity_id = result[rand][0]
+            cursor.execute("SELECT follower,followedAt FROM follow WHERE activity='"+str(activity_id)+"'")
+            result = cursor.fetchall()
+            inner_self.activity_id = str(activity_id)
+            inner_self.follows = result
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM activity WHERE activity.id = '"+inner_self.activity_id+"'") 
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO activity (id,participant,race,joinedAt) VALUES('"+
+                str(inner_self.activity[0])+"','"+str(inner_self.activity[1])+"','"+str(inner_self.activity[2])+"','"+str(inner_self.activity[3])+"')")
+            for f in inner_self.follows:
+                cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+
+                    str(f[0])+"','"+inner_self.activity_id+"','"+str(f[1])+"')")
+            cursor.close()
+            self.cnx.commit()
+        return self.create_case("unparticipate", setup, run, teardown)
 
     def updateCoords(self):
         pass
@@ -725,7 +806,33 @@ class MySQL(Base):
         pass
 
     def removeRace(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id,name,description,race_date,max_duration,preview,location,logo_url,event_id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            inner_self.race = result[rand]
+            race_id = result[rand][0]
+            cursor.execute("SELECT id,map,race FROM racemap WHERE race='"+str(race_id)+"'")
+            result = cursor.fetchall()
+            inner_self.racemaps = result
+            inner_self.race_id = str(race_id)
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM race where id='"+inner_self.race_id+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO race (id,name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+str(inner_self.race[0])+"','"+str(inner_self.race[1])+"','"+str(inner_self.race[2])+"','"+str(inner_self.race[3])+"','"+str(inner_self.race[4])+"','"+str(inner_self.race[5])+"','"+str(inner_self.race[6])+"','"+str(inner_self.race[7])+"','"+str(inner_self.race[8])+"')")
+            for rm in inner_self.racemaps:
+                cursor.execute("INSERT INTO racemap (id,map,race) VALUES('"+str(rm[0])+"','"+str(rm[1])+"','"+str(rm[2])+"')")
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("removeRace", setup, run, teardown)
 
     def insertMaps(self):
         pass
