@@ -719,7 +719,9 @@ class MySQL(Base):
                 race_ids = race_ids +"'"+ str(r[0]) + "',"
             race_ids = race_ids[:-1]
             race_ids = race_ids + ")"
-            print(race_ids)
+            cursor.execute("SELECT * from racemap WHERE id IN "+race_ids)
+            result = cursor.fetchall()
+            print(result)
             cursor.close()
         def run(inner_self):
             cursor = self.cnx.cursor()
