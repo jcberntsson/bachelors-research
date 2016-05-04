@@ -704,7 +704,33 @@ class MySQL(Base):
         pass
 
     def duplicateEvent(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM EVENT")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            inner_self.event = result[rand]
+            event_id = result[rand][0]
+            cursor.execute("SELECT * FROM race WHERE event_id='"+str(event_id)+"'")
+            result = cursor.fetchall()
+            inner_self.races = result
+            race_ids = "("
+            for r in result:
+                race_ids = race_ids +"'"+ str(r[0]) + "',"
+            race_ids = race_ids[:-1]
+            print(race_ids)
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("")
+            cursor.close()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("")
+            cursor.close()
+
+        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def fetchParticipants2(self):
         def setup(inner_self):
@@ -803,7 +829,7 @@ class MySQL(Base):
             cursor.close()
             self.cnx.commit()
 
-        return self.create_case("fetchParticipants2", setup, run, teardown)
+        return self.create_case("removeRace", setup, run, teardown)
 
     def insertMaps(self):
         pass
