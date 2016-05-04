@@ -799,6 +799,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("INSERT INTO race (id,name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+str(inner_self.race[0])+"','"+str(inner_self.race[1])+"','"+str(inner_self.race[2])+"','"+str(inner_self.race[3])+"','"+str(inner_self.race[4])+"','"+str(inner_self.race[5])+"','"+str(inner_self.race[6])+"','"+str(inner_self.race[7])+"','"+str(inner_self.race[8])+"')")
             for rm in inner_self.racemaps:
+                print("INSERT INTO racemap (id,map,race,start_point,goal_point) VALUES('"+str(rm[0])+"','"+str(rm[1])+"','"+str(rm[2])+"','"+str(rm[3])+"','"+str(rm[4])+"')")
                 cursor.execute("INSERT INTO racemap (id,map,race,start_point,goal_point) VALUES('"+str(rm[0])+"','"+str(rm[1])+"','"+str(rm[2])+"','"+str(rm[3])+"','"+str(rm[4])+"')")
             cursor.close()
             self.cnx.commit()
