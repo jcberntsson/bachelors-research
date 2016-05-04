@@ -394,16 +394,17 @@ class Neo4j(Base):
                 'MATCH (race:RACE) '
                 'RETURN ID(race) AS race_id'
             )
-            out_count = self.graph.run(
-                'MATCH (race:RACE) '
-                'RETURN COUNT(race) AS nbr_of_races'
-            )
-            iterations = randint(0, out_count.evaluate() - 1)
-            for result in out:
-                if iterations == 0:
-                    inner_self.test_id = result['race_id']
-                    break
-                iterations -= 1
+            inner_self.test_id = out.current['race_id'] if out.forward() else -1
+            #out_count = self.graph.run(
+            #    'MATCH (race:RACE) '
+            #    'RETURN COUNT(race) AS nbr_of_races'
+            #)
+            #iterations = randint(0, out_count.evaluate() - 1)
+            #for result in out:
+            #    if iterations == 0:
+            #        inner_self.test_id = result['race_id']
+            #        break
+            #    iterations -= 1
 
         def run(inner_self):
             out = self.graph.run(
