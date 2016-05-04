@@ -50,7 +50,7 @@ elif database == 'mysql':
 else:
     from cases.neo4j import Neo4j
     testClass = Neo4j()
-testClass.init(company)
+#testClass.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
