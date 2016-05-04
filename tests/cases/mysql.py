@@ -706,7 +706,7 @@ class MySQL(Base):
     def duplicateEvent(self):
         def setup(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM EVENT")
+            cursor.execute("SELECT * FROM event")
             result = cursor.fetchall()
             rand = random.randint(0,len(result)-1)
             inner_self.event = result[rand]
