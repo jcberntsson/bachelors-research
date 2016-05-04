@@ -27,7 +27,7 @@ print("Extracting arguments")
 # Extract arguments
 database = argv[1]
 company = argv[2]
-iterations = 10   # Number of runs per test case
+iterations = 1000   # Number of runs per test case
 
 # Test arguments
 validCompany = (company == "raceone" or company == "skim" or company == "reddit")
