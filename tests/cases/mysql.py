@@ -778,17 +778,30 @@ class MySQL(Base):
 
     def removeRace(self):
         def setup(inner_self):
-            pass
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id,name,description,race_date,max_duration,preview,location,logo_url,event_id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            inner_self.race = result[rand]
+            race_id = result[rand][0]
+            cursor.execute("SELECT id,map,race,start_point,goal_point FROM racemap WHERE race='"+str(race_id)+"'")
+            result = cursor.fetchall()
+            inner_self.racemaps = result
+            inner_self.race_id = str(race_id)
+            cursor.close()
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT activity.race, participant.id, count(*) FROM participant "
-                "INNER JOIN activity ON activity.participant=participant.id "
-                "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id,activity.race")
-            result = cursor.fetchall()
+            cursor.execute("DELETE FROM race where id='"+inner_self.race_id+"'")
             cursor.close()
+            self.cnx.commit()
 
         def teardown(inner_self):
-            pass
+            cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO race (id,name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+str(inner_self.race[0])+"','"+str(inner_self.race[1])+"','"+str(inner_self.race[2])+"','"+str(inner_self.race[3])+"','"+str(inner_self.race[4])+"','"+str(inner_self.race[5])+"','"+str(inner_self.race[6])+"','"+str(inner_self.race[7])+"','"+str(inner_self.race[8])+"')")
+            for rm in inner_self.racemaps:
+                cursor.execute("INSERT INTO racemap (id,map,race,start_point,goal_point) VALUES('"+str(rm[0])+"','"+str(rm[1])+"','"+str(rm[2])+"','"+str(rm[3])+"','"+str(rm[4])+"')")
+            cursor.close()
+            self.cnx.commit()
 
         return self.create_case("fetchParticipants2", setup, run, teardown)
 
