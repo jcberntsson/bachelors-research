@@ -16,7 +16,11 @@ test_cases = {
     'skim': [
         'pairImageSKU'
     ],
-    'raceone': [],
+    'raceone': [
+        'unfollow',
+        'fetchComments',
+        'fetchHotPosts'
+    ],
     'reddit': []
 }
 
@@ -27,7 +31,7 @@ print("Extracting arguments")
 # Extract arguments
 database = argv[1]
 company = argv[2]
-iterations = 10   # Number of runs per test case
+iterations = 100   # Number of runs per test case
 
 # Test arguments
 validCompany = (company == "raceone" or company == "skim" or company == "reddit")
@@ -40,11 +44,11 @@ print("Initializing database")
 if database == 'neo4j':
     from cases.neo4j import Neo4j
     testClass = Neo4j()
-    testClass.init(company)
+    #testClass.init(company)
 else:
     from cases.neo4j import Neo4j
     testClass = Neo4j()
-    testClass.init(company)
+    #testClass.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
