@@ -445,8 +445,6 @@ class MySQL(Base):
         self.cnx.commit()
         cursor.close()
 
-    def initReddit(self):
-        pass
 
     def clearData(self):
         # Dangerous
@@ -604,7 +602,19 @@ class MySQL(Base):
         pass
 
     def fetchAllUserComments(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("")
+            result = cursor.fetchall()
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchAllUserComments", setup, run, teardown)
 
     # RaceOne
     def follow(self):
@@ -685,11 +695,7 @@ class MySQL(Base):
 
         return self.create_case("unfollow", setup, run, teardown)
 
-    def fetchComments(self):
-        pass
 
-    def fetchHotPosts(self):
-        pass
 
     def insertCoords(self):
         pass
@@ -788,9 +794,6 @@ class MySQL(Base):
         return self.create_case("unparticipate", setup, run, teardown)
 
     def updateCoords(self):
-        pass
-
-    def updateRace(self):
         pass
 
     def fetchCoords(self):
