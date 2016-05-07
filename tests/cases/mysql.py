@@ -709,9 +709,12 @@ class MySQL(Base):
             cursor.execute("SELECT * FROM event")
             result = cursor.fetchall()
             rand = random.randint(0,len(result)-1)
-            inner_self.event = result[rand]
-            event_id = result[rand][0]
-            cursor.execute("SELECT * FROM race WHERE event_id='"+str(event_id)+"'")
+            event_id = str(result[rand][0])
+            inner_self.event_id = event_id
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM race WHERE event_id='"+inner_self.event_id+"'")
             result = cursor.fetchall()
             inner_self.races = result
             race_ids = "("
@@ -721,10 +724,7 @@ class MySQL(Base):
             race_ids = race_ids + ")"
             cursor.execute("SELECT * from racemap WHERE id IN "+race_ids)
             result = cursor.fetchall()
-            print(result)
-            cursor.close()
-        def run(inner_self):
-            cursor = self.cnx.cursor()
+            inner_self.racemaps = result
             cursor.execute("")
             cursor.close()
 
