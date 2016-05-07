@@ -8,7 +8,9 @@ pip install python-gflags oauth2client
 
 pip install gspread
 
-pip install py2neo
+pip install py2neo==3b2
+
+pip install oauth2client
 
 apt-get install python3-pip
 

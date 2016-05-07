@@ -6,7 +6,9 @@ from cases import Base
 
 
 class Neo4j(Base):
+
     # connect to authenticated graph database
+    #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
     graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
@@ -56,6 +58,7 @@ class Neo4j(Base):
                             lat=33,
                             lng=44,
                             alt=100)
+                tx.create(Relationship(prev, "START_FOR", race))
                 for i in range(99):
                     coord = Node("COORDINATE",
                                  lat=10 + i,
@@ -67,15 +70,33 @@ class Neo4j(Base):
                 tx.create(Relationship(prev, "END_FOR", race))
 
                 rands = []
-                for z in range(random.randint(0, 5)):
+                for z in range(10):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 49)
-
                     rands.append(rand)
+                    rand2 = self.new_rand_int(rands, 0, 49)
+                    rands.append(rand2)
                     activity = Node("ACTIVITY",
                                     joinedAt="2016-08-08")
                     tx.create(activity)
                     tx.create(Path(users[rand], "PARTICIPATING_IN", activity, "OF", race))
+                    tx.create(Relationship(users[rand2], "FOLLOWING", activity))
+
+                    # Coordinates
+                    prev = Node("COORDINATE",
+                                lat=33,
+                                lng=44,
+                                alt=100)
+                    tx.create(Relationship(prev, "START_FOR", activity))
+                    for i in range(49):
+                        coord = Node("COORDINATE",
+                                     lat=20 + i,
+                                     lng=21 + i,
+                                     alt=30 + i)
+                        tx.create(coord)
+                        tx.create(Relationship(prev, "FOLLOWED_BY", coord))
+                        prev = coord
+                    tx.create(Relationship(prev, "END_FOR", activity))
 
         tx.commit()
 
@@ -174,14 +195,7 @@ class Neo4j(Base):
     # SKIM
     def fetchSKU(self):
         def setup(inner_self):
-            # print("Setup")
-            out = self.graph.run(
-                'CREATE (sku:SKU { name: "test_sku" }) '
-                'RETURN ID(sku) AS sku_id'
-            )
-            if out.forward():
-                # print(out.current)
-                inner_self.sku_id = out.current['sku_id']
+            inner_self.sku_id = self.get_random_id('SKU')
 
         def run(inner_self):
             self.graph.run(
@@ -191,12 +205,7 @@ class Neo4j(Base):
             )  # .dump()
 
         def teardown(inner_self):
-            self.graph.run(
-                'MATCH (sku:SKU) '
-                'WHERE ID(sku)=%d '
-                'DELETE sku '
-                'RETURN count(*) AS deleted_rows' % inner_self.sku_id
-            )  # .dump()
+            pass
 
         return self.create_case("fetchSKU", setup, run, teardown)
 
@@ -207,7 +216,7 @@ class Neo4j(Base):
         def run(inner_self):
             self.graph.run(
                 'MATCH (user:USER) RETURN user'
-            ).dump()
+            )#.dump()
 
         def teardown(inner_self):
             pass
@@ -216,15 +225,16 @@ class Neo4j(Base):
 
     def commentOnImage(self):
         def setup(inner_self):
+            inner_self.project_id = self.get_random_id('PROJECT')
             out = self.graph.run(
-                'CREATE (user:USER { username: "test_user" })<-[:COLLABORATOR]-(project:PROJECT { name: "test_project" })<-[:IN]-(image:IMAGE { name: "test_image" }) '
-                'RETURN ID(user) AS user_id, ID(project) AS project_id, ID(image) AS image_id'
+                'MATCH (image:IMAGE)-[:IN]->(project:PROJECT)-[:COLLABORATOR]->(user:USER) '
+                'WHERE ID(project)=%d '
+                'RETURN ID(image) AS image_id, ID(user) AS user_id '
+                'LIMIT 1' % inner_self.project_id
             )
-            if out.forward():
-                # print(out.current)
-                inner_self.user_id = out.current['user_id']
-                inner_self.project_id = out.current['project_id']
-                inner_self.image_id = out.current['image_id']
+            out.forward()
+            inner_self.user_id = out.current['user_id']
+            inner_self.image_id = out.current['image_id']
 
         def run(inner_self):
             self.graph.run(
@@ -232,34 +242,34 @@ class Neo4j(Base):
                 'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
                 'RETURN comment' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            )#.dump()
 
         def teardown(inner_self):
             self.graph.run(
-                'MATCH (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
-                '      (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
+                'MATCH '
+                '   (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
+                '   (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
                 'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE collaborator,in,made,on,user,project,image,comment '
+                'DELETE made,on,comment '
                 'RETURN count(*) AS deleted_rows' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
-            ).dump()
+            )#.dump()
 
         return self.create_case("commentOnImage", setup, run, teardown)
 
     def pairImageSKU(self):
         def setup(inner_self):
-            # print("Setup")
+            inner_self.project_id = self.get_random_id('PROJECT')
             out = self.graph.run(
-                'CREATE (sku:SKU { name: "test_sku" })-[:IN]->(project:PROJECT { name: "test_project" })<-[in:IN]-(image:IMAGE { name:"test_image" }) '
-                'RETURN ID(sku) AS sku_id, ID(project) AS project_id, ID(image) AS image_id'
+                'MATCH (image:IMAGE)-[:IN]->(project:PROJECT)<-[:IN]-(sku:SKU) '
+                'WHERE ID(project)=%d '
+                'RETURN ID(sku) AS sku_id, ID(image) AS image_id '
+                'LIMIT 1' % inner_self.project_id
             )
-            if out.forward():
-                # print(out.current)
-                inner_self.sku_id = out.current['sku_id']
-                inner_self.project_id = out.current['project_id']
-                inner_self.image_id = out.current['image_id']
+            out.forward()
+            inner_self.sku_id = out.current['sku_id']
+            inner_self.image_id = out.current['image_id']
 
         def run(inner_self):
-            # print("Run")
             self.graph.run(
                 'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
@@ -269,18 +279,17 @@ class Neo4j(Base):
             )  # .dump()
 
         def teardown(inner_self):
-            # print("Teardown")
             self.graph.run(
                 'MATCH (image:IMAGE)-[b:BELONGS_TO]->(sku:SKU)-[in:IN]->(project:PROJECT) '
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE b, image, in, sku, project '
+                'DELETE b '
+                'CREATE (image)-[:IN]->(project) '
                 'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            )#.dump()
 
         return self.create_case("pairImageSKU", setup, run, teardown)
 
-    # RaceOne
-    def follow(self):
+    def addRowsToSKU(self):
         def setup(inner_self):
             pass
 
@@ -290,72 +299,129 @@ class Neo4j(Base):
         def teardown(inner_self):
             pass
 
-        return self.create_case("follow", setup, run, teardown)
+        return self.create_case("addRowsToSKU", setup, run, teardown)
 
-        '''
-        self.graph.run(
-            'MATCH (user:USER),(race:RACE) '
-            'WITH * LIMIT 1 '
-            'CREATE UNIQUE (user)-[:PARTICIPATING_IN]->'
-            '(activity:ACTIVITY {joinedAt:"2015-03-02@13:37"} )-[:OF]->(race) '
-            'RETURN ID(activity)'
-        ).dump()
-        '''
-
-    def unfollow(self):
+    def fetchAllUserComments(self):
         def setup(inner_self):
             pass
 
         def run(inner_self):
             pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchAllUserComments", setup, run, teardown)
+
+    # RaceOne
+    def follow(self):
+        def setup(inner_self):
+            inner_self.follower_id = self.get_random_id('USER')
+
+            participant_id = self.get_random_id('USER')
+            while participant_id == inner_self.follower_id:
+                participant_id = self.get_random_id('USER')
+
+            race_id = self.get_random_id('RACE')
+
+            out = self.graph.run(
+                'MATCH (race:RACE), (user:USER) '
+                'WHERE ID(race)=%s AND ID(user)=%s '
+                'CREATE (user)-[:PARTICIPATING_IN]->(activity:ACTIVITY { joinedAt:"2016-05-03" })-[:OF]->(race) '
+                'RETURN ID(activity) AS activity_id' % (race_id, participant_id)
+            )
+            inner_self.activity_id = out.current['activity_id'] if out.forward() else None
+
+        def run(inner_self):
+            self.graph.run(
+                'MATCH (activity:ACTIVITY), (follower:USER) '
+                'WHERE ID(activity)=%d AND ID(follower)=%d '
+                'CREATE (follower)-[f:FOLLOWING]->(activity) '
+                'RETURN follower,f,activity' % (inner_self.activity_id, inner_self.follower_id)
+            )#.dump()
+
+        def teardown(inner_self):
+            self.graph.run(
+                'MATCH '
+                '   (follower:USER)-[following:FOLLOWING]->(activity:ACTIVITY)-[of:OF]->(:RACE),'
+                '   (participant:USER)-[participating:PARTICIPATING_IN]->(activity) '
+                'WHERE ID(activity)=%d AND ID(follower)=%d '
+                'DELETE following, of, participating, activity '
+                'RETURN COUNT(*) AS nbr_deleted' % (inner_self.activity_id, inner_self.follower_id)
+            )#.dump()
+
+        return self.create_case("follow", setup, run, teardown)
+
+    def unfollow(self):
+        def setup(inner_self):
+            inner_self.follow = self.follow()
+            inner_self.follow.setup()
+            inner_self.follow.run()
+
+        def run(inner_self):
+            inner_self.follow.teardown()
 
         def teardown(inner_self):
             pass
 
         return self.create_case("unfollow", setup, run, teardown)
-        '''
-        self.graph.run(
-            'MATCH (:USER)-[:PARTICIPATING_IN]->(activity:ACTIVITY)-[:OF]->(:RACE) '
-            'WHERE ID(activity) = 6168 '
-            'WITH * LIMIT 1 '
-            'DETACH DELETE activity '
-            'RETURN count(*)'
-        ).dump()
-        '''
-
-    def fetchComments(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchComments", setup, run, teardown)
-
-    def fetchHotPosts(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchHotPosts", setup, run, teardown)
 
     def insertCoords(self):
         def setup(inner_self):
-            pass
+            out = self.graph.run(
+                'MATCH (race:RACE)<-[:END_FOR]-(coord:COORDINATE) '
+                'RETURN ID(coord) AS coord_id, ID(race) AS race_id '
+                'LIMIT 1'
+            )
+            if out.forward():
+                inner_self.coord_id = out.current['coord_id']
+                inner_self.race_id = out.current['race_id']
 
         def run(inner_self):
-            pass
+            out = self.graph.run(
+                'MATCH (coord:COORDINATE)-[end:END_FOR]->(race:RACE) '
+                'WHERE ID(coord)=%d AND ID(race)=%d '
+                'DELETE end '
+                'RETURN coord, race' % (inner_self.coord_id, inner_self.race_id)
+            )
+            prev = Node("COORDINATE")
+            race = Node("RACE")
+            if out.forward():
+                prev = out.current['coord']
+                race = out.current['race']
+
+            tx = self.graph.begin()
+
+            for i in range(1000):
+                coord = Node("COORDINATE",
+                             lat=10 + i,
+                             lng=11 + i,
+                             alt=20 + i)
+                # tx.create(coord)
+                tx.create(Relationship(prev, "FOLLOWED_BY", coord))
+                prev = coord
+            tx.create(Relationship(prev, "END_FOR", race))
+            tx.commit()
 
         def teardown(inner_self):
-            pass
+            self.graph.run(
+                'MATCH (race:RACE)<-[end:END_FOR]-(coord:COORDINATE) '
+                'WHERE ID(race)=%d '
+                'DELETE end' % inner_self.race_id
+            )
+            self.graph.run(
+                'MATCH (end:COORDINATE)<-[followed:FOLLOWED_BY*]-(original_end:COORDINATE)'
+                'WHERE ID(original_end)=%d '
+                'FOREACH (f in followed | DELETE f)'
+                'DELETE end '
+                'RETURN COUNT(*) AS deleted' % inner_self.coord_id
+            )
+            self.graph.run(
+                'MATCH (coord:COORDINATE), (race:RACE) '
+                'WHERE ID(coord)=%d AND ID(race)=%d '
+                'CREATE (coord)-[:END_FOR]->(race) '
+                'RETURN COUNT(*)' % (inner_self.coord_id, inner_self.race_id)
+            )
 
         return self.create_case("insertCoords", setup, run, teardown)
 
@@ -364,60 +430,17 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            pass
+            self.graph.run(
+                'MATCH (user:USER)-[:PARTICIPATING_IN]->(activity:ACTIVITY) '
+                'RETURN user.username, count(activity) AS count '
+                'ORDER BY count DESC '
+                'LIMIT 10'
+            ).dump()
 
         def teardown(inner_self):
             pass
 
         return self.create_case("fetchParticipants", setup, run, teardown)
-
-    def createComment(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("createComment", setup, run, teardown)
-
-    def fetchBestFriend(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchBestFriend", setup, run, teardown)
-
-    def fetchUsersAndComments(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchUsersAndComments", setup, run, teardown)
-
-    def fetchHotPostsInSub(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchHotPostsInSub", setup, run, teardown)
 
     def duplicateEvent(self):
         def setup(inner_self):
@@ -436,34 +459,64 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            pass
+            self.graph.run(
+                'MATCH (participant:USER)-[:PARTICIPATING_IN]->(:ACTIVITY)<-[:FOLLOWING]-(follower:USER) '
+                'RETURN participant.username, count(follower) AS count '
+                'ORDER BY count DESC '
+                'LIMIT 10'
+            ).dump()
 
         def teardown(inner_self):
             pass
 
         return self.create_case("fetchParticipants2", setup, run, teardown)
 
-    def fetchMapLength(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchMapLength", setup, run, teardown)
-
     def unparticipate(self):
         def setup(inner_self):
-            pass
+            inner_self.activity_id = self.get_random_id('ACTIVITY')
+            activity = self.graph.run(
+                'MATCH (participant:USER)-[:PARTICIPATING_IN]->(act:ACTIVITY)-[:OF]->(race:RACE) '
+                'WHERE ID(act)=%s '
+                'RETURN act,ID(participant) AS participant_id,ID(race) AS race_id' % inner_self.activity_id
+            )
+            activity.forward()
+            inner_self.activity = activity.current['act']
+            inner_self.participant_id = activity.current['participant_id']
+            inner_self.race_id = activity.current['race_id']
+            followers_cursor = self.graph.run(
+                'MATCH (follower:USER)-[:FOLLOWING]->(act:ACTIVITY) '
+                'WHERE ID(act)=%s '
+                'RETURN ID(follower) AS follower_id' % inner_self.activity_id
+            )
+            follower_ids = []
+            while followers_cursor.forward():
+                follower_ids.append(followers_cursor.current['follower_id'])
+            inner_self.follower_ids = follower_ids
 
         def run(inner_self):
-            pass
+            self.graph.run(
+                'MATCH '
+                '   (participant:USER)-[p:PARTICIPATING_IN]->(act:ACTIVITY)<-[f:FOLLOWING]-(follower:USER), '
+                '   (act)-[of:OF]->(race:RACE) '
+                'WHERE ID(act)=%d '
+                'DELETE p,f,of,act '
+                'RETURN COUNT(*) AS deleted' % inner_self.activity_id
+            ).dump()
 
         def teardown(inner_self):
-            pass
+            self.graph.run(
+                'MATCH (act:ACTIVITY), (race:RACE), (participant:USER) '
+                'WHERE ID(act)=%d AND ID(race)=%d AND ID(participant)=%d '
+                'CREATE (participant)-[:PARTICIPATING_IN]->(activity)-[:OF]->(race)' % (inner_self.activity_id, inner_self.race_id, inner_self.participant_id)
+            )
+            tx = self.graph.begin()
+            for follower_id in inner_self.follower_ids:
+                tx.run(
+                    'MATCH (act:ACTIVITY), (follower:USER) '
+                    'WHERE ID(act)=%d AND ID(follower)=%d '
+                    'CREATE (follower)-[:FOLLOWING]->(act)' % (inner_self.activity_id, follower_id)
+                )
+            tx.commit()
 
         return self.create_case("unparticipate", setup, run, teardown)
 
@@ -479,54 +532,6 @@ class Neo4j(Base):
 
         return self.create_case("updateCoords", setup, run, teardown)
 
-    def fetchPostLength(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchPostLength", setup, run, teardown)
-
-    def fetchCommentedPosts(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchCommentedPosts", setup, run, teardown)
-
-    def upvote(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("upvote", setup, run, teardown)
-
-    def updateRace(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("updateRace", setup, run, teardown)
-
     def fetchCoords(self):
         def setup(inner_self):
             pass
@@ -541,19 +546,59 @@ class Neo4j(Base):
 
     def removeCoords(self):
         def setup(inner_self):
-            pass
+            inner_self.race_id = self.get_random_id('RACE')
 
         def run(inner_self):
-            pass
+            coordinates_cursor = self.graph.run(
+                'MATCH '
+                '   (start:COORDINATE)-[:START_FOR]->(race:RACE)<-[:END_FOR]-(end:COORDINATE), '
+                '   (start)-[:FOLLOWED_BY*]->(before:COORDINATE)-[:FOLLOWED_BY]->(coord:COORDINATE) ' # -[:FOLLOWED_BY*]->(end)
+                'WHERE ID(race)=%d '
+                'RETURN ID(coord) AS coord_id, coord, ID(before) AS before_id' % inner_self.race_id
+            )
+            i = 0
+            inner_self.removed_coords = []
+            tx = self.graph.begin()
+            while coordinates_cursor.forward():
+                if i % 3 == 0:
+                    coord = coordinates_cursor.current['coord']
+                    coord_id = coordinates_cursor.current['coord_id']
+                    before_id = coordinates_cursor.current['before_id']
+                    coordinate = {
+                        "data": coord,
+                        "before_id": before_id
+                    }
+                    inner_self.removed_coords.append(coordinate)
+                    tx.run(
+                        'MATCH (first:COORDINATE)-[f1:FOLLOWED_BY]->(middle:COORDINATE)-[f2:FOLLOWED_BY]->(last:COORDINATE) '
+                        'WHERE ID(middle)=%d '
+                        'DELETE f1,f2,middle '
+                        'CREATE (first)-[:FOLLOWED_BY]->(last)' % coord_id
+                    )
+                i += 1
+            tx.commit()
 
         def teardown(inner_self):
-            pass
+            tx = self.graph.begin()
+            for coord in reversed(inner_self.removed_coords):
+                tx.run(
+                    'MATCH (before:COORDINATE)-[f:FOLLOWED_BY]->(after:COORDINATE) '
+                    'WHERE ID(before)=%d '
+                    'DELETE f '
+                    'CREATE (before)-[:FOLLOWED_BY]->%s-[:FOLLOWED_BY]->(after)' % (coord['before_id'], coord['data'])
+                )
+            tx.commit()
 
         return self.create_case("removeCoords", setup, run, teardown)
 
     def removeRace(self):
         def setup(inner_self):
-            pass
+            inner_self.race_id = self.get_random_id('RACE')
+            inner_self.race = self.graph.run(
+                'MATCH (race:RACE) '
+                'WHERE ID(race)=%d '
+                'RETURN race' % inner_self.race_id
+            )
 
         def run(inner_self):
             pass
@@ -563,7 +608,7 @@ class Neo4j(Base):
 
         return self.create_case("removeRace", setup, run, teardown)
 
-    def insertMaps(self):
+    def fetchHotRaces(self):
         def setup(inner_self):
             pass
 
@@ -573,4 +618,29 @@ class Neo4j(Base):
         def teardown(inner_self):
             pass
 
-        return self.create_case("insertMaps", setup, run, teardown)
+        return self.create_case("fetchHotRaces", setup, run, teardown)
+
+    def fetchRace(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchRace", setup, run, teardown)
+
+    def get_random_id(self, entity_name):
+        from random import randint
+        entities = self.graph.run(
+            'MATCH (ent:%s)'
+            'RETURN ID(ent) AS ent_id' % entity_name
+        )
+        entity_count = self.graph.run(
+            'MATCH (ent:%s) '
+            'RETURN COUNT(ent)' % entity_name
+        ).evaluate()
+        forward_count = randint(1, entity_count)
+        return entities.current['ent_id'] if entity_count > 0 and entities.forward(forward_count) else None
