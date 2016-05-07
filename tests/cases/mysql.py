@@ -206,7 +206,7 @@ class MySQL(Base):
             "  lat DECIMAL(11, 8),"
             "  lng DECIMAL(11, 8),"
             "  alt DECIMAL(11, 8),"
-            "  PRIMARY KEY (is),"
+            "  PRIMARY KEY (id),"
             "  CONSTRAINT activityCoordinate_activity_fk FOREIGN KEY (activity) "
             "     REFERENCES activity (id) ON DELETE CASCADE"
             ") ENGINE=InnoDB")
