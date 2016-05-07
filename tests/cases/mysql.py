@@ -197,6 +197,18 @@ class MySQL(Base):
             "  CONSTRAINT follow_activity_fk FOREIGN KEY (activity) "
             "     REFERENCES activity (id) ON DELETE CASCADE"
             ") ENGINE=InnoDB")
+        TABLES.append(
+            "CREATE TABLE activityCoordinate ("
+            "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  activity bigint,"
+            "  createdAt datetime,"
+            "  lat DECIMAL(11, 8),"
+            "  lng DECIMAL(11, 8),"
+            "  alt DECIMAL(11, 8),"
+            "  PRIMARY KEY (is),"
+            "  CONSTRAINT activityCoordinate_activity_fk FOREIGN KEY (activity) "
+            "     REFERENCES activity (id) ON DELETE CASCADE"
+            ") ENGINE=InnoDB")
         for ddl in TABLES:
             try:
                 cursor = self.cnx.cursor()
@@ -256,15 +268,14 @@ class MySQL(Base):
                 rands = []
                 for z in range(random.randint(0, 5)):
                     # Participants
-                    rand = self.new_rand_int(rands, 0, 49)
+                    rand = self.new_rand_int(rands, 0, 48)
                     
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
-                rand2 = random.randint( 0, len(participants)-5)
-        for z in range(5):
-            # Participants
-            rand = random.randint( 0, len(activities)-1)
-            cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[z])+"','"+str(activities[rand])+"','"+str(datetime.datetime.now())+"')")   
+                    activity_id = cursor.lastrowid
+                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[rand+1])+"','"+str(activity_id)+"','"+str(datetime.datetime.now())+"')") 
+                    for p in range(50):
+                        cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES('"+str(activity_id)+"','2016-03-03',"+str(10+p)+","+str(11+p)+","+str(20+p)+")")
 
         cursor.close()
         self.cnx.commit()
@@ -676,7 +687,7 @@ class MySQL(Base):
     def insertCoords(self):
         pass
 
-    def fetchParticipants(self):
+    def fetchParticipants(self)
         def setup(inner_self):
             pass
 
@@ -691,27 +702,18 @@ class MySQL(Base):
 
         return self.create_case("fetchParticipants", setup, run, teardown)
 
-    def createComment(self):
-        pass
-
-    def fetchBestFriend(self):
-        pass
-
-    def fetchUsersAndComments(self):
-        pass
-
-    def fetchHotPostsInSub(self):
-        pass
-
     def duplicateEvent(self):
-        def setup(inner_self):
+            '''def setup(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM event")
             result = cursor.fetchall()
             rand = random.randint(0,len(result)-1)
-            inner_self.event = result[rand]
-            event_id = result[rand][0]
-            cursor.execute("SELECT * FROM race WHERE event_id='"+str(event_id)+"'")
+            event_id = str(result[rand][0])
+            inner_self.event_id = event_id
+            cursor.close()
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM race WHERE event_id='"+inner_self.event_id+"'")
             result = cursor.fetchall()
             inner_self.races = result
             race_ids = "("
@@ -721,10 +723,7 @@ class MySQL(Base):
             race_ids = race_ids + ")"
             cursor.execute("SELECT * from racemap WHERE id IN "+race_ids)
             result = cursor.fetchall()
-            print(result)
-            cursor.close()
-        def run(inner_self):
-            cursor = self.cnx.cursor()
+            inner_self.racemaps = result
             cursor.execute("")
             cursor.close()
 
@@ -733,7 +732,7 @@ class MySQL(Base):
             cursor.execute("")
             cursor.close()
 
-        return self.create_case("fetchParticipants2", setup, run, teardown)
+        return self.create_case("fetchParticipants2", setup, run, teardown)'''
 
     def fetchParticipants2(self):
         def setup(inner_self):
@@ -751,8 +750,7 @@ class MySQL(Base):
 
         return self.create_case("fetchParticipants2", setup, run, teardown)
 
-    def fetchMapLength(self):
-        pass
+
 
     def unparticipate(self):
         def setup(inner_self):
@@ -785,15 +783,6 @@ class MySQL(Base):
         return self.create_case("unparticipate", setup, run, teardown)
 
     def updateCoords(self):
-        pass
-
-    def fetchPostLength(self):
-        pass
-
-    def fetchCommentedPosts(self):
-        pass
-
-    def upvote(self):
         pass
 
     def updateRace(self):
