@@ -19,6 +19,7 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE activityCoordinate")
             cursor.execute("DROP TABLE follow")
             cursor.execute("DROP TABLE activity")
             cursor.execute("DROP TABLE participant")
@@ -840,7 +841,7 @@ class MySQL(Base):
                 "INNER JOIN activity ON race.id=activity.race " 
                 "INNER JOIN follow on follow.activity=activity.id ORDER BY rating LIMIT 10")
             result = cursor.fetchall()
-            console.log(result)
+            print(result)
             cursor.close()
 
         def teardown(inner_self):
