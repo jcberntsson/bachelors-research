@@ -6,6 +6,7 @@ from cases import Base
 
 
 class Neo4j(Base):
+
     # connect to authenticated graph database
     #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
     graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
@@ -288,6 +289,30 @@ class Neo4j(Base):
 
         return self.create_case("pairImageSKU", setup, run, teardown)
 
+    def addRowsToSKU(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("addRowsToSKU", setup, run, teardown)
+
+    def fetchAllUserComments(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchAllUserComments", setup, run, teardown)
+
     # RaceOne
     def follow(self):
         def setup(inner_self):
@@ -446,18 +471,6 @@ class Neo4j(Base):
 
         return self.create_case("fetchParticipants2", setup, run, teardown)
 
-    def fetchMapLength(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchMapLength", setup, run, teardown)
-
     def unparticipate(self):
         def setup(inner_self):
             inner_self.activity_id = self.get_random_id('ACTIVITY')
@@ -595,7 +608,7 @@ class Neo4j(Base):
 
         return self.create_case("removeRace", setup, run, teardown)
 
-    def insertMaps(self):
+    def fetchHotRaces(self):
         def setup(inner_self):
             pass
 
@@ -605,7 +618,19 @@ class Neo4j(Base):
         def teardown(inner_self):
             pass
 
-        return self.create_case("insertMaps", setup, run, teardown)
+        return self.create_case("fetchHotRaces", setup, run, teardown)
+
+    def fetchRace(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchRace", setup, run, teardown)
 
     def get_random_id(self, entity_name):
         from random import randint

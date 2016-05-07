@@ -45,7 +45,7 @@ class Base:
         return
 
     @abc.abstractmethod
-    def fetchAllUsersComments(self):
+    def fetchAllUserComments(self):
         pass
 
     @abc.abstractmethod
