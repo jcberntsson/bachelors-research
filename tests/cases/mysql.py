@@ -7,6 +7,7 @@ from cases.base import Base
 
 
 class MySQL(Base):
+
     # connect to authenticated graph database
     cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
     
@@ -599,6 +600,12 @@ class MySQL(Base):
 
         return self.create_case("pairImageSKU", setup, run, teardown)
 
+    def addRowsToSKU(self):
+        pass
+
+    def fetchAllUserComments(self):
+        pass
+
     # RaceOne
     def follow(self):
         def setup(inner_self):
@@ -687,7 +694,7 @@ class MySQL(Base):
     def insertCoords(self):
         pass
 
-    def fetchParticipants(self)
+    def fetchParticipants(self):
         def setup(inner_self):
             pass
 
@@ -749,8 +756,6 @@ class MySQL(Base):
             pass
 
         return self.create_case("fetchParticipants2", setup, run, teardown)
-
-
 
     def unparticipate(self):
         def setup(inner_self):
@@ -823,5 +828,8 @@ class MySQL(Base):
 
         return self.create_case("removeRace", setup, run, teardown)
 
-    def insertMaps(self):
+    def fetchHotRaces(self):
+        pass
+
+    def fetchRace(self):
         pass

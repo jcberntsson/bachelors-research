@@ -86,10 +86,6 @@ class Base:
         return
 
     @abc.abstractmethod
-    def insertMaps(self):
-        return
-
-    @abc.abstractmethod
     def removeCoords(self):
         return
 
