@@ -12,8 +12,6 @@ class Base:
             self.initRaceOne()
         elif company == "skim":
             self.initSkim()
-        elif company == "reddit":
-            self.initReddit()
         else:
             print(company + " not supported as type")
 
@@ -23,10 +21,6 @@ class Base:
 
     @abc.abstractmethod
     def initSkim(self):
-        return
-
-    @abc.abstractmethod
-    def initReddit(self):
         return
 
     @abc.abstractmethod
@@ -49,6 +43,14 @@ class Base:
     @abc.abstractmethod
     def pairImageSKU(self):
         return
+
+    @abc.abstractmethod
+    def fetchAllUsersComments(self):
+        pass
+
+    @abc.abstractmethod
+    def addRowsToSKU(self):
+        pass
 
     # RaceOne
     @abc.abstractmethod
@@ -92,10 +94,6 @@ class Base:
         return
 
     @abc.abstractmethod
-    def updateRace(self):
-        return
-
-    @abc.abstractmethod
     def removeRace(self):
         return
 
@@ -104,45 +102,12 @@ class Base:
         return
 
     @abc.abstractmethod
-    def fetchMapLength(self):
-        return
-
-    # Reddit
-    @abc.abstractmethod
-    def fetchCommentedPosts(self):
-        return
+    def fetchRace(self):
+        pass
 
     @abc.abstractmethod
-    def fetchHotPosts(self):
-        return
-
-    @abc.abstractmethod
-    def fetchPostLength(self):
-        return
-
-    @abc.abstractmethod
-    def fetchComments(self):
-        return
-
-    @abc.abstractmethod
-    def fetchHotPostsInSub(self):
-        return
-
-    @abc.abstractmethod
-    def createComment(self):
-        return
-
-    @abc.abstractmethod
-    def upvote(self):
-        return
-
-    @abc.abstractmethod
-    def fetchUsersAndComments(self):
-        return
-
-    @abc.abstractmethod
-    def fetchBestFriend(self):
-        return
+    def fetchHotRaces(self):
+        pass
 
     # Help methods
     @staticmethod
