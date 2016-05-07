@@ -687,7 +687,7 @@ class MySQL(Base):
     def insertCoords(self):
         pass
 
-    def fetchParticipants(self):
+    def fetchParticipants(self)
         def setup(inner_self):
             pass
 
@@ -701,18 +701,6 @@ class MySQL(Base):
             pass
 
         return self.create_case("fetchParticipants", setup, run, teardown)
-
-    def createComment(self):
-        pass
-
-    def fetchBestFriend(self):
-        pass
-
-    def fetchUsersAndComments(self):
-        pass
-
-    def fetchHotPostsInSub(self):
-        pass
 
     def duplicateEvent(self):
             '''def setup(inner_self):
@@ -762,8 +750,7 @@ class MySQL(Base):
 
         return self.create_case("fetchParticipants2", setup, run, teardown)
 
-    def fetchMapLength(self):
-        pass
+
 
     def unparticipate(self):
         def setup(inner_self):
@@ -796,15 +783,6 @@ class MySQL(Base):
         return self.create_case("unparticipate", setup, run, teardown)
 
     def updateCoords(self):
-        pass
-
-    def fetchPostLength(self):
-        pass
-
-    def fetchCommentedPosts(self):
-        pass
-
-    def upvote(self):
         pass
 
     def updateRace(self):
