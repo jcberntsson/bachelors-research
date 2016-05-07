@@ -793,8 +793,7 @@ class MySQL(Base):
             self.cnx.commit()
         return self.create_case("unparticipate", setup, run, teardown)
 
-    def updateCoords(self):
-        pass
+
 
     def fetchCoords(self):
         pass
@@ -832,7 +831,22 @@ class MySQL(Base):
         return self.create_case("removeRace", setup, run, teardown)
 
     def fetchHotRaces(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT race.id, count(*) as rating FROM race "
+                "INNER JOIN activity ON race.id=activity.race" 
+                "INNER JOIN follow on follow.activity=activity.id ORDER BY rating LIMIT 10")
+            result = cursor.fetchall()
+            console.log(result)
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchHotRaces", setup, run, teardown)
 
     def fetchRace(self):
         pass
