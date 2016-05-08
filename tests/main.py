@@ -4,8 +4,8 @@ from cases import Neo4j
 # Run
 if __name__ == '__main__':
     neo = Neo4j()
-    neo.init("raceone")
-    #case = neo.addRowsToSKU()
-    #case.setup()
-    #case.run()
-    #case.teardown()
+    #neo.init("raceone")
+    case = neo.removeCoords()
+    case.setup()
+    case.run()
+    case.teardown()
