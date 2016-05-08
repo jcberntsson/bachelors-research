@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from cases import Neo4j
+from cases import MySQL
 
 # Run
 if __name__ == '__main__':
