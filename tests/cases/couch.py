@@ -7,6 +7,7 @@ from cases import Base
 
 
 class Couch(Base):
+
     # connect to authenticated graph database
     server = client.Server(url="http://admin:mysecretpassword@46.101.118.239:5984")
     db = server['raceone'] if ('raceone' in server) else server.create('raceone')
@@ -192,9 +193,6 @@ class Couch(Base):
         tx.commit()
         """
 
-    def initReddit(self):
-        pass
-
     def clearData(self):
         if 'raceone' in self.server:
             del self.server['raceone']
@@ -344,6 +342,12 @@ class Couch(Base):
 
         return self.create_case("pairImageSKU", setup, run, teardown)'''
 
+    def fetchAllUserComments(self):
+        pass
+
+    def addRowsToSKU(self):
+        pass
+
     # RaceOne
     def follow(self):
         '''
@@ -365,28 +369,10 @@ class Couch(Base):
             'RETURN count(*)'
         ).dump()'''
 
-    def fetchComments(self):
-        pass
-
-    def fetchHotPosts(self):
-        pass
-
     def insertCoords(self):
         pass
 
     def fetchParticipants(self):
-        pass
-
-    def createComment(self):
-        pass
-
-    def fetchBestFriend(self):
-        pass
-
-    def fetchUsersAndComments(self):
-        pass
-
-    def fetchHotPostsInSub(self):
         pass
 
     def duplicateEvent(self):
@@ -395,25 +381,10 @@ class Couch(Base):
     def fetchParticipants2(self):
         pass
 
-    def fetchMapLength(self):
-        pass
-
     def unparticipate(self):
         pass
 
     def updateCoords(self):
-        pass
-
-    def fetchPostLength(self):
-        pass
-
-    def fetchCommentedPosts(self):
-        pass
-
-    def upvote(self):
-        pass
-
-    def updateRace(self):
         pass
 
     def fetchCoords(self):
@@ -425,5 +396,8 @@ class Couch(Base):
     def removeRace(self):
         pass
 
-    def insertMaps(self):
+    def fetchHotRaces(self):
+        pass
+
+    def fetchRace(self):
         pass
