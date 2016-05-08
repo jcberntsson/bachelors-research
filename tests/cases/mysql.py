@@ -839,7 +839,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             '''cursor.execute("SELECT activity.race, count(*) as rating FROM activity "
                 "INNER JOIN follow on follow.activity=activity.id GROUP BY activity.race ORDER BY rating LIMIT 10")'''
-            cursor.execute("SELECt * FROM activity INNER JOIN follow on follow.activity=activity.id")
+            cursor.execute("SELECt activity.race FROM activity INNER JOIN follow on follow.activity=activity.id")
             result = cursor.fetchall()
             print(result)
             cursor.close()
