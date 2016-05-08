@@ -109,8 +109,9 @@ class Base:
     @staticmethod
     def new_rand_int(rands, start, end):
         rand = random.randint(start, end)
-        while rands is not None and len(rands) > 0 and rand in rands:
-            rand = random.randint(start, end)
+        if rands is not None or len(rands) > 0:
+            while rand in rands:
+                rand = random.randint(start, end)
         return rand
 
     @staticmethod
