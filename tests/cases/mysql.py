@@ -746,7 +746,7 @@ class MySQL(Base):
             activity_id = result[rand][0]
             inner_self.activity_id = str(activity_id)
             inner_self.start_time = str(datetime.datetime.now())
-                        cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
+            cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
             print(cursor.fetchall())
             cursor.close()
 
