@@ -537,7 +537,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
                 "VALUES('Haha, cool image','2016-04-04','"+inner_self.user_id+"','"+inner_self.image_id+"')")
-            inner_self.comment_id = cursor.lastrowid 
+            inner_self.comment_id = str(cursor.lastrowid)
             cursor.close()
             self.cnx.commit()       
 
