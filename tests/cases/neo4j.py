@@ -204,10 +204,10 @@ class Neo4j(Base):
             inner_self.sku_id = self.get_random_id('SKU')
 
         def run(inner_self):
-            self.graph.run(
+            out = self.graph.run(
+                'START sku=Node(%d) '
                 'MATCH (value:SKU_VALUE)-[of:OF]->(sku:SKU) '
-                'WHERE ID(sku)=%d '
-                'RETURN sku,of,value' % inner_self.sku_id
+                'RETURN value' % inner_self.sku_id
             )  # .dump()
 
         def teardown(inner_self):
@@ -307,6 +307,9 @@ class Neo4j(Base):
                     'MATCH (sku:SKU) '
                     'WHERE ID(sku)=%d '
                     'CREATE (value:SKU_VALUE { header: "remove_me", value:"110" })-[:OF]->(sku) '
+                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"120" })-[:OF]->(sku) '
+                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"130" })-[:OF]->(sku) '
+                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) '
                     'RETURN value, sku' % inner_self.sku_id
                 )
             tx.commit()
