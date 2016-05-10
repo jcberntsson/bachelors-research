@@ -902,8 +902,11 @@ class MySQL(Base):
             point_ids = ""
             for p in inner_self.point_ids:
                 point_ids = point_ids + str(p[0]) + ","
-            print(len(inner_self.points))
-            print(len(inner_self.point_ids))
+            point_ids = point_ids[:-1]
+            print(point_ids)
+            #cursor = self.cnx.cursor()
+            #cursor.execute("DELETE FROM point WHERE ID IN ("+point_ids+")")
+            #cursor.close()
             '''coordinates_cursor = self.graph.run(
                 'START race=Node(%d) '
                 'MATCH '
