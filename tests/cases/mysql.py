@@ -1000,7 +1000,7 @@ class MySQL(Base):
             cursor.execute("SELECT * FROM point WHERE map = "+map_id +" ORDER BY orderIndex")
             mapCoords = cursor.fetchall()[0]
             cursor.execute("SELECT participant.id, participant.username,participant.fullname FROM activity INNER JOIN participant ON activity.participant=participant.id WHERE race = "+inner_self.race_id)
-            participants = cursor.fetchall()[0]
+            participants = cursor.fetchall()
             print(participants)
             cursor.close()
 
