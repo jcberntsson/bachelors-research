@@ -884,15 +884,15 @@ class MySQL(Base):
     def removeCoords(self):
         def setup(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM race")
+            cursor.execute("SELECT id FROM map")
             result = cursor.fetchall()
             rand = random.randint(0,len(result)-1)
-            race_id = result[rand][0]
-            inner_self.race_id = str(race_id)
-            cursor.execute("SELECT id,lat,lng,alt,map FROM point")
+            map_id = result[rand][0]
+            inner_self.map_id = str(map_id)
+            cursor.execute("SELECT id,lat,lng,alt,map FROM point WHERE map="+str(map_id))
             result = cursor.fetchall()
             inner_self.points = result
-            cursor.execute("SELECT id FROM point")
+            cursor.execute("SELECT id FROM point WHERE map="+str(map_id))
             result = cursor.fetchall()
             random.shuffle(result)
             inner_self.point_ids = result[:(len(result)//3)]
