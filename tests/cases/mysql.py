@@ -641,7 +641,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT id FROM contributor")
             result = cursor.fetchall()
-            rand = random.randint(0,len(result))
+            rand = random.randint(0,len(result)-1)
             contributor_id = result[rand][0]
             inner_self.contributor_id = str(contributor_id)
             cursor.close()
@@ -667,7 +667,7 @@ class MySQL(Base):
             participant_id = cursor.lastrowid
             cursor.execute("SELECT id FROM race")
             result = cursor.fetchall()
-            rand = random.randint(0,len(result))
+            rand = random.randint(0,len(result)-1)
             race_id = result[rand][0]
             cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"'")
             activity_id = cursor.lastrowid
