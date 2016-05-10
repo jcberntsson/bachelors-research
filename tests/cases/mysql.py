@@ -93,7 +93,7 @@ class MySQL(Base):
         TABLES.append(
             "CREATE TABLE point ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
-            "  orderIndex bigint"
+            "  orderIndex bigint,"
             "  lat DECIMAL(11, 8),"
             "  lng DECIMAL(11, 8),"
             "  alt DECIMAL(11, 8),"
