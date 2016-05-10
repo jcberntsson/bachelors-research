@@ -607,7 +607,7 @@ class MySQL(Base):
             rand = random.randint(0,len(result)-1)
             sku_id = result[rand][0]
             inner_self.sku_id = str(sku_id)
-            cursor.execute("INSERT INTO header(sku_id,header_name) VALUES ("+inner_self.sku_id+",'remove_me1'),("+inner_self.sku_id+",'remove_me2'),("+inner_self.sku_id+",'remove_me3')")
+            cursor.execute("INSERT INTO header(sku_id,name) VALUES ("+inner_self.sku_id+",'remove_me1'),("+inner_self.sku_id+",'remove_me2'),("+inner_self.sku_id+",'remove_me3')")
             cursor.close()
 
         def run(inner_self):
@@ -622,11 +622,14 @@ class MySQL(Base):
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM header WHERE header_name='remove_me1'")
-            cursor.execute("DELETE FROM header WHERE header_name='remove_me2'")
-            cursor.execute("DELETE FROM header WHERE header_name='remove_me3'")
-            cursor.execute("DELETE FROM header WHERE header_name='remove_me4'")
-            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me1'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me2'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me3'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me4'")
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me1'")
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me2'")
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me3'")
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me4'")
             self.cnx.commit()
             cursor.close()
 
