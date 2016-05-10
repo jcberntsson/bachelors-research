@@ -902,7 +902,8 @@ class MySQL(Base):
             point_ids = ""
             for p in inner_self.point_ids:
                 point_ids = point_ids + str(p[0]) + ","
-            print(point_ids)
+            print(len(inner_self.points))
+            print(len(inner_self.point_ids))
             '''coordinates_cursor = self.graph.run(
                 'START race=Node(%d) '
                 'MATCH '
