@@ -970,4 +970,22 @@ class MySQL(Base):
         return self.create_case("fetchHotRaces", setup, run, teardown)
 
     def fetchRace(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            race_id = result[rand][0]
+            inner_self.race_id = str(race_id)
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM race WHERE ID="inner_self.race_id)
+            result = cursor.fetchall()
+            print(result)
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchRace", setup, run, teardown)
