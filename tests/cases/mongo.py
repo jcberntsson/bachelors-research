@@ -44,7 +44,7 @@ class Mongo(Base):
                 "location": "Gothenburg, Sweden",
                 "logoURL":"google.se/img.png",
                 "event":event,
-                "prev": {"lat": 33,"lng": 44,"alt": 100}
+                "start": {"lat": 33,"lng": 44,"alt": 100}
             }).inserted_id
             # Coordinates
 
