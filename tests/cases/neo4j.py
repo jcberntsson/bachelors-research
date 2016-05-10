@@ -18,20 +18,7 @@ class Neo4j(Base):
     def initRaceOne(self):
         tx = self.graph.begin()
 
-
-        """
-        test1 = Node("TEST", name="halla")
-        test2 = Node("TEST", name="halla")
-        test3 = Node("TEST", name="halla")
-        #tx.create(test1)
-        tx.create(test2)
-        tx.create(test3)
-        tx.create(Relationship(test1, "INSIDE_OF", test2))
-        tx.create(Relationship(test2, "OUTSIDE_OF", test3))
-        tx.commit()
-        """
         # Users
-        #"""
         users = []
         organizers = []
         print("Creating users and organizers")
@@ -49,7 +36,6 @@ class Neo4j(Base):
                              email="mail_" + str(x) + "@mail.se")
             tx.create(organizer)
             organizers.append(organizer)
-        #tx.commit()
         print("Users and organizers have been created")
 
         # Events & Races
@@ -122,7 +108,6 @@ class Neo4j(Base):
                 print("A race is done")
             print("An event is done")
         tx.commit()
-        #"""
 
     def initSkim(self):
         tx = self.graph.begin()
@@ -555,24 +540,19 @@ class Neo4j(Base):
 
         return self.create_case("unparticipate", setup, run, teardown)
 
-    def updateCoords(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            pass
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("updateCoords", setup, run, teardown)
-
     def fetchCoords(self):
         def setup(inner_self):
-            pass
+            inner_self.activity_id = self.get_random_id('ACTIVITY')
 
         def run(inner_self):
-            pass
+            cursor = self.graph.run(
+                'START act=Node(%d) '
+                'MATCH (act:ACTIVITY)-[:STARTS_WITH|FOLLOWED_BY*]-(coord:COORDINATE) '
+                'RETURN coord' % inner_self.activity_id
+            )
+            coords = []
+            while cursor.forward():
+                coords.append(cursor.current['coord'])
 
         def teardown(inner_self):
             pass
@@ -585,18 +565,11 @@ class Neo4j(Base):
             print(inner_self.race_id)
 
         def run(inner_self):
-            coords_count = self.graph.evaluate(
-                'START race=Node(%d) '
-                'MATCH (race)<-[:START_FOR]-(start:COORDINATE)-[f:FOLLOWED_BY*]->(coord:COORDINATE) '
-                'RETURN COUNT(f)' % inner_self.race_id
-            )
-            print("Nbr of coords = " + str(coords_count))
-            """
             coordinates_cursor = self.graph.run(
+                'START race=Node(%d) '
                 'MATCH '
-                '   (start:COORDINATE)-[:START_FOR]->(race:RACE)<-[:END_FOR]-(end:COORDINATE), '
-                '   (start)-[:FOLLOWED_BY*]->(before:COORDINATE)-[:FOLLOWED_BY]->(coord:COORDINATE) '  # -[:FOLLOWED_BY*]->(end)
-                'WHERE ID(race)=%d '
+                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
+                '   (start)-[:FOLLOWED_BY*]->(before:COORDINATE)-[:FOLLOWED_BY]->(coord:COORDINATE) '
                 'RETURN ID(coord) AS coord_id, coord, ID(before) AS before_id' % inner_self.race_id
             )
             i = 0
@@ -620,38 +593,58 @@ class Neo4j(Base):
                     )
                 i += 1
             tx.commit()
+            """
             coords_count = self.graph.evaluate(
                 'START race=Node(%d) '
-                'MATCH (race)<-[:START_FOR]-(start:COORDINATE)-[f:FOLLOWED_BY*]->(coord:COORDINATE) '
+                'MATCH (race)-[:STARTS_WITH]->(start:COORDINATE)-[f:FOLLOWED_BY*]->(coord:COORDINATE) '
                 'RETURN COUNT(f)' % inner_self.race_id
             )
-            print("Nbr of coords = " + str(coords_count))
-            """
+            print("Nbr of coords = " + str(coords_count))"""
 
         def teardown(inner_self):
-            pass
-            """
             tx = self.graph.begin()
             for coord in reversed(inner_self.removed_coords):
                 tx.run(
-                    'MATCH (before:COORDINATE)-[f:FOLLOWED_BY]->(after:COORDINATE) '
-                    'WHERE ID(before)=%d '
+                    'START before=Node(%d) '
+                    'MATCH (before)-[f:FOLLOWED_BY]->(after:COORDINATE) '
                     'DELETE f '
                     'CREATE (before)-[:FOLLOWED_BY]->%s-[:FOLLOWED_BY]->(after)' % (coord['before_id'], coord['data'])
                 )
             tx.commit()
-            """
 
         return self.create_case("removeCoords", setup, run, teardown)
 
     def removeRace(self):
         def setup(inner_self):
             inner_self.race_id = self.get_random_id('RACE')
-            inner_self.race = self.graph.run(
-                'MATCH (race:RACE) '
-                'WHERE ID(race)=%d '
-                'RETURN race' % inner_self.race_id
+            race_cursor = self.graph.run(
+                'START race=Node(%d) '
+                'MATCH (race)-[:IN]->(event:EVENT) '
+                'RETURN race, ID(event) AS event_id' % inner_self.race_id
             )
+            if race_cursor.forward():
+                inner_self.race = race_cursor.current['race']
+                inner_self.event_id = race_cursor.current['event_id']
+            activity_cursor = self.graph.run(
+                'START race=Node(%d) '
+                'MATCH '
+                '   (race)<-[:OF]-(activity:ACTIVITY)<-[:PARTICIPATING_IN]-(participant:USER), '
+                '   (activity)<-[:FOLLOWING]-(follower:USER) '
+                'RETURN activity.joinedAt AS joinedAt, ID(participant) AS part_id, ID(follower) AS follower_id' % inner_self.race_id
+            )
+            cursor = self.graph.run(
+                'START race=Node(%d) '
+                'MATCH (race)-[r:]-(o)' % inner_self.race_id
+            )
+            inner_self.activities = {}
+            while activity_cursor.forward():
+                part_id = activity_cursor.current['part_id']
+                follower_id = activity_cursor.current['follower_id']
+                joined_at = activity_cursor.current['joinedAt']
+                if part_id in inner_self.activities:
+                    inner_self.activities[part_id]['follower_ids'].append(follower_id)
+                else:
+                    inner_self.activities[part_id] = dict(joinedAt=joined_at, follower_ids=[follower_id])
 
         def run(inner_self):
             pass
