@@ -892,10 +892,6 @@ class MySQL(Base):
             cursor.execute("SELECT id,lat,lng,alt,map FROM point WHERE map="+str(map_id))
             result = cursor.fetchall()
             inner_self.points = result
-            
-            cursor.execute("SELECT count(*) FROM point WHERE map="+str(map_id))
-            print(cursor.fetchall())
-            
             cursor.execute("SELECT id FROM point WHERE map="+str(map_id))
             result = cursor.fetchall()
             random.shuffle(result)
@@ -924,11 +920,6 @@ class MySQL(Base):
                 cursor.execute("INSERT INTO point (id, lat,lng,alt,map) VALUES("+point_id+","+lat+","+lng+","+alt+","+map+")")
             cursor.close()
             self.cnx.commit()
-            
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT count(*) FROM point WHERE map="+inner_self.map_id)
-            print(cursor.fetchall())
-            cursor.close()
 
         return self.create_case("removeCoords", setup, run, teardown)
 
