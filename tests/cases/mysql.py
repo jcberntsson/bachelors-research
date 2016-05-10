@@ -611,6 +611,7 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
+            cursor.execute("INSERT INTO header(sku_id,header_name) VALUES ("+inner_self.sku_id+",'remove_me')")
             for i in range(10):
                 cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'110','remove_me')")
             self.cnx.commit()
@@ -618,6 +619,7 @@ class MySQL(Base):
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM header WHERE header_name='remove_me'")
             cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me'")
             self.cnx.commit()
             cursor.close()
