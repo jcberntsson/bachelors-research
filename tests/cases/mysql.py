@@ -991,19 +991,15 @@ class MySQL(Base):
                 "LEFT JOIN point as p2 ON racemap.goal_point = p2.id "+
                 "WHERE race.ID="+inner_self.race_id)
             result = cursor.fetchall()[0]
-            print(result)
             map_id = str(result[13])
             race = result[:14]
             start_point = result[14:17]
             goal_point = result[17:20]
-            print(map_id)
             cursor.execute("SELECT * FROM point WHERE map = "+map_id +" ORDER BY orderIndex")
             mapCoords = cursor.fetchall()[0]
             cursor.execute("SELECT participant.id, participant.username,participant.fullname FROM activity INNER JOIN participant ON activity.participant=participant.id WHERE race = "+inner_self.race_id)
             participants = cursor.fetchall()
-            print(participants)
             returnable = dict(race=race,start_point=start_point,goal_point=goal_point,map_coordinates=mapCoords,participants=participants)
-            print(returnable)
             cursor.close()
 
         def teardown(inner_self):
