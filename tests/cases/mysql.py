@@ -962,7 +962,6 @@ class MySQL(Base):
             cursor.execute("SELECT activity.race, count(*) as rating FROM activity "
                 "INNER JOIN follow on follow.activity=activity.id GROUP BY activity.race ORDER BY rating DESC LIMIT 10")
             result = cursor.fetchall()
-            print(result)
             cursor.close()
 
         def teardown(inner_self):
@@ -981,10 +980,6 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            print("SELECT race.*,event.name,racemap.id,racemap.map,p1.lat,p1.lng,p1.alt,p2.lat,p2.lng,p2.alt FROM race INNER JOIN event ON race.event_id=event.id "+
-                "INNER JOIN racemap ON racemap.race = race.id "+
-                "INNER JOIN point as p1 ON racemap.start_point = p1.id "+
-                "INNER JOIN point as p2 ON racemap.goal_point = p2.id WHERE race.ID="+inner_self.race_id)
             cursor.execute("SELECT race.*,event.name,racemap.id,racemap.map,p1.lat,p1.lng,p1.alt,p2.lat,p2.lng,p2.alt FROM race INNER JOIN event ON race.event_id=event.id "+
                 "INNER JOIN racemap ON racemap.race = race.id "+
                 "LEFT JOIN point as p1 ON racemap.start_point = p1.id "+
