@@ -920,7 +920,7 @@ class MySQL(Base):
                 lng = str(p[2])
                 alt = str(p[3])
                 map = str(p[4])
-                cursor.execute("INSERT INTO point (id, lat,lng,alt,map) VALUES("+point_id","+lat+","+lng+","+alt+","+map+")")
+                cursor.execute("INSERT INTO point (id, lat,lng,alt,map) VALUES("+point_id+","+lat+","+lng+","+alt+","+map+")")
             cursor.close()
             self.cnx.commit()
             
