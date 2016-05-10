@@ -204,10 +204,10 @@ class Neo4j(Base):
             inner_self.sku_id = self.get_random_id('SKU')
 
         def run(inner_self):
-            self.graph.run(
+            out = self.graph.run(
                 'MATCH (value:SKU_VALUE)-[of:OF]->(sku:SKU) '
                 'WHERE ID(sku)=%d '
-                'RETURN sku,of,value' % inner_self.sku_id
+                'RETURN value' % inner_self.sku_id
             )  # .dump()
 
         def teardown(inner_self):
