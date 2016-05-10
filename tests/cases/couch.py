@@ -1,13 +1,9 @@
-import datetime
-import random
-
 from couchdb import client
 
 from cases import Base
 
 
 class Couch(Base):
-
     # connect to authenticated graph database
     server = client.Server(url="http://admin:mysecretpassword@46.101.118.239:5984")
     db = server['raceone'] if ('raceone' in server) else server.create('raceone')
@@ -19,96 +15,80 @@ class Couch(Base):
     def initRaceOne(self):
         users = []
         organizers = []
-        for x in range(50):
+        for x in range(100):
             # User
-            name = "user_" + str(x)
             user = dict(
                 type='USER',
-                fullname=name,
+                fullname="user_" + str(x),
                 password="SuperHash")
-            self.db[name] = user
-            users.append(user)
+            user_id, user_rev = self.db.save(user)
+            users.append(user_id)
 
             # Organizer
-            name = "organizer_" + str(x)
             organizer = dict(
                 type='ORGANIZER',
-                username=name,
+                username="organizer_" + str(x),
                 password="SuperHash",
                 email="mail@mail.se")
-            self.db[name] = organizer
-            organizers.append(organizer)
+            organizer_id, organizer_rev = self.db.save(organizer)
+            organizers.append(organizer_id)
 
         for x in range(10):
-            name = "event_" + str(x)
             event = dict(
                 type='EVENT',
-                name=name,
+                name="event_" + str(x),
                 logoURL='google.se/img.png',
-                created_by='<<user_id>>')
-            self.db[name] = event
+                created_by=organizers[x * 5])
+            event_id, event_rev = self.db.save(event)
             for y in range(5):
                 nbr = x * 5 + y
-                name = "race_" + str(nbr)
+                # Coordinates
+                route = []
+                for i in range(100):
+                    coord = dict(
+                        type="COORDINATE",
+                        lat=10 + i,
+                        lng=11 + i,
+                        alt=20 + i,
+                        index=i)
+                    route.append(coord)
                 race = dict(
                     type='RACE',
-                    name=name,
-                    event_id='',
+                    name="race_" + str(nbr),
                     description="A nice race to participate in.",
                     date="2016-06-13",
                     maxDuration=x + y if nbr < 24 else 24,
                     preview="linktoimage.png",
                     location="Gothenburg, Sweden",
-                    logoURL="google.se/img.png")
-                self.db[name] = race
-
-        '''
-        # Events & Races
-        for x in range(10):
-            event = Node("EVENT",
-                         name="event_" + str(x),
-                         logoURL="google.se/img.png")
-            tx.create(event)
-            tx.create(Relationship(event, "MADE_BY", organizers[x * 5]))
-            for y in range(5):
-                race = Node("RACE",
-                            name="race_" + str(random.randint(1, 500)),
-                            description="A nice race to participate in.",
-                            date="2016-06-13",
-                            maxDuration=3,
-                            preview="linktoimage.png",
-                            location="Gothenburg, Sweden",
-                            logoURL="google.se/img.png")
-                tx.create(race)
-                tx.create(Relationship(race, "IN", event))
-                # Coordinates
-                prev = Node("COORDINATE",
-                            lat=33,
-                            lng=44,
-                            alt=100)
-                for i in range(99):
-                    coord = Node("COORDINATE",
-                                 lat=10 + i,
-                                 lng=11 + i,
-                                 alt=20 + i)
-                    tx.create(coord)
-                    tx.create(Relationship(prev, "FOLLOWED_BY", coord))
-                    prev = coord
-                tx.create(Relationship(prev, "END_FOR", race))
-
+                    logoURL="google.se/img.png",
+                    event_id=event_id,
+                    route=route)
+                race_id, race_dev = self.db.save(race)
+                coords = []
+                for i in range(50):
+                    coord = dict(
+                        type="COORDINATE",
+                        lat=10 + i,
+                        lng=11 + i,
+                        alt=20 + i,
+                        index=i)
+                    coords.append(coord)
                 rands = []
-                for z in range(random.randint(0, 5)):
+                for z in range(10):
                     # Participants
-                    rand = self.new_rand_int(rands, 0, 49)
-
+                    rand = self.new_rand_int(rands, 0, 99)
                     rands.append(rand)
-                    activity = Node("ACTIVITY",
-                                    joinedAt="2016-08-08")
-                    tx.create(activity)
-                    tx.create(Path(users[rand], "PARTICIPATING_IN", activity, "OF", race))
-
-        tx.commit()
-        '''
+                    rand2 = self.new_rand_int(rands, 0, 99)
+                    rands.append(rand2)
+                    # Coordinates
+                    activity = dict(
+                        type="ACTIVITY",
+                        joinedAt="2016-08-08",
+                        participant_id=users[rand],
+                        coordinates=coords,
+                        follower_ids=[users[rand2]],
+                        race_id=race_id)
+                    self.db.save(activity)
 
     def initSkim(self):
         pass
@@ -198,12 +178,12 @@ class Couch(Base):
             del self.server['raceone']
             self.db = self.server.create('raceone')
 
-        # Dangerous
-        #
-        # if self.server['skim']:
-        #    del self.server['skim']
-        # if self.server['reddit']:
-        #    del self.server['reddit']
+            # Dangerous
+            #
+            # if self.server['skim']:
+            #    del self.server['skim']
+            # if self.server['reddit']:
+            #    del self.server['reddit']
 
     ############################
     ####	TEST METHODS	####
@@ -211,20 +191,20 @@ class Couch(Base):
     # TODO: All inserting methods should first find the nodes that it is relating for
 
     # SKIM
-    def fetchSKU(self):
+    def fetch(self):
         map_fun = """
-                function(doc) {
-                    if (doc.type === 'RACE') {
-                        emit([doc.type, doc.maxDuration], 1);
-                    }
+            function(doc) {
+                if (doc.type === 'RACE') {
+                    emit(doc._id, doc);
                 }
-                """
+            }
+        """
         reduce_fun = """
-                function(keys, values) {
-                    return sum(values);
-                }
-                """
-        for row in self.db.query(map_fun, reduce_fun=reduce_fun, group=True):
+            function(keys, values) {
+                return sum(values);
+            }
+        """
+        for row in self.db.query(map_fun):#, reduce_fun=reduce_fun, group=True):
             print(row)
 
         '''
@@ -255,20 +235,24 @@ class Couch(Base):
 
         return self.create_case("fetchSKU", setup, run, teardown)'''
 
+    def fetchSKU(self):
+        def setup(inner_self):
+            inner_self.sku_id = self.get_random_id('SKU')
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchSKU", setup, run, teardown)
+
     def fetchUsers(self):
         def setup(inner_self):
             pass
 
         def run(inner_self):
-            map_fun = """
-                    function(doc) {
-                        if (doc.type === 'USER') {
-                            emit(doc.name, doc);
-                        }
-                    }
-                    """
-            for row in self.db.query(map_fun):
-                print(row)
+            pass
 
         def teardown(inner_self):
             pass
@@ -276,128 +260,266 @@ class Couch(Base):
         return self.create_case("fetchUsers", setup, run, teardown)
 
     def commentOnImage(self):
-        '''
         def setup(inner_self):
-            out = self.graph.run(
-                'CREATE (user:USER { username: "test_user" })<-[:COLLABORATOR]-(project:PROJECT { name: "test_project" })<-[:IN]-(image:IMAGE { name: "test_image" }) '
-                'RETURN ID(user) AS user_id, ID(project) AS project_id, ID(image) AS image_id'
-            )
-            if out.forward():
-                # print(out.current)
-                inner_self.user_id = out.current['user_id']
-                inner_self.project_id = out.current['project_id']
-                inner_self.image_id = out.current['image_id']
+            pass
 
         def run(inner_self):
-            self.graph.run(
-                'MATCH (user:USER)<-[:COLLABORATOR]-(project:PROJECT)<-[:IN]-(image:IMAGE) '
-                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
-                'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
-                'RETURN comment' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            pass
 
         def teardown(inner_self):
-            self.graph.run(
-                'MATCH (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
-                '      (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
-                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE collaborator,in,made,on,user,project,image,comment '
-                'RETURN count(*) AS deleted_rows' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
-            ).dump()
+            pass
 
-        return self.create_case("commentOnImage", setup, run, teardown)'''
+        return self.create_case("commentOnImage", setup, run, teardown)
 
     def pairImageSKU(self):
-        '''
         def setup(inner_self):
-            # print("Setup")
-            out = self.graph.run(
-                'CREATE (sku:SKU { name: "test_sku" })-[:IN]->(project:PROJECT { name: "test_project" })<-[in:IN]-(image:IMAGE { name:"test_image" }) '
-                'RETURN ID(sku) AS sku_id, ID(project) AS project_id, ID(image) AS image_id'
-            )
-            if out.forward():
-                # print(out.current)
-                inner_self.sku_id = out.current['sku_id']
-                inner_self.project_id = out.current['project_id']
-                inner_self.image_id = out.current['image_id']
+            pass
 
         def run(inner_self):
-            # print("Run")
-            self.graph.run(
-                'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
-                'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
-                'CREATE (image)-[b:BELONGS_TO]->(sku) '
-                'DELETE in '
-                'RETURN ID(b) AS ID' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            pass
 
         def teardown(inner_self):
-            # print("Teardown")
-            self.graph.run(
-                'MATCH (image:IMAGE)-[b:BELONGS_TO]->(sku:SKU)-[in:IN]->(project:PROJECT) '
-                'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE b, image, in, sku, project '
-                'RETURN count(*) AS deleted_rows' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
-            )  # .dump()
+            pass
 
-        return self.create_case("pairImageSKU", setup, run, teardown)'''
-
-    def fetchAllUserComments(self):
-        pass
+        return self.create_case("pairImageSKU", setup, run, teardown)
 
     def addRowsToSKU(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("addRowsToSKU", setup, run, teardown)
+
+    def fetchAllUserComments(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchAllUserComments", setup, run, teardown)
 
     # RaceOne
     def follow(self):
-        '''
-        self.graph.run(
-            'MATCH (user:USER),(race:RACE) '
-            'WITH * LIMIT 1 '
-            'CREATE UNIQUE (user)-[:PARTICIPATING_IN]->'
-            '(activity:ACTIVITY {joinedAt:"2015-03-02@13:37"} )-[:OF]->(race) '
-            'RETURN ID(activity)'
-        ).dump()'''
+        def setup(inner_self):
+            activity = self.get_random('ACTIVITY')
+            follower_id = self.get_random_id('USER')
+            while follower_id in activity['follower_ids']:
+                follower_id = self.get_random_id('USER')
+            inner_self.activity_id = activity['_id']
+            inner_self.follower_id = follower_id
+            #print("Act_id: %s, Follower_id: %s" % (inner_self.activity_id, inner_self.follower_id))
+
+        def run(inner_self):
+            activity = self.db.get(inner_self.activity_id)
+            activity['follower_ids'].append(inner_self.follower_id)
+            self.db.save(activity)
+            activity['coordinates'] = []
+            #print(activity)
+
+        def teardown(inner_self):
+            activity = self.db.get(inner_self.activity_id)
+            activity['follower_ids'].remove(inner_self.follower_id)
+            self.db.save(activity)
+            activity['coordinates'] = []
+            #print(activity)
+
+        return self.create_case("follow", setup, run, teardown)
 
     def unfollow(self):
-        '''
-        self.graph.run(
-            'MATCH (:USER)-[:PARTICIPATING_IN]->(activity:ACTIVITY)-[:OF]->(:RACE) '
-            'WHERE ID(activity) = 6168 '
-            'WITH * LIMIT 1 '
-            'DETACH DELETE activity '
-            'RETURN count(*)'
-        ).dump()'''
+        def setup(inner_self):
+            activity = self.get_random('ACTIVITY')
+            inner_self.follower_id = self.get_random_of(activity['follower_ids'])
+            inner_self.activity_id = activity['_id']
+            # print("Act_id: %s, Follower_id: %s" % (inner_self.activity_id, inner_self.follower_id))
+
+        def run(inner_self):
+            activity = self.db.get(inner_self.activity_id)
+            activity['follower_ids'].remove(inner_self.follower_id)
+            self.db.save(activity)
+            activity['coordinates'] = []
+            # print(activity)
+
+        def teardown(inner_self):
+            activity = self.db.get(inner_self.activity_id)
+            activity['follower_ids'].append(inner_self.follower_id)
+            self.db.save(activity)
+            activity['coordinates'] = []
+            # print(activity)
+
+        return self.create_case("unfollow", setup, run, teardown)
 
     def insertCoords(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("insertCoords", setup, run, teardown)
 
     def fetchParticipants(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            map_func = """
+                function(doc) {
+                    if (doc.type === 'ACTIVITY') {
+                        emit(doc.participant_id, 1);
+                    }
+                }
+            """
+            reduce_fun = "_count"
+            out = self.db.query(map_func, reduce_fun=reduce_fun, group=True, limit=5, descending=True)
+            for row in out:
+                print(row)
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants", setup, run, teardown)
 
     def duplicateEvent(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("duplicateEvent", setup, run, teardown)
 
     def fetchParticipants2(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def unparticipate(self):
-        pass
+        def setup(inner_self):
+            activity = self.get_random('ACTIVITY')
+            inner_self.participant_id = activity['participant_id']
 
-    def updateCoords(self):
-        pass
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("unparticipate", setup, run, teardown)
 
     def fetchCoords(self):
-        pass
+        def setup(inner_self):
+            inner_self.activity_id = self.get_random_id('ACTIVITY')
+
+        def run(inner_self):
+            out = self.db.view('activity/coordinates', key=inner_self.activity_id)
+            #for row in out:
+            #    print(row)
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchCoords", setup, run, teardown)
 
     def removeCoords(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("removeCoords", setup, run, teardown)
 
     def removeRace(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("removeRace", setup, run, teardown)
 
     def fetchHotRaces(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchHotRaces", setup, run, teardown)
 
     def fetchRace(self):
-        pass
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            pass
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchRace", setup, run, teardown)
+
+    @staticmethod
+    def get_random_of(items):
+        from random import randint
+        key = randint(0, len(items) - 1)
+        return items[key]
+
+    def get_random_id(self, entity_name):
+        from random import randint
+        map_fun = """
+            function(doc) {
+                if (doc.type === '%s') {
+                    emit(doc._id, '');
+                }
+            }
+        """ % entity_name
+        result = self.db.query(map_fun)
+        result_id = randint(0, result.total_rows - 1)
+        return result.rows[result_id].key
+
+    def get_random(self, entity_name):
+        from random import randint
+        map_fun = """
+            function(doc) {
+                if (doc.type === '%s') {
+                    emit(doc._id, doc);
+                }
+            }
+        """ % entity_name
+        result = self.db.query(map_fun)
+        if result.total_rows == 0:
+            return None
+        result_id = randint(0, result.total_rows - 1)
+        return result.rows[result_id].value
