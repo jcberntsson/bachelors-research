@@ -991,7 +991,7 @@ class MySQL(Base):
                 "WHERE race.ID="+inner_self.race_id)
             result = cursor.fetchall()[0]
             print(result)
-            map_id = str(result[14])
+            map_id = str(result[13])
             race = result[:14]
             start_point = result[14:17]
             goal_point = result[17:20]
