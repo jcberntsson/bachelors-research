@@ -604,12 +604,19 @@ class MySQL(Base):
 
     def fetchAllUserComments(self):
         def setup(inner_self):
-            pass
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM Contributor")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            contributor_id = result[rand][0]
+            inner_self.contributor_id = str(contributor_id)
+            cursor.close()
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("")
+            cursor.execute("SELECT * FROM comment WHERE creator ="+inner_self.contributor_id)
             result = cursor.fetchall()
+            console.log(result)
             cursor.close()
 
         def teardown(inner_self):
