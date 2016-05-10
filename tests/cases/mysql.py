@@ -616,7 +616,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM comment WHERE creator ="+inner_self.contributor_id)
             result = cursor.fetchall()
-            console.log(result)
+            print(result)
             cursor.close()
 
         def teardown(inner_self):
