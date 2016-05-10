@@ -914,6 +914,7 @@ class MySQL(Base):
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM point WHERE map="+inner_self.map_id)
             for p in inner_self.points:
                 point_id = str(p[0])
                 lat = str(p[1])
