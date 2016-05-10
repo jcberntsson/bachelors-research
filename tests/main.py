@@ -5,7 +5,7 @@ from cases import MySQL
 if __name__ == '__main__':
     m = MySQL()
     m.init("raceone")
-    case = m.insertCoords()
+    case = m.fetchCoords()
     case.setup()
     case.run()
     case.teardown()
