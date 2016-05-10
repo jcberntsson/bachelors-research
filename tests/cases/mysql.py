@@ -746,8 +746,6 @@ class MySQL(Base):
             activity_id = result[rand][0]
             inner_self.activity_id = str(activity_id)
             inner_self.start_time = str(datetime.datetime.now())
-            cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
-            print(cursor.fetchall())
             cursor.close()
 
         def run(inner_self):
@@ -760,14 +758,9 @@ class MySQL(Base):
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            print("DELETE FROM activityCoordinate WHERE activity="+inner_self.activity_id+" AND createdAt > '"+inner_self.start_time+"'")
             cursor.execute("DELETE FROM activityCoordinate WHERE activity="+inner_self.activity_id+" AND createdAt > '"+inner_self.start_time+"'")
             cursor.close()
             self.cnx.commit()
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
-            print(cursor.fetchall())
-            cursor.close()
 
         return self.create_case("insertCoords", setup, run, teardown)
 
