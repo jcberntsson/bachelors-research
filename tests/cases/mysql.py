@@ -992,8 +992,8 @@ class MySQL(Base):
             result = cursor.fetchall()[0]
             print(result)
             race = result[:14]
-            start_point = result[15:18]
-            goal_point = result[18:21]
+            start_point = result[14:17]
+            goal_point = result[17:20]
             print(race)
             print(start_point)
             print(goal_point)
