@@ -669,7 +669,7 @@ class MySQL(Base):
             result = cursor.fetchall()
             rand = random.randint(0,len(result)-1)
             race_id = result[rand][0]
-            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"'")
+            cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
             activity_id = cursor.lastrowid
             cursor.close()
             self.cnx.commit()
@@ -688,7 +688,7 @@ class MySQL(Base):
         def teardown(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
-                +"' AND participant='"+inner_self.participant_id+"' AND race='"+inner_self.race_id+"'")
+                +"' AND activity='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
@@ -706,7 +706,7 @@ class MySQL(Base):
             participant_id = cursor.lastrowid
             cursor.execute("SELECT id FROM race")
             result = cursor.fetchall()
-            rand = random.randint(0,len(result))
+            rand = random.randint(0,len(result)-1)
             race_id = result[rand][0]
             cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participant_id)+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
             activity_id = cursor.lastrowid
