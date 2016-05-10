@@ -7,9 +7,9 @@ from cases import Base
 
 class Neo4j(Base):
     # connect to authenticated graph database
-    #graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
     #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
-    graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
     ####	DATA INITIALIZATION		####
@@ -632,10 +632,6 @@ class Neo4j(Base):
                 '   (activity)<-[:FOLLOWING]-(follower:USER) '
                 'RETURN activity.joinedAt AS joinedAt, ID(participant) AS part_id, ID(follower) AS follower_id' % inner_self.race_id
             )
-            cursor = self.graph.run(
-                'START race=Node(%d) '
-                'MATCH (race)-[r:]-(o)' % inner_self.race_id
-            )
             inner_self.activities = {}
             while activity_cursor.forward():
                 part_id = activity_cursor.current['part_id']
@@ -645,6 +641,22 @@ class Neo4j(Base):
                     inner_self.activities[part_id]['follower_ids'].append(follower_id)
                 else:
                     inner_self.activities[part_id] = dict(joinedAt=joined_at, follower_ids=[follower_id])
+
+            """
+            cursor = self.graph.run(
+                'START race=Node(%d) '
+                'MATCH '
+                '   (race)<-[:OF]-(act:ACTIVITY)<-[:PARTICIPATING_IN]-(part:PARTICIPANT), '
+                '   (act)<-[:FOLLOWING]-(follower:FOLLOWER), '
+                '   (act)-[:STARTS_WITH|FOLLOWED_BY|END_FOR*]-(act_coord:COORDINATE), '
+                '   (race)-[:STARTS_WITH|FOLLOWED_BY|END_FOR*]-(coord:COORDINATE), '
+                '   (race)'
+                'WHERE not ((race)-[:IN]-(o)) '
+                'RETURN r,o,r2,o2' % inner_self.race_id
+            )
+            while cursor.forward():
+                print(cursor.current)
+            """
 
         def run(inner_self):
             pass
