@@ -980,7 +980,7 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM race WHERE ID="+inner_self.race_id)
+            cursor.execute("SELECT * FROM race INNER JOIN event ON race.event_id=event.id WHERE ID="+inner_self.race_id)
             result = cursor.fetchall()
             print(result)
             cursor.close()
