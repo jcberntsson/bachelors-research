@@ -755,8 +755,8 @@ class MySQL(Base):
             for i in range(100):
                 cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES("+
                     inner_self.activity_id+",'"+str(datetime.datetime.now())+"',"+str(10+i)+","+str(11+i)+","+str(20+i)+")")
-            self.cnx.commit()
             cursor.close()
+            self.cnx.commit()
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
