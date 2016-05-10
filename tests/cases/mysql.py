@@ -980,16 +980,22 @@ class MySQL(Base):
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            print("SELECT * FROM race INNER JOIN event ON race.event_id=event.id "+
+            print("SELECT race.*,racemap.id,racemap.map,p1.lat,p1.lng,p1.alt,p2.lat,p2.lng,p2.alt FROM race INNER JOIN event ON race.event_id=event.id "+
                 "INNER JOIN racemap ON racemap.race = race.id "+
                 "INNER JOIN point as p1 ON racemap.start_point = p1.id "+
                 "INNER JOIN point as p2 ON racemap.goal_point = p2.id WHERE race.ID="+inner_self.race_id)
             cursor.execute("SELECT * FROM race INNER JOIN event ON race.event_id=event.id "+
                 "INNER JOIN racemap ON racemap.race = race.id "+
                 "LEFT JOIN point as p1 ON racemap.start_point = p1.id "+
-                "LEFT JOIN point as p2 ON racemap.goal_point = p2.id WHERE race.ID="+inner_self.race_id)
-            result = cursor.fetchall()
-            print(result)
+                "LEFT JOIN point as p2 ON racemap.goal_point = p2.id "+
+                "WHERE race.ID="+inner_self.race_id)
+            result = cursor.fetchall()[0]
+            race = result[:13]
+            start_point = result[14:16]
+            goal_point = result[17:20]
+            print(race)
+            print(start_point)
+            print(goal_point)
             cursor.close()
 
         def teardown(inner_self):
