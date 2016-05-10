@@ -756,19 +756,17 @@ class MySQL(Base):
                 cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES("+
                     inner_self.activity_id+",'"+str(datetime.datetime.now())+"',"+str(10+i)+","+str(11+i)+","+str(20+i)+")")
             cursor.close()
-            self.cnx.commit()
+            self.cnx.commit()   
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            '''            cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
-            print(cursor.fetchall())
             print("DELETE FROM activityCoordinate WHERE activity="+inner_self.activity_id+" AND createdAt > '"+inner_self.start_time+"'")
             cursor.execute("DELETE FROM activityCoordinate WHERE activity="+inner_self.activity_id+" AND createdAt > '"+inner_self.start_time+"'")
+            cursor.close()
+            self.cnx.commit()
+            cursor = self.cnx.cursor()
             cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
             print(cursor.fetchall())
-            self.cnx.commit()
-            cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
-            print(cursor.fetchall())'''
             cursor.close()
 
         return self.create_case("insertCoords", setup, run, teardown)
