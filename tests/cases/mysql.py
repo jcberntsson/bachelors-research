@@ -9,7 +9,7 @@ from cases.base import Base
 class MySQL(Base):
 
     # connect to authenticated graph database
-    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
+    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='10.135.9.156', database='research')
     
     ####################################
     ####	DATA INITIALIZATION		####
