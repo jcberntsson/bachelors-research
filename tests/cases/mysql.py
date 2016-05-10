@@ -93,6 +93,7 @@ class MySQL(Base):
         TABLES.append(
             "CREATE TABLE point ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  orderIndex bigint"
             "  lat DECIMAL(11, 8),"
             "  lng DECIMAL(11, 8),"
             "  alt DECIMAL(11, 8),"
@@ -259,7 +260,7 @@ class MySQL(Base):
                 map_id = cursor.lastrowid
                 maps.append(map_id)
                 for p in range(100):
-                    cursor.execute("INSERT INTO point (lat,lng,alt,map) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"')")
+                    cursor.execute("INSERT INTO point (lat,lng,alt,map,orderIndex) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"',"+p+")")
                     coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(events[x])+"')")  
                 race_id=cursor.lastrowid
@@ -996,7 +997,11 @@ class MySQL(Base):
             start_point = result[14:17]
             goal_point = result[17:20]
             print(map_id)
-            #cursor.execute
+            cursor.execute("SELECT * FROM point WHERE map = "+map_id +" ORDER BY orderIndex")
+            mapCoords = cursor.fetchall()[0]
+            cursor.execute("SELECT participant.id, participant.username,participant.fullname FROM activity INNER JOIN participant WHERE activity.participant=participant.id WHERE race = "+inner_self.race_id)
+            participants = cursor.fetchall()[0]
+            print(participants)
             cursor.close()
 
         def teardown(inner_self):
