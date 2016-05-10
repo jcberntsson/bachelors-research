@@ -16,7 +16,7 @@ class Neo4j(Base):
     ####################################
 
     def initRaceOne(self):
-        tx = self.graph.begin(autocommit=True)
+        tx = self.graph.begin()
 
         # Users
         users = []
