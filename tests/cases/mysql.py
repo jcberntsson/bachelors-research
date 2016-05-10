@@ -600,7 +600,29 @@ class MySQL(Base):
         return self.create_case("pairImageSKU", setup, run, teardown)
 
     def addRowsToSKU(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM sku")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            sku_id = result[rand][0]
+            inner_self.sku_id = str(sku_id)
+            cursor.close()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            for i in range(10):
+                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+"'110','remove_me')")
+            self.cnx.commit()
+            cursor.close()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me'")
+            self.cnx.commit()
+            cursor.close()
+
+        return self.create_case("addRowsToSKU", setup, run, teardown)
 
     def fetchAllUserComments(self):
         def setup(inner_self):
