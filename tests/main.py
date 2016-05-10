@@ -4,8 +4,8 @@ from cases import MySQL
 # Run
 if __name__ == '__main__':
     m = MySQL()
-    m.init("skim")
-    case = m.addRowsToSKU()
+    m.init("raceone")
+    case = m.insertCoords()
     case.setup()
     case.run()
     case.teardown()
