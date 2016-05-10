@@ -305,10 +305,10 @@ class Neo4j(Base):
             for i in range(10):
                 tx.run(
                     'START sku=Node(%d) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"110" })-[:OF]->(sku) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"120" })-[:OF]->(sku) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"130" })-[:OF]->(sku) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) ' % inner_self.sku_id
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"110" })-[:OF]->(sku) '
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"120" })-[:OF]->(sku) '
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"130" })-[:OF]->(sku) '
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) ' % inner_self.sku_id
                 )
             tx.commit()
 
@@ -405,33 +405,33 @@ class Neo4j(Base):
                 'START activity=Node(%d) '
                 'MATCH (coord:COORDINATE)-[end:END_FOR]->(activity:ACTIVITY) '
                 'DELETE end '
-                'RETURN ID(coord) AS coord' % inner_self.activity_id
+                'RETURN coord, activity' % inner_self.activity_id
             )
             out.forward()
-            prev_id = out.current['coord']
-            #activity = out.current['activity']
+            prev = out.current['coord']
+            activity = out.current['activity']
             #print("ACT: " + str(inner_self.activity_id))
 
-            #tx = self.graph.begin()
-            query = 'START first=Node(%d), activity=Node(%d) ' \
-                    'CREATE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (prev_id, inner_self.activity_id)
+            tx = self.graph.begin()
+            #query = 'START first=Node(%d), activity=Node(%d) ' \
+            #        'CREATE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (prev_id, inner_self.activity_id)
             for i in range(99):
-                #coord = Node("COORDINATE",
-                #             lat=10 + i,
-                #             lng=11 + i,
-                #             alt=20 + i)
+                coord = Node("COORDINATE",
+                             lat=10 + i,
+                             lng=11 + i,
+                             alt=20 + i)
                 #tx.create(coord)
-                #tx.create(Relationship(prev, "FOLLOWED_BY", coord))
-                query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i+1))
+                tx.create(Relationship(prev, "FOLLOWED_BY", coord))
+                #query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i+1))
                 # tx.run(
                 #    'START '
                 #    'MERGE (%s)-[:FOLLOWED_BY]->(coord:COORDINATE { lat:10, lng:11, alt:20 })' % prev
                 # )
-                #prev = coord
-            query += ' CREATE (%s)-[:END_FOR]->(activity)' % "coord100"
-            self.graph.run(query)
-            #tx.create(Relationship(prev, "END_FOR", activity))
-            #tx.commit()
+                prev = coord
+            #query += ' CREATE (%s)-[:END_FOR]->(activity)' % "coord100"
+            #self.graph.run(query)
+            tx.create(Relationship(prev, "END_FOR", activity))
+            tx.commit()
             """
             self.graph.run(
                 'START act=Node(%d) '
@@ -585,7 +585,7 @@ class Neo4j(Base):
     def removeCoords(self):
         def setup(inner_self):
             inner_self.race_id = self.get_random_id('RACE')
-            print(inner_self.race_id)
+            #print(inner_self.race_id)
 
         def run(inner_self):
             coordinates_cursor = self.graph.run(
@@ -699,8 +699,8 @@ class Neo4j(Base):
                 '   (race:RACE)<-[:OF]-(activity:ACTIVITY), '
                 '   (participant:USER)-[:PARTICIPATING_IN]->(activity)<-[:FOLLOWING]-(follower:USER) '
                 'WITH race '
-                'RETURN race'
-                'ORDER BY COUNT(follower)+COUNT(participant) '
+                'RETURN race, COUNT(follower)+COUNT(participant) AS popularity '
+                'ORDER BY popularity '
                 'LIMIT 10'
             )
 
