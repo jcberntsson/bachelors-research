@@ -874,7 +874,6 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM activityCoordinate WHERE activity="+inner_self.activity_id)
             result = cursor.fetchall()
-            print(result)
             cursor.close()
 
         def teardown(inner_self):
