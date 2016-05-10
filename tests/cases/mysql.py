@@ -738,7 +738,34 @@ class MySQL(Base):
 
 
     def insertCoords(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM activity")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            activity_id = result[rand][0]
+            inner_self.activity_id = str(activity_id)
+            inner_self.start_time = str(datetime.datetime.now())
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            for i in range(100):
+                cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES("+
+                    inner_self.activity_id+",'"+str(datetime.datetime.now())+"',"+str(10+i)+","+str(11+i)+","+str(20+i)+")")
+            self.cnx.commit()
+            cursor.close()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
+            print(cursor.fetchall)
+            cursor.execute("DELETE FROM activityCoordinate WHERE activity="+inner_self.activity_id+" AND createdAt > "+inner_self.start_time)
+            cursor.execute("SELECT COUNT(*) FROM activityCoordinate WHERE activity="+inner_self.activity_id)
+            print(cursor.fetchall)
+            self.cnx.commit()
+            cursor.close()
+
+        return self.create_case("insertCoords", setup, run, teardown)
 
     def fetchParticipants(self):
         def setup(inner_self):
