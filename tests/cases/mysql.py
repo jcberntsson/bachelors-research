@@ -621,10 +621,7 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             for i in range(10):
-                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'110','remove_me1')")
-                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'120','remove_me2')")
-                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'130','remove_me3')")
-                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'140','remove_me4')")
+                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'110','remove_me1'),("+inner_self.sku_id+",'120','remove_me2'),("+inner_self.sku_id+",'130','remove_me3'),("+inner_self.sku_id+",'140','remove_me4')")
             self.cnx.commit()
             cursor.close()
 
