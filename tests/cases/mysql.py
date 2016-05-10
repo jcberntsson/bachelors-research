@@ -260,7 +260,7 @@ class MySQL(Base):
                 map_id = cursor.lastrowid
                 maps.append(map_id)
                 for p in range(100):
-                    cursor.execute("INSERT INTO point (lat,lng,alt,map,orderIndex) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"',"+p+")")
+                    cursor.execute("INSERT INTO point (lat,lng,alt,map,orderIndex) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"',"+str(p)+")")
                     coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(events[x])+"')")  
                 race_id=cursor.lastrowid
