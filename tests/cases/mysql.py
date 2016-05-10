@@ -780,6 +780,7 @@ class MySQL(Base):
         return self.create_case("fetchParticipants", setup, run, teardown)
 
     def duplicateEvent(self):
+        pass
             '''def setup(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM event")
@@ -860,7 +861,25 @@ class MySQL(Base):
 
 
     def fetchCoords(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM activity")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            activity_id = result[rand][0]
+            inner_self.activity_id = str(activity_id)
+            cursor.close()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM activityCoordinate WHERE activity="+inner_self.activity_id)
+            result = cursor.fetchall()
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchCoords", setup, run, teardown)
 
     def removeCoords(self):
         pass
