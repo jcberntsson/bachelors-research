@@ -892,6 +892,10 @@ class MySQL(Base):
             cursor.execute("SELECT id,lat,lng,alt,map FROM point WHERE map="+str(map_id))
             result = cursor.fetchall()
             inner_self.points = result
+            
+            cursor.execute("SELECT count(*) FROM point WHERE map="+str(map_id))
+            print(cursor.fetchall())
+            
             cursor.execute("SELECT id FROM point WHERE map="+str(map_id))
             result = cursor.fetchall()
             random.shuffle(result)
@@ -903,56 +907,27 @@ class MySQL(Base):
             for p in inner_self.point_ids:
                 point_ids = point_ids + str(p[0]) + ","
             point_ids = point_ids[:-1]
-            print(point_ids)
-            #cursor = self.cnx.cursor()
-            #cursor.execute("DELETE FROM point WHERE ID IN ("+point_ids+")")
-            #cursor.close()
-            '''coordinates_cursor = self.graph.run(
-                'START race=Node(%d) '
-                'MATCH '
-                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
-                '   (start)-[:FOLLOWED_BY*]->(before:COORDINATE)-[:FOLLOWED_BY]->(coord:COORDINATE) '
-                'RETURN ID(coord) AS coord_id, coord, ID(before) AS before_id' % inner_self.race_id
-            )
-            i = 0
-            inner_self.removed_coords = []
-            tx = self.graph.begin()
-            while coordinates_cursor.forward():
-                if i % 3 == 0:
-                    coord = coordinates_cursor.current['coord']
-                    coord_id = coordinates_cursor.current['coord_id']
-                    before_id = coordinates_cursor.current['before_id']
-                    coordinate = {
-                        "data": coord,
-                        "before_id": before_id
-                    }
-                    inner_self.removed_coords.append(coordinate)
-                    tx.run(
-                        'MATCH (first:COORDINATE)-[f1:FOLLOWED_BY]->(middle:COORDINATE)-[f2:FOLLOWED_BY]->(last:COORDINATE) '
-                        'WHERE ID(middle)=%d '
-                        'DELETE f1,f2,middle '
-                        'CREATE (first)-[:FOLLOWED_BY]->(last)' % coord_id
-                    )
-                i += 1
-            tx.commit()'''
-            """
-            coords_count = self.graph.evaluate(
-                'START race=Node(%d) '
-                'MATCH (race)-[:STARTS_WITH]->(start:COORDINATE)-[f:FOLLOWED_BY*]->(coord:COORDINATE) '
-                'RETURN COUNT(f)' % inner_self.race_id
-            )
-            print("Nbr of coords = " + str(coords_count))"""
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM point WHERE id IN ("+point_ids+")")
+            cursor.close()
+            self.cnx.commit()
 
         def teardown(inner_self):
-            tx = self.graph.begin()
-            for coord in reversed(inner_self.removed_coords):
-                tx.run(
-                    'START before=Node(%d) '
-                    'MATCH (before)-[f:FOLLOWED_BY]->(after:COORDINATE) '
-                    'DELETE f '
-                    'CREATE (before)-[:FOLLOWED_BY]->%s-[:FOLLOWED_BY]->(after)' % (coord['before_id'], coord['data'])
-                )
-            tx.commit()
+            cursor = self.cnx.cursor()
+            for p in inner_self.points:
+                point_id = str(p[0])
+                lat = str(p[1])
+                lng = str(p[2])
+                alt = str(p[3])
+                map = str(p[4])
+                cursor.execute("INSERT INTO point (id, lat,lng,alt,map) VALUES("+point_id","+lat+","+lng+","+alt+","+map+")")
+            cursor.close()
+            self.cnx.commit()
+            
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT count(*) FROM point WHERE map="+inner_self.map_id)
+            print(cursor.fetchall())
+            cursor.close()
 
         return self.create_case("removeCoords", setup, run, teardown)
 
