@@ -205,8 +205,8 @@ class Neo4j(Base):
 
         def run(inner_self):
             out = self.graph.run(
+                'START sku=Node(%d) '
                 'MATCH (value:SKU_VALUE)-[of:OF]->(sku:SKU) '
-                'WHERE ID(sku)=%d '
                 'RETURN value' % inner_self.sku_id
             )  # .dump()
 
