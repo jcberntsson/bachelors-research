@@ -889,10 +889,10 @@ class MySQL(Base):
             rand = random.randint(0,len(result)-1)
             race_id = result[rand][0]
             inner_self.race_id = str(race_id)
-            cursor.execute("SELECT id,lat,lng,alt,map FROM [point]")
+            cursor.execute("SELECT id,lat,lng,alt,map FROM point")
             result = cursor.fetchall()
             inner_self.points = result
-            cursor.execute("SELECT id FROM [point]")
+            cursor.execute("SELECT id FROM point")
             result = cursor.fetchall()
             random.shuffle(result)
             inner_self.point_ids = result[:(len(result)//3)]
