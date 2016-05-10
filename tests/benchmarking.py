@@ -23,11 +23,17 @@ test_cases = {
         'fetchAllUserComments'
     ],
     'raceone': [
+        'follow',
         'unfollow',
-        'fetchComments',
-        'fetchHotPosts'
-    ],
-    'reddit': []
+        'insertCoords',
+        'fetchParticipants',
+        'fetchParticipants2',
+        'unparticipate',
+        'fetchCoords',
+        'removeCoords',
+        'fetchHotRaces',
+        'fetchRace'
+    ]
 }
 
 # Definition of the column system in the Google Spreadsheet
@@ -40,7 +46,7 @@ company = argv[2]
 iterations = 100  # Number of runs per test case
 
 # Test arguments
-is_valid_company = (company == "raceone" or company == "skim" or company == "reddit")
+is_valid_company = (company == "raceone" or company == "skim")
 if not is_valid_company:
     print("Invalid company " + company)
     print("Syntax: 'python benchmarking.py <database> <company>'")
