@@ -7,5 +7,5 @@ if __name__ == '__main__':
     m.init("raceone")
     case = m.removeCoords()
     case.setup()
-    #case.run()
+    case.run()
     #case.teardown()

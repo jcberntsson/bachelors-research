@@ -889,13 +889,21 @@ class MySQL(Base):
             rand = random.randint(0,len(result)-1)
             race_id = result[rand][0]
             inner_self.race_id = str(race_id)
-            array = [1,2,3,4]
-            random.shuffle(array)
-            print(array)
+            cursor.execute("SELECT id,lat,lng,alt,map FROM [point]")
+            result = cursor.fetchall()
+            inner_self.points = result
+            cursor.execute("SELECT id FROM [point]")
+            result = cursor.fetchall()
+            random.shuffle(result)
+            inner_self.point_ids = result[:(len(result)//3)]
             cursor.close()
 
         def run(inner_self):
-            coordinates_cursor = self.graph.run(
+            point_ids = ""
+            for p in inner_self.point_ids:
+                point_ids = point_ids + p + ","
+            print(point_ids)
+            '''coordinates_cursor = self.graph.run(
                 'START race=Node(%d) '
                 'MATCH '
                 '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
@@ -922,7 +930,7 @@ class MySQL(Base):
                         'CREATE (first)-[:FOLLOWED_BY]->(last)' % coord_id
                     )
                 i += 1
-            tx.commit()
+            tx.commit()'''
             """
             coords_count = self.graph.evaluate(
                 'START race=Node(%d) '
