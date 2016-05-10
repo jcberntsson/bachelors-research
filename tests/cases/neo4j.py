@@ -307,6 +307,9 @@ class Neo4j(Base):
                     'MATCH (sku:SKU) '
                     'WHERE ID(sku)=%d '
                     'CREATE (value:SKU_VALUE { header: "remove_me", value:"110" })-[:OF]->(sku) '
+                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"120" })-[:OF]->(sku) '
+                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"130" })-[:OF]->(sku) '
+                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) '
                     'RETURN value, sku' % inner_self.sku_id
                 )
             tx.commit()
