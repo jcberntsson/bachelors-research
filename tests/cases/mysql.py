@@ -622,14 +622,14 @@ class MySQL(Base):
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM header WHERE name='remove_me1'")
-            cursor.execute("DELETE FROM header WHERE name='remove_me2'")
-            cursor.execute("DELETE FROM header WHERE name='remove_me3'")
-            cursor.execute("DELETE FROM header WHERE name='remove_me4'")
             cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me1'")
             cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me2'")
             cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me3'")
             cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me4'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me1'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me2'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me3'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me4'")
             self.cnx.commit()
             cursor.close()
 
