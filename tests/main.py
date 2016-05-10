@@ -1,11 +1,11 @@
 #!/usr/bin/python
-from cases import MySQL
+from cases import Neo4j
 
 # Run
 if __name__ == '__main__':
-    m = MySQL()
-    #neo.init("raceone")
-    case = m.follow()
+    neo = Neo4j()
+    neo.init("raceone")
+    case = neo.insertCoords()
     case.setup()
     case.run()
     case.teardown()
