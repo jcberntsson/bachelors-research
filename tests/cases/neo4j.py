@@ -699,8 +699,8 @@ class Neo4j(Base):
                 '   (race:RACE)<-[:OF]-(activity:ACTIVITY), '
                 '   (participant:USER)-[:PARTICIPATING_IN]->(activity)<-[:FOLLOWING]-(follower:USER) '
                 'WITH race '
-                'RETURN race '
-                'ORDER BY COUNT(follower)+COUNT(participant) '
+                'RETURN race, COUNT(follower)+COUNT(participant) AS popularity '
+                'ORDER BY popularity '
                 'LIMIT 10'
             )
 
