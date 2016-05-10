@@ -612,7 +612,7 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             for i in range(10):
-                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+"'110','remove_me')")
+                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'110','remove_me')")
             self.cnx.commit()
             cursor.close()
 
@@ -638,7 +638,6 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM comment WHERE creator ="+inner_self.contributor_id)
             result = cursor.fetchall()
-            print(result)
             cursor.close()
 
         def teardown(inner_self):
