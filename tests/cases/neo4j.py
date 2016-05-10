@@ -305,10 +305,10 @@ class Neo4j(Base):
             for i in range(10):
                 tx.run(
                     'START sku=Node(%d) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"110" })-[:OF]->(sku) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"120" })-[:OF]->(sku) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"130" })-[:OF]->(sku) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) ' % inner_self.sku_id
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"110" })-[:OF]->(sku) '
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"120" })-[:OF]->(sku) '
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"130" })-[:OF]->(sku) '
+                    'CREATE (:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) ' % inner_self.sku_id
                 )
             tx.commit()
 
