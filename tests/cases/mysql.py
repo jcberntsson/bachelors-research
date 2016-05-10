@@ -781,7 +781,7 @@ class MySQL(Base):
 
     def duplicateEvent(self):
         pass
-            '''def setup(inner_self):
+        '''def setup(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM event")
             result = cursor.fetchall()
