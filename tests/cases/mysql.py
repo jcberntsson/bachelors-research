@@ -688,7 +688,7 @@ class MySQL(Base):
         def teardown(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
-                +"' AND activity='"+inner_self.activity_id+"'"
+                +"' AND activity='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
