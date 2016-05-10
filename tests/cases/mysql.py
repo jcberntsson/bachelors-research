@@ -10,7 +10,7 @@ class MySQL(Base):
 
     # connect to authenticated graph database
     cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='10.135.9.156', database='research')
-    
+
     ####################################
     ####	DATA INITIALIZATION		####
     ####################################
@@ -223,13 +223,13 @@ class MySQL(Base):
                     print("already exists.")'''
                 '''else:'''
                 print(err)
-        
+
         # Users
         cursor = self.cnx.cursor()
         print("Inserting organizers and participants.")
         organizers = []
         participants = []
-        for x in range(50):
+        for x in range(100):
             username = "user_" + str(random.randint(1, 50))
             participant_name = "participant_" + str(random.randint(1, 50))
             cursor.execute("INSERT INTO organizer (username,fullname,password,email) VALUES('"+ username +"','Tester','SuperHash','test@mail.com')")
@@ -262,21 +262,21 @@ class MySQL(Base):
                 for p in range(100):
                     cursor.execute("INSERT INTO point (lat,lng,alt,map,orderIndex) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"',"+str(p)+")")
                     coordinates.append(cursor.lastrowid)
-                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(events[x])+"')")  
+                cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(events[x])+"')")
                 race_id=cursor.lastrowid
-                races.append(race_id)   
+                races.append(race_id)
                 cursor.execute("INSERT INTO racemap (map,race) VALUES('"+str(map_id)+"','"+str(race_id)+"')")
                 racemap_id = cursor.lastrowid
-                racemaps.append(racemap_id)         
+                racemaps.append(racemap_id)
                 rands = []
-                for z in range(random.randint(0, 5)):
+                for z in range(10):
                     # Participants
                     rand = self.new_rand_int(rands, 0, 48)
-                    
+
                     cursor.execute("INSERT INTO activity (participant,race,joinedAt) VALUES('"+str(participants[rand])+"','"+str(race_id)+"','"+str(datetime.datetime.now())+"')")
                     activities.append(cursor.lastrowid)
                     activity_id = cursor.lastrowid
-                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[rand+1])+"','"+str(activity_id)+"','"+str(datetime.datetime.now())+"')") 
+                    cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+str(participants[rand+1])+"','"+str(activity_id)+"','"+str(datetime.datetime.now())+"')")
                     for p in range(50):
                         cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES('"+str(activity_id)+"','2016-03-03',"+str(10+p)+","+str(11+p)+","+str(20+p)+")")
 
@@ -295,13 +295,13 @@ class MySQL(Base):
             cursor.execute("DROP TABLE contribution")
             cursor.execute("DROP TABLE contributor")
             cursor.execute("DROP TABLE project")
-            self.cnx.commit();
+            self.cnx.commit()
         except mysql.connector.Error as err:
             print(err.msg)
         else:
             print("Dropping OK")
         cursor.close()
-        
+
         ##Create tables
         print("Creating tables")
         TABLES = []
@@ -391,7 +391,7 @@ class MySQL(Base):
             "     REFERENCES contributor (id),"
             "  CONSTRAINT comment_image_fk FOREIGN KEY (image) "
             "     REFERENCES image (id)"
-            ") ENGINE=InnoDB")     
+            ") ENGINE=InnoDB")
         for ddl in TABLES:
             try:
                 cursor = self.cnx.cursor()
@@ -418,7 +418,7 @@ class MySQL(Base):
         for x in range(8):
             cursor.execute("INSERT INTO project (name) VALUES('project_"+str(x)+"')")
             project_id = cursor.lastrowid
-            
+
             for c in range(10):
                 cursor.execute("INSERT INTO contribution (contributor,project) VALUES('"+str(users[x*2+c])+"','"+str(project_id)+"')")
             for y in range(4):
@@ -524,7 +524,7 @@ class MySQL(Base):
             #Image
             cursor.execute("INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
                 "VALUES('test_image','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'"+str(project_id)+"')")
-            image_id = cursor.lastrowid        
+            image_id = cursor.lastrowid
             #Output
             inner_self.user_id = str(user_id)
             inner_self.project_id = str(project_id)
@@ -539,7 +539,7 @@ class MySQL(Base):
                 "VALUES('Haha, cool image','2016-04-04','"+inner_self.user_id+"','"+inner_self.image_id+"')")
             inner_self.comment_id = str(cursor.lastrowid)
             cursor.close()
-            self.cnx.commit()       
+            self.cnx.commit()
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
@@ -571,7 +571,7 @@ class MySQL(Base):
                 # Rows
                 cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
                 cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
-            
+
             cursor.close()
             self.cnx.commit()
             #OUTPUT
@@ -594,7 +594,7 @@ class MySQL(Base):
             cursor.execute("DELETE FROM image WHERE id='"+inner_self.image_id+"'")
             cursor.execute ("DELETE FROM sku WHERE id='"+inner_self.sku_id+"'")
             cursor.execute("DELETE FROM project WHERE id='"+inner_self.project_id+"'")
-            
+
             cursor.close()
             self.cnx.commit()
 
@@ -684,14 +684,14 @@ class MySQL(Base):
                 +inner_self.activity_id+"','"+str(datetime.datetime.now())+"')")
             cursor.close()
             self.cnx.commit()
-                        
+
         def teardown(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("DELETE FROM follow WHERE follower='"+inner_self.follower_id
                 +"' AND activity='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
-            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")
             cursor.close()
             self.cnx.commit()
 
@@ -725,12 +725,12 @@ class MySQL(Base):
                 +"' AND activity='"+inner_self.activity_id+"'")
             cursor.close()
             self.cnx.commit()
-                        
+
         def teardown(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("DELETE FROM activity WHERE id='"+inner_self.activity_id+"'")
             cursor.execute("DELETE FROM participant WHERE id='"+inner_self.participant_id+"'")
-            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")    
+            cursor.execute("DELETE FROM participant WHERE id='"+inner_self.follower_id+"'")
             cursor.close()
             self.cnx.commit()
 
@@ -755,7 +755,7 @@ class MySQL(Base):
                 cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES("+
                     inner_self.activity_id+",'"+str(datetime.datetime.now())+"',"+str(10+i)+","+str(11+i)+","+str(20+i)+")")
             cursor.close()
-            self.cnx.commit()   
+            self.cnx.commit()
 
         def teardown(inner_self):
             cursor = self.cnx.cursor()
@@ -844,7 +844,7 @@ class MySQL(Base):
             cursor.close()
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM activity WHERE activity.id = '"+inner_self.activity_id+"'") 
+            cursor.execute("DELETE FROM activity WHERE activity.id = '"+inner_self.activity_id+"'")
             cursor.close()
             self.cnx.commit()
 

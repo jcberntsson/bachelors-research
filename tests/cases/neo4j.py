@@ -7,8 +7,8 @@ from cases import Base
 
 class Neo4j(Base):
     # connect to authenticated graph database
-    graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
-    #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
     #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
@@ -304,13 +304,11 @@ class Neo4j(Base):
             tx = self.graph.begin()
             for i in range(10):
                 tx.run(
-                    'MATCH (sku:SKU) '
-                    'WHERE ID(sku)=%d '
+                    'START sku=Node(%d) '
                     'CREATE (value:SKU_VALUE { header: "remove_me", value:"110" })-[:OF]->(sku) '
                     'CREATE (value:SKU_VALUE { header: "remove_me", value:"120" })-[:OF]->(sku) '
                     'CREATE (value:SKU_VALUE { header: "remove_me", value:"130" })-[:OF]->(sku) '
-                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) '
-                    'RETURN value, sku' % inner_self.sku_id
+                    'CREATE (value:SKU_VALUE { header: "remove_me", value:"140" })-[:OF]->(sku) ' % inner_self.sku_id
                 )
             tx.commit()
 
@@ -407,14 +405,15 @@ class Neo4j(Base):
                 'START activity=Node(%d) '
                 'MATCH (coord:COORDINATE)-[end:END_FOR]->(activity:ACTIVITY) '
                 'DELETE end '
-                'RETURN coord, activity' % inner_self.activity_id
+                'RETURN ID(coord) AS coord_id, ID(activity) AS act_id' % inner_self.activity_id
             )
             out.forward()
-            prev = out.current['coord']
-            activity = out.current['activity']
+            prev_id = out.current['coord_id']
+            activity_id = out.current['act_id']
 
-            tx = self.graph.begin()
-
+            #tx = self.graph.begin()
+            query = 'START first=Node(%d), activity=Node(%d) ' \
+                    'MERGE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (prev_id,activity_id)
             for i in range(99):
                 #coord = Node("COORDINATE",
                 #             lat=10 + i,
@@ -422,15 +421,18 @@ class Neo4j(Base):
                 #             alt=20 + i)
                 #tx.create(coord)
                 #tx.create(Relationship(prev, "FOLLOWED_BY", coord))
-                tx.run(
-                    'MERGE (%s)-[:FOLLOWED_BY]->(coord:COORDINATE { lat:10, lng:11, alt:20 })' % prev
-                )
+                query += ' MERGE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i+1))
+                #tx.run(
+                #    'START '
+                #    'MERGE (%s)-[:FOLLOWED_BY]->(coord:COORDINATE { lat:10, lng:11, alt:20 })' % prev
+                #)
                 #prev = coord
-            tx.run(
-                'MERGE (%s)-[:END_FOR]-(coord:COORDINATE { lat:10, lng:11, alt:20 })' % activity
-            )
+            #tx.run(
+            query += ' MERGE (%s)-[:END_FOR]->(activity)' % "coord100"
+            self.graph.run(query)
+            #)
             #tx.create(Relationship(prev, "END_FOR", activity))
-            tx.commit()
+            #tx.commit()
 
         def teardown(inner_self):
             self.graph.run(
