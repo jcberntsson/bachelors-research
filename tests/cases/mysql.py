@@ -604,7 +604,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT id FROM sku")
             result = cursor.fetchall()
-            rand = random.randint(0,len(result))
+            rand = random.randint(0,len(result)-1)
             sku_id = result[rand][0]
             inner_self.sku_id = str(sku_id)
             cursor.execute("INSERT INTO header(sku_id,header_name) VALUES ("+inner_self.sku_id+",'remove_me1'),("+inner_self.sku_id+",'remove_me2'),("+inner_self.sku_id+",'remove_me3')")
