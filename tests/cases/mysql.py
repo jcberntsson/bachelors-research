@@ -986,8 +986,8 @@ class MySQL(Base):
                 "INNER JOIN point as p2 ON racemap.goal_point = p2.id WHERE race.ID="+inner_self.race_id)
             cursor.execute("SELECT * FROM race INNER JOIN event ON race.event_id=event.id "+
                 "INNER JOIN racemap ON racemap.race = race.id "+
-                "INNER JOIN point as p1 ON racemap.start_point = p1.id "+
-                "INNER JOIN point as p2 ON racemap.goal_point = p2.id WHERE race.ID="+inner_self.race_id)
+                "LEFT JOIN point as p1 ON racemap.start_point = p1.id "+
+                "LEFT JOIN point as p2 ON racemap.goal_point = p2.id WHERE race.ID="+inner_self.race_id)
             result = cursor.fetchall()
             print(result)
             cursor.close()
