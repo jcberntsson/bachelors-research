@@ -203,7 +203,7 @@ class MySQL(Base):
             "CREATE TABLE activityCoordinate ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  activity bigint,"
-            "  createdAt datetime,"
+            "  createdAt timestamp,"
             "  lat DECIMAL(11, 8),"
             "  lng DECIMAL(11, 8),"
             "  alt DECIMAL(11, 8),"
