@@ -882,7 +882,67 @@ class MySQL(Base):
         return self.create_case("fetchCoords", setup, run, teardown)
 
     def removeCoords(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            race_id = result[rand][0]
+            inner_self.race_id = str(race_id)
+            array = [1,2,3,4]
+            random.shuffle(array)
+            print(array)
+            cursor.close()
+
+        def run(inner_self):
+            coordinates_cursor = self.graph.run(
+                'START race=Node(%d) '
+                'MATCH '
+                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
+                '   (start)-[:FOLLOWED_BY*]->(before:COORDINATE)-[:FOLLOWED_BY]->(coord:COORDINATE) '
+                'RETURN ID(coord) AS coord_id, coord, ID(before) AS before_id' % inner_self.race_id
+            )
+            i = 0
+            inner_self.removed_coords = []
+            tx = self.graph.begin()
+            while coordinates_cursor.forward():
+                if i % 3 == 0:
+                    coord = coordinates_cursor.current['coord']
+                    coord_id = coordinates_cursor.current['coord_id']
+                    before_id = coordinates_cursor.current['before_id']
+                    coordinate = {
+                        "data": coord,
+                        "before_id": before_id
+                    }
+                    inner_self.removed_coords.append(coordinate)
+                    tx.run(
+                        'MATCH (first:COORDINATE)-[f1:FOLLOWED_BY]->(middle:COORDINATE)-[f2:FOLLOWED_BY]->(last:COORDINATE) '
+                        'WHERE ID(middle)=%d '
+                        'DELETE f1,f2,middle '
+                        'CREATE (first)-[:FOLLOWED_BY]->(last)' % coord_id
+                    )
+                i += 1
+            tx.commit()
+            """
+            coords_count = self.graph.evaluate(
+                'START race=Node(%d) '
+                'MATCH (race)-[:STARTS_WITH]->(start:COORDINATE)-[f:FOLLOWED_BY*]->(coord:COORDINATE) '
+                'RETURN COUNT(f)' % inner_self.race_id
+            )
+            print("Nbr of coords = " + str(coords_count))"""
+
+        def teardown(inner_self):
+            tx = self.graph.begin()
+            for coord in reversed(inner_self.removed_coords):
+                tx.run(
+                    'START before=Node(%d) '
+                    'MATCH (before)-[f:FOLLOWED_BY]->(after:COORDINATE) '
+                    'DELETE f '
+                    'CREATE (before)-[:FOLLOWED_BY]->%s-[:FOLLOWED_BY]->(after)' % (coord['before_id'], coord['data'])
+                )
+            tx.commit()
+
+        return self.create_case("removeCoords", setup, run, teardown)
 
     def removeRace(self):
         def setup(inner_self):
