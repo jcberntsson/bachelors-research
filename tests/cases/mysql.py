@@ -605,7 +605,7 @@ class MySQL(Base):
     def fetchAllUserComments(self):
         def setup(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM Contributor")
+            cursor.execute("SELECT id FROM contributor")
             result = cursor.fetchall()
             rand = random.randint(0,len(result))
             contributor_id = result[rand][0]
