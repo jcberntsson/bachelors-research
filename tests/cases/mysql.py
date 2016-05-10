@@ -1002,6 +1002,8 @@ class MySQL(Base):
             cursor.execute("SELECT participant.id, participant.username,participant.fullname FROM activity INNER JOIN participant ON activity.participant=participant.id WHERE race = "+inner_self.race_id)
             participants = cursor.fetchall()
             print(participants)
+            returnable = dict(race=race,start_point=start_point,goal_point=goal_point,map_coordinates=mapCoords,participants=participants)
+            print(returnable)
             cursor.close()
 
         def teardown(inner_self):
