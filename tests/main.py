@@ -1,11 +1,13 @@
 #!/usr/bin/python
-from cases import Neo4j
+from cases import Mongo
 
 # Run
 if __name__ == '__main__':
-    neo = Neo4j()
-    neo.init("raceone")
-    #case = neo.removeCoords()
-    #case.setup()
-    #case.run()
-    #case.teardown()
+    mongo = Mongo()
+    mongo.init("skim")
+    case = mongo.commentOnImage()
+    case.setup()
+    case.run()
+    case.teardown()
+
+
