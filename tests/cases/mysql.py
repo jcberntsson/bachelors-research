@@ -461,7 +461,7 @@ class MySQL(Base):
     def fetchSKU(self):
         def setup(inner_self):
             # print("Setup")
-            cursor = self.cnx.cursor()
+            '''            cursor = self.cnx.cursor()
             cursor.execute("INSERT INTO project (name) VALUE('test_project')")
             project_id = cursor.lastrowid
             cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
@@ -470,6 +470,13 @@ class MySQL(Base):
                 # Rows
                 cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
                 cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
+            inner_self.sku_id = str(sku_id)
+            cursor.close()'''
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM sku")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            sku_id = result[rand][0]
             inner_self.sku_id = str(sku_id)
             cursor.close()
 
@@ -483,14 +490,14 @@ class MySQL(Base):
             cursor.close()
 
         def teardown(inner_self):
-            cursor = self.cnx.cursor()
+            '''            cursor = self.cnx.cursor()
             cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+inner_self.sku_id+"'")
             cursor.execute ("DELETE FROM header WHERE sku_id='"+inner_self.sku_id+"'")
             cursor.execute ("DELETE FROM sku WHERE id='"+inner_self.sku_id+"'")
             rc = cursor.rowcount
             cursor.close()
             self.cnx.commit()
-            return rc
+            return rc'''
 
         return self.create_case("fetchSKU", setup, run, teardown)
 
