@@ -8,4 +8,4 @@ if __name__ == '__main__':
     case = m.removeCoords()
     case.setup()
     case.run()
-    #case.teardown()
+    case.teardown()
