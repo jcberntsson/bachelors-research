@@ -990,6 +990,7 @@ class MySQL(Base):
                 "LEFT JOIN point as p2 ON racemap.goal_point = p2.id "+
                 "WHERE race.ID="+inner_self.race_id)
             result = cursor.fetchall()[0]
+            print(result)
             race = result[:13]
             start_point = result[14:16]
             goal_point = result[17:20]
