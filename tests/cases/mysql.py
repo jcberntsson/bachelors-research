@@ -9,7 +9,7 @@ from cases.base import Base
 class MySQL(Base):
 
     # connect to authenticated graph database
-    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='46.101.234.110', database='research')
+    cnx = mysql.connector.connect(user='vagrant', password='vagrant', host='10.135.9.156', database='research')
     
     ####################################
     ####	DATA INITIALIZATION		####
@@ -93,6 +93,7 @@ class MySQL(Base):
         TABLES.append(
             "CREATE TABLE point ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
+            "  orderIndex bigint,"
             "  lat DECIMAL(11, 8),"
             "  lng DECIMAL(11, 8),"
             "  alt DECIMAL(11, 8),"
@@ -203,7 +204,7 @@ class MySQL(Base):
             "CREATE TABLE activityCoordinate ("
             "  id bigint NOT NULL AUTO_INCREMENT,"
             "  activity bigint,"
-            "  createdAt datetime,"
+            "  createdAt datetime(6),"
             "  lat DECIMAL(11, 8),"
             "  lng DECIMAL(11, 8),"
             "  alt DECIMAL(11, 8),"
@@ -259,7 +260,7 @@ class MySQL(Base):
                 map_id = cursor.lastrowid
                 maps.append(map_id)
                 for p in range(100):
-                    cursor.execute("INSERT INTO point (lat,lng,alt,map) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"')")
+                    cursor.execute("INSERT INTO point (lat,lng,alt,map,orderIndex) VALUES("+str(10+p)+","+str(11+p)+","+str(20+p)+",'"+str(map_id)+"',"+str(p)+")")
                     coordinates.append(cursor.lastrowid)
                 cursor.execute("INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+racename+"','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','"+str(events[x])+"')")  
                 race_id=cursor.lastrowid
@@ -600,15 +601,54 @@ class MySQL(Base):
         return self.create_case("pairImageSKU", setup, run, teardown)
 
     def addRowsToSKU(self):
-        pass
-
-    def fetchAllUserComments(self):
         def setup(inner_self):
-            pass
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM sku")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            sku_id = result[rand][0]
+            inner_self.sku_id = str(sku_id)
+            cursor.execute("INSERT INTO header(sku_id,name) VALUES ("+inner_self.sku_id+",'remove_me1'),("+inner_self.sku_id+",'remove_me2'),("+inner_self.sku_id+",'remove_me3'),("+inner_self.sku_id+",'remove_me4')")
+            cursor.close()
 
         def run(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("")
+            for i in range(10):
+                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'110','remove_me1')")
+                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'120','remove_me2')")
+                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'130','remove_me3')")
+                cursor.execute("INSERT INTO skuValue(sku_id,value,header_name) VALUES ("+inner_self.sku_id+",'140','remove_me4')")
+            self.cnx.commit()
+            cursor.close()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me1'")
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me2'")
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me3'")
+            cursor.execute("DELETE FROM skuValue WHERE header_name='remove_me4'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me1'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me2'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me3'")
+            cursor.execute("DELETE FROM header WHERE name='remove_me4'")
+            self.cnx.commit()
+            cursor.close()
+
+        return self.create_case("addRowsToSKU", setup, run, teardown)
+
+    def fetchAllUserComments(self):
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM contributor")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result))
+            contributor_id = result[rand][0]
+            inner_self.contributor_id = str(contributor_id)
+            cursor.close()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM comment WHERE creator ="+inner_self.contributor_id)
             result = cursor.fetchall()
             cursor.close()
 
@@ -699,7 +739,31 @@ class MySQL(Base):
 
 
     def insertCoords(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM activity")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            activity_id = result[rand][0]
+            inner_self.activity_id = str(activity_id)
+            inner_self.start_time = str(datetime.datetime.now())
+            cursor.close()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            for i in range(100):
+                cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES("+
+                    inner_self.activity_id+",'"+str(datetime.datetime.now())+"',"+str(10+i)+","+str(11+i)+","+str(20+i)+")")
+            cursor.close()
+            self.cnx.commit()   
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM activityCoordinate WHERE activity="+inner_self.activity_id+" AND createdAt > '"+inner_self.start_time+"'")
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("insertCoords", setup, run, teardown)
 
     def fetchParticipants(self):
         def setup(inner_self):
@@ -717,7 +781,8 @@ class MySQL(Base):
         return self.create_case("fetchParticipants", setup, run, teardown)
 
     def duplicateEvent(self):
-            '''def setup(inner_self):
+        pass
+        '''def setup(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM event")
             result = cursor.fetchall()
@@ -797,10 +862,67 @@ class MySQL(Base):
 
 
     def fetchCoords(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM activity")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            activity_id = result[rand][0]
+            inner_self.activity_id = str(activity_id)
+            cursor.close()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM activityCoordinate WHERE activity="+inner_self.activity_id)
+            result = cursor.fetchall()
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchCoords", setup, run, teardown)
 
     def removeCoords(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM map")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            map_id = result[rand][0]
+            inner_self.map_id = str(map_id)
+            cursor.execute("SELECT id,lat,lng,alt,map FROM point WHERE map="+str(map_id))
+            result = cursor.fetchall()
+            inner_self.points = result
+            cursor.execute("SELECT id FROM point WHERE map="+str(map_id))
+            result = cursor.fetchall()
+            random.shuffle(result)
+            inner_self.point_ids = result[:(len(result)//3)]
+            cursor.close()
+
+        def run(inner_self):
+            point_ids = ""
+            for p in inner_self.point_ids:
+                point_ids = point_ids + str(p[0]) + ","
+            point_ids = point_ids[:-1]
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM point WHERE id IN ("+point_ids+")")
+            cursor.close()
+            self.cnx.commit()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DELETE FROM point WHERE map="+inner_self.map_id)
+            for p in inner_self.points:
+                point_id = str(p[0])
+                lat = str(p[1])
+                lng = str(p[2])
+                alt = str(p[3])
+                map = str(p[4])
+                cursor.execute("INSERT INTO point (id, lat,lng,alt,map) VALUES("+point_id+","+lat+","+lng+","+alt+","+map+")")
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("removeCoords", setup, run, teardown)
 
     def removeRace(self):
         def setup(inner_self):
@@ -849,4 +971,38 @@ class MySQL(Base):
         return self.create_case("fetchHotRaces", setup, run, teardown)
 
     def fetchRace(self):
-        pass
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT id FROM race")
+            result = cursor.fetchall()
+            rand = random.randint(0,len(result)-1)
+            race_id = result[rand][0]
+            inner_self.race_id = str(race_id)
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            print("SELECT race.*,event.name,racemap.id,racemap.map,p1.lat,p1.lng,p1.alt,p2.lat,p2.lng,p2.alt FROM race INNER JOIN event ON race.event_id=event.id "+
+                "INNER JOIN racemap ON racemap.race = race.id "+
+                "INNER JOIN point as p1 ON racemap.start_point = p1.id "+
+                "INNER JOIN point as p2 ON racemap.goal_point = p2.id WHERE race.ID="+inner_self.race_id)
+            cursor.execute("SELECT race.*,event.name,racemap.id,racemap.map,p1.lat,p1.lng,p1.alt,p2.lat,p2.lng,p2.alt FROM race INNER JOIN event ON race.event_id=event.id "+
+                "INNER JOIN racemap ON racemap.race = race.id "+
+                "LEFT JOIN point as p1 ON racemap.start_point = p1.id "+
+                "LEFT JOIN point as p2 ON racemap.goal_point = p2.id "+
+                "WHERE race.ID="+inner_self.race_id)
+            result = cursor.fetchall()[0]
+            map_id = str(result[13])
+            race = result[:14]
+            start_point = result[14:17]
+            goal_point = result[17:20]
+            cursor.execute("SELECT * FROM point WHERE map = "+map_id +" ORDER BY orderIndex")
+            mapCoords = cursor.fetchall()[0]
+            cursor.execute("SELECT participant.id, participant.username,participant.fullname FROM activity INNER JOIN participant ON activity.participant=participant.id WHERE race = "+inner_self.race_id)
+            participants = cursor.fetchall()
+            returnable = dict(race=race,start_point=start_point,goal_point=goal_point,map_coordinates=mapCoords,participants=participants)
+            cursor.close()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchRace", setup, run, teardown)
