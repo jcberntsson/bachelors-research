@@ -775,8 +775,8 @@ class Neo4j(Base):
 
         def run(inner_self):
             out = self.graph.run(
-                'MATCH (test:TEST) '
-                'RETURN test'
+                'MATCH (n) '
+                'RETURN n'
             )
             #while out.forward():
             #    print(out.current)
