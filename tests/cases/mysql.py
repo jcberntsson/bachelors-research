@@ -1006,11 +1006,11 @@ class MySQL(Base):
 
         return self.create_case("fetchRace", setup, run, teardown)
     def easyGet(self):
-        def setup:
+        def setup(self):
             pass
-        def run:
+        def run(self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT 1")
             cursor.close()
-        def teardown:
+        def teardown(self):
             pass
