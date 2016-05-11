@@ -176,9 +176,9 @@ class Mongo(Base):
                 "images": images,
                 "skus": sku_list
             })
-    def reference(self):
+    def initReference(self):
         for a in range(100):
-            self.db.insert_one({"name":"hello"})
+            self.db.abc.insert_one({"name":"hello"})
 
 
             # cursor = self.db.projects.find()
@@ -198,6 +198,7 @@ class Mongo(Base):
 
         def run(inner_self):
             cursor = self.db.abd.find()
+            result = list(cursor)
 
         def teardown(inner_self):
             pass
@@ -209,9 +210,8 @@ class Mongo(Base):
             pass
 
         def run(inner_self):
-            cursor = self.db.abc.find()
+            cursor = self.db.abc.find({})
             result = list(cursor)
-            print(result)
 
         def teardown(inner_self):
             pass

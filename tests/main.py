@@ -5,7 +5,7 @@ from cases import Mongo
 if __name__ == '__main__':
     m = Mongo()
     m.init("reference")
-    case = m.tinyGet()
+    case = m.smallGet()
     case.setup()
     case.run()
     case.teardown()
