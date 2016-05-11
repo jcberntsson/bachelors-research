@@ -5,7 +5,7 @@ from cases import Neo4j
 if __name__ == '__main__':
     neo = Neo4j()
     #neo.init("raceone")
-    case = neo.insertCoords()
+    case = neo.easy_get()
     case.setup()
     case.run()
     case.teardown()

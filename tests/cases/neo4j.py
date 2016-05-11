@@ -405,33 +405,33 @@ class Neo4j(Base):
                 'START activity=Node(%d) '
                 'MATCH (coord:COORDINATE)-[end:END_FOR]->(activity:ACTIVITY) '
                 'DELETE end '
-                'RETURN coord, activity' % inner_self.activity_id
+                'RETURN ID(coord) AS coord' % inner_self.activity_id
             )
             out.forward()
-            prev = out.current['coord']
-            activity = out.current['activity']
+            prev_id = out.current['coord']
+            #activity = out.current['activity']
             #print("ACT: " + str(inner_self.activity_id))
 
-            tx = self.graph.begin()
-            #query = 'START first=Node(%d), activity=Node(%d) ' \
-            #        'CREATE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (prev_id, inner_self.activity_id)
+            #tx = self.graph.begin()
+            query = 'START first=Node(%d), activity=Node(%d) ' \
+                    'CREATE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (prev_id, inner_self.activity_id)
             for i in range(99):
-                coord = Node("COORDINATE",
-                             lat=10 + i,
-                             lng=11 + i,
-                             alt=20 + i)
+                #coord = Node("COORDINATE",
+                #             lat=10 + i,
+                #             lng=11 + i,
+                #             alt=20 + i)
                 #tx.create(coord)
-                tx.create(Relationship(prev, "FOLLOWED_BY", coord))
-                #query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i+1))
+                #tx.create(Relationship(prev, "FOLLOWED_BY", coord))
+                query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i+1))
                 # tx.run(
                 #    'START '
                 #    'MERGE (%s)-[:FOLLOWED_BY]->(coord:COORDINATE { lat:10, lng:11, alt:20 })' % prev
                 # )
-                prev = coord
-            #query += ' CREATE (%s)-[:END_FOR]->(activity)' % "coord100"
-            #self.graph.run(query)
-            tx.create(Relationship(prev, "END_FOR", activity))
-            tx.commit()
+                #prev = coord
+            query += ' CREATE (%s)-[:END_FOR]->(activity)' % "coord100"
+            self.graph.run(query)
+            #tx.create(Relationship(prev, "END_FOR", activity))
+            #tx.commit()
             """
             self.graph.run(
                 'START act=Node(%d) '
@@ -746,6 +746,20 @@ class Neo4j(Base):
             pass
 
         return self.create_case("fetchRace", setup, run, teardown)
+
+    def easy_get(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            self.graph.run(
+                'RETURN 1'
+            ).dump()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("easy_get", setup, run, teardown)
 
     def get_random_id(self, entity_name):
         from random import randint
