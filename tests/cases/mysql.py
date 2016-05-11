@@ -295,6 +295,7 @@ class MySQL(Base):
             cursor.execute("DROP TABLE contribution")
             cursor.execute("DROP TABLE contributor")
             cursor.execute("DROP TABLE project")
+            cursor.execute("DROP TABLE abc")
             self.cnx.commit()
         except mysql.connector.Error as err:
             print(err.msg)
@@ -302,7 +303,18 @@ class MySQL(Base):
             print("Dropping OK")
         cursor.close()
 
+        cursor = self.cnx.cursor()
+        cursor.execute("CREATE TABLE abc (id bigint NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB")
+        values = ""
+        for v in range(1000):
+            values = values + '(' + str(v) + '),'
+        values = values[:-1]
+        cursor.execute("INSERT INTO abc (id) VALUES " + values)
+        cursor.close()
+        self.cnx.commit()
+
         ##Create tables
+        """
         print("Creating tables")
         TABLES = []
         TABLES.append(
@@ -445,7 +457,7 @@ class MySQL(Base):
                     cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
                         "VALUES('Haha, cool image','2016-04-04','"+str(users[x*2+z])+"','"+str(image_id)+"')")
         self.cnx.commit()
-        cursor.close()
+        cursor.close()"""
 
 
     def clearData(self):
@@ -1023,15 +1035,7 @@ class MySQL(Base):
         
     def easy_get2(self):
         def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("CREATE TABLE abc (id bigint NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB")
-            values = ""
-            for v in range(1000):
-                values = values + '('+ str(v) + '),'
-            values = values[:-1]
-            cursor.execute("INSERT INTO abc (id) VALUES "+values)
-            cursor.close()
-            self.cnx.commit()
+            pass
 
         def run(inner_self):
             cursor = self.cnx.cursor()
@@ -1040,9 +1044,6 @@ class MySQL(Base):
             cursor.close()
 
         def teardown(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE abc")
-            cursor.close()
-            self.cnx.commit()
+            pass
 
         return self.create_case("easy_get2", setup, run, teardown)
