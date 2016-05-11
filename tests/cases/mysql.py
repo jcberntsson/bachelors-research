@@ -1013,6 +1013,7 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT 1")
+            result = cursor.fetchall()
             cursor.close()
 
         def teardown(inner_self):

@@ -752,7 +752,7 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            self.graph.run(
+            out = self.graph.run(
                 'RETURN 1'
             )#.dump()
 
