@@ -18,23 +18,23 @@ test_cases = {
         'fetchSKU',
         'fetchUsers',
         'commentOnImage',
-        #'pairImageSKU',
-        #'addRowsToSKU',
-        #'fetchAllUserComments'
+        'pairImageSKU',
+        'addRowsToSKU',
+        'fetchAllUserComments'
         #'easy_get',
         #'easy_get2'
     ],
     'raceone': [
-        #'follow',
-        #'unfollow',
+        'follow',
+        'unfollow',
         'insertCoords',
-        #'fetchParticipants',
-        #'fetchParticipants2',
-        #'unparticipate',
-        #'fetchCoords',
-        #'removeCoords',
-        #'fetchHotRaces',
-        #'fetchRace'
+        'fetchParticipants',
+        'fetchParticipants2',
+        'unparticipate',
+        'fetchCoords',
+        'removeCoords',
+        'fetchHotRaces',
+        'fetchRace'
     ]
 }
 
@@ -77,7 +77,7 @@ else:
     from cases.neo4j import Neo4j
     database_class = Neo4j()
 
-database_class.init(company)
+#database_class.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
@@ -93,24 +93,32 @@ if __name__ == '__main__':
         print("======== Start %s ========" % test_case)
         case_to_test = getattr(database_class, test_case)
         time_array = []
+        error = False
         for i in range(iterations):
             case = case_to_test()
-            case.setup()
-            # TODO: Check if timeit is unreliable
-            time = timeit(case.run, number=1) * 1000  # in ms
-            case.teardown()
-            time_array.append(time)
-
-        # TODO: Extract information for CPU load
+            try:
+                case.setup()
+                time = timeit(case.run, number=1) * 1000  # in ms
+                case.teardown()
+                time_array.append(time)
+            except Exception as ex:
+                error = True
+                print("Exception during execution: %s" % ex)
+                break
 
         # Calculate results
-        total_time = 0
-        peak_time = 0
-        for time in time_array:
-            total_time += time
-            if time > peak_time:
-                peak_time = time
-        avg_time = total_time / len(time_array)
+        if error:
+            total_time = -1
+            peak_time = -1
+            avg_time = -1
+        else:
+            total_time = 0
+            peak_time = 0
+            for time in time_array:
+                total_time += time
+                if time > peak_time:
+                    peak_time = time
+            avg_time = total_time / len(time_array)
 
         # Log results
         print("Results (in ms):")
