@@ -491,15 +491,12 @@ class Mongo(Base):
             random.shuffle(coordinates)
             inner_self.race_id = race_id
             inner_self.coordinates = coordinates[:(len(coordinates)//3)]
-            print(len(coordinates))
 
         def run(inner_self):
             self.db["races"].update({"_id":inner_self.race_id},{"$pull":{"coordinates":{"$in":inner_self.coordinates}}})
-            print(len(self.db["races"].find_one({"_id":inner_self.race_id},{"activities":0})["coordinates"]))
 
         def teardown(inner_self):
             self.db["races"].update({"_id":inner_self.race_id},{"$push":{"coordinates":{"$each":inner_self.coordinates}}})
-            print(len(self.db["races"].find_one({"_id":inner_self.race_id},{"activities":0})["coordinates"]))
 
         return self.create_case("removeCoords", setup, run, teardown)
 
