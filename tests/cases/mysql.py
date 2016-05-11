@@ -1005,7 +1005,7 @@ class MySQL(Base):
             pass
 
         return self.create_case("fetchRace", setup, run, teardown)
-    def easyGet(self):
+    def easy_get(self):
         def setup(self):
             pass
         def run(self):
