@@ -1027,7 +1027,7 @@ class MySQL(Base):
             cursor.execute("CREATE TABLE abc (id bigint NOT NULL AUTO_INCREMENT, PRIMARY KEY(id)) ENGINE=InnoDB")
             values = ""
             for v in range(1000):
-                values = values + '('+ v + '),'
+                values = values + '('+ str(v) + '),'
             values = values[:-1]
             cursor.execute("INSERT INTO abc (id) VALUES "+values)
             cursor.close()
