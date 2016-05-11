@@ -274,18 +274,12 @@ class Mongo(Base):
             inner_self.race_id = race_id
             inner_self.participant_id = participant_id
             inner_self.follower_id = follower_id
-            inner_self.random = random
-            print(race["activities"][inner_self.random]["following"])
 
         def run(inner_self):
             self.db["races"].update({"_id":inner_self.race_id,"activities":{"$elemMatch":{"participating":inner_self.participant_id}}},{"$pull":{"activities.$.following":inner_self.follower_id}})
-            race = self.db["races"].find_one({"_id":inner_self.race_id},{"coordinates":0})
-            print(race["activities"][inner_self.random]["following"])
         
         def teardown(inner_self):
             self.db["races"].update({"_id":inner_self.race_id,"activities":{"$elemMatch":{"participating":inner_self.participant_id}}},{"$push":{"activities.$.following":inner_self.follower_id}})
-            race = self.db["races"].find_one({"_id":inner_self.race_id},{"coordinates":0})
-            print(race["activities"][inner_self.random]["following"])
 
         return self.create_case("unfollow", setup, run, teardown)
 
