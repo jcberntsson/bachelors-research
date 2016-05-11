@@ -5,7 +5,7 @@ from cases import Mongo
 if __name__ == '__main__':
     m = Mongo()
     m.init("raceone")
-    case = m.unfollow()
+    case = m.unparticipate()
     case.setup()
     case.run()
     case.teardown()

@@ -1,5 +1,7 @@
 from pymongo import MongoClient
 from cases import Base
+from random import randint
+import datetime
 
 
 class Mongo(Base):
@@ -42,7 +44,8 @@ class Mongo(Base):
                     allCordinates.append({
                         "lat": 10 + i,
                         "lng": 11 + i,
-                        "alt": 12 + i
+                        "alt": 12 + i,
+                        "createdAt":datetime.datetime.now()
                     })
                 rands = []
                 activities = []
@@ -244,7 +247,6 @@ class Mongo(Base):
         def setup(inner_self):
             race_id = self.get_random_id("races")
             race = self.db["races"].find_one({"_id":race_id},{"coordinates":0})
-            from random import randint
             random = randint(0, len(race["activities"]) - 1)
             participant_id = race["activities"][random]["participating"]
             follower_id = self.get_random_id("users")
@@ -266,7 +268,6 @@ class Mongo(Base):
         def setup(inner_self):
             race_id = self.get_random_id("races")
             race = self.db["races"].find_one({"_id":race_id},{"coordinates":0})
-            from random import randint
             random = randint(0, len(race["activities"]) - 1)
             participant_id = race["activities"][random]["participating"]
             random2 = randint(0, len(race["activities"][random]["following"]) - 1)
@@ -287,28 +288,28 @@ class Mongo(Base):
 
     def insertCoords(self):
         def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM activity")
-            result = cursor.fetchall()
-            rand = random.randint(0,len(result)-1)
-            activity_id = result[rand][0]
-            inner_self.activity_id = str(activity_id)
-            inner_self.start_time = str(datetime.datetime.now())
-            cursor.close()
+            race_id = self.get_random_id("races")
+            race = self.db["races"].find_one({"_id":race_id},{"coordinates":0})
+            random = randint(0, len(race["activities"]) - 1)
+            participant_id = race["activities"][random]["participating"]
+            inner_self.race_id = race_id
+            inner_self.participant_id = participant_id
+            inner_self.coords = []
+            for i in range(100):
+                inner_self.coords.append({
+                        "lat": 10 + i,
+                        "lng": 11 + i,
+                        "alt": 20 + i,
+                        "createdAt":datetime.datetime.now()
+                    })
 
         def run(inner_self):
-            cursor = self.cnx.cursor()
-            for i in range(100):
-                cursor.execute("INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) VALUES("+
-                    inner_self.activity_id+",'"+str(datetime.datetime.now())+"',"+str(10+i)+","+str(11+i)+","+str(20+i)+")")
-            cursor.close()
-            self.cnx.commit()
+            for coord in inner_self.coords:
+                self.db["races"].update({"_id":inner_self.race_id,"activities":{"$elemMatch":{"participating":inner_self.participant_id}}},{"$push":{"activities.$.coordinates":coord}})
 
         def teardown(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM activityCoordinate WHERE activity="+inner_self.activity_id+" AND createdAt > '"+inner_self.start_time+"'")
-            cursor.close()
-            self.cnx.commit()
+            for coord in inner_self.coords:
+                self.db["races"].update({"_id":inner_self.race_id,"activities":{"$elemMatch":{"participating":inner_self.participant_id}}},{"$pull":{"activities.$.coordinates":coord}})
 
         return self.create_case("insertCoords", setup, run, teardown)
 
@@ -317,6 +318,7 @@ class Mongo(Base):
             pass
 
         def run(inner_self):
+            self.db["races"].find()
             cursor = self.cnx.cursor()
             cursor.execute("SELECT participant.id, count(*) as followCount FROM participant INNER JOIN activity ON activity.participant=participant.id GROUP BY participant.id ORDER BY followCount")
             result = cursor.fetchall()
@@ -378,32 +380,21 @@ class Mongo(Base):
 
     def unparticipate(self):
         def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT activity.id, activity.participant,activity.race,activity.joinedAt FROM activity INNER JOIN follow WHERE activity.id=follow.activity")
-            result = cursor.fetchall()
-            rand = random.randint(0,len(result)-1)
-            inner_self.activity = result[rand]
-            activity_id = result[rand][0]
-            cursor.execute("SELECT follower,followedAt FROM follow WHERE activity='"+str(activity_id)+"'")
-            result = cursor.fetchall()
-            inner_self.activity_id = str(activity_id)
-            inner_self.follows = result
-            cursor.close()
+            race_id = self.get_random_id("races")
+            race = self.db["races"].find_one({"_id":race_id},{"coordinates":0})
+            random = randint(0, len(race["activities"]) - 1)
+            participant_id = race["activities"][random]["participating"]
+            inner_self.race_id = race_id
+            inner_self.participant_id = participant_id
+            inner_self.activity = race["activities"][random]
+        
         def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM activity WHERE activity.id = '"+inner_self.activity_id+"'")
-            cursor.close()
-            self.cnx.commit()
+            self.db["races"].update({"_id":inner_self.race_id},{"$pull":{"activities":{"participating":inner_self.participant_id}}})
 
         def teardown(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("INSERT INTO activity (id,participant,race,joinedAt) VALUES('"+
-                str(inner_self.activity[0])+"','"+str(inner_self.activity[1])+"','"+str(inner_self.activity[2])+"','"+str(inner_self.activity[3])+"')")
-            for f in inner_self.follows:
-                cursor.execute("INSERT INTO follow (follower,activity,followedAt) VALUES('"+
-                    str(f[0])+"','"+inner_self.activity_id+"','"+str(f[1])+"')")
-            cursor.close()
-            self.cnx.commit()
+            import json
+            self.db["races"].update({"_id":inner_self.race_id},{"$push":{"activities":inner_self.activity}})
+            
         return self.create_case("unparticipate", setup, run, teardown)
 
 
