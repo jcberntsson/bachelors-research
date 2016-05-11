@@ -15,14 +15,14 @@ if len(argv) < 2:
 # Declaration of all test cases. Should reflect the google spreadsheet to enable synchronization.
 test_cases = {
     'skim': [
-        #'fetchSKU',
-        #'fetchUsers',
-        #'commentOnImage',
-        #'pairImageSKU',
-        #'addRowsToSKU',
-        #'fetchAllUserComments'
-        'easy_get',
-        'easy_get2'
+        'fetchSKU',
+        'fetchUsers',
+        'commentOnImage',
+        'pairImageSKU',
+        'addRowsToSKU',
+        'fetchAllUserComments'
+        #'easy_get',
+        #'easy_get2'
     ],
     'raceone': [
         'follow',
