@@ -96,15 +96,15 @@ if __name__ == '__main__':
         error = False
         for i in range(iterations):
             case = case_to_test()
-            case.setup()
             try:
+                case.setup()
                 time = timeit(case.run, number=1) * 1000  # in ms
+                case.teardown()
+                time_array.append(time)
             except Exception as ex:
                 error = True
                 print("Exception during execution: %s" % ex)
                 break
-            case.teardown()
-            time_array.append(time)
 
         # Calculate results
         if error:
