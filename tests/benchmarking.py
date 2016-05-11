@@ -15,9 +15,9 @@ if len(argv) < 2:
 # Declaration of all test cases. Should reflect the google spreadsheet to enable synchronization.
 test_cases = {
     'skim': [
-        #'fetchSKU',
-        #'fetchUsers',
-        #'commentOnImage',
+        'fetchSKU',
+        'fetchUsers',
+        'commentOnImage',
         #'pairImageSKU',
         #'addRowsToSKU',
         #'fetchAllUserComments'
@@ -77,7 +77,7 @@ else:
     from cases.neo4j import Neo4j
     database_class = Neo4j()
 
-#database_class.init(company)
+database_class.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
