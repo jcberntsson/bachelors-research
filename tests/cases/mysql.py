@@ -1025,7 +1025,11 @@ class MySQL(Base):
         def setup(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("CREATE TABLE abc (id bigint NOT NULL AUTO_INCREMENT) ENGINE=InnoDB")
-            cursor.execute("INSERT INTO abc (id) VALUES (222)")
+            values = ""
+            for v in range(1000):
+                values = values + '('+ v + '),'
+            values = values[:-1]
+            cursor.execute("INSERT INTO abc (id) VALUES "+values)
             cursor.close()
             self.cnx.commit()
 
