@@ -256,8 +256,10 @@ class Neo4j(Base):
             #out.forward()
             #inner_self.user_id = out.current['user_id']
             #inner_self.image_id = out.current['image_id']
-            info = list(out)
-            print(info)
+            info = list(out)[0]
+            #print(info)
+            inner_self.user_id = info['user_id']
+            inner_self.image_id = info['image_id']
 
         def run(inner_self):
             self.session.run(
