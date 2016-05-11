@@ -82,10 +82,6 @@ class Base:
         return
 
     @abc.abstractmethod
-    def updateCoords(self):
-        return
-
-    @abc.abstractmethod
     def removeCoords(self):
         return
 

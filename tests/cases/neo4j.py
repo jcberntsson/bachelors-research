@@ -1,5 +1,3 @@
-import random
-
 from py2neo import Relationship, Graph, Node, Path
 
 from cases import Base
