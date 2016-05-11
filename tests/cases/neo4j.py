@@ -112,6 +112,15 @@ class Neo4j(Base):
     def initSkim(self):
         tx = self.graph.begin()
 
+        for x in range(1000):
+            tx.run(
+                'CREATE (test:TEST)'
+            )
+
+        tx.commit()
+        """
+        tx = self.graph.begin()
+
         # Users
         users = []
         for x in range(50):
@@ -188,6 +197,7 @@ class Neo4j(Base):
                     tx.create(Relationship(comment, "MADE_BY", users[x * 2 + z]))
 
         tx.commit()
+        """
 
     def clearData(self):
         # Dangerous
@@ -755,6 +765,23 @@ class Neo4j(Base):
             out = self.graph.run(
                 'RETURN 1'
             )#.dump()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("easy_get", setup, run, teardown)
+
+    def easy_get2(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            out = self.graph.run(
+                'MATCH (test:TEST) '
+                'RETURN test'
+            )
+            #while out.forward():
+            #    print(out.current)
 
         def teardown(inner_self):
             pass
