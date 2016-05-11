@@ -5,7 +5,7 @@ from cases import Base
 class Mongo(Base):
     # connect to authenticated mongo database
     # client = MongoClient("mongodb://46.101.103.26:27017")
-    client = MongoClient("mongodb://10.135.7.215:27017")
+    client = MongoClient("mongodb://10.135.3.156:27017")
     db = client.skimdatabase
 
     ####################################
