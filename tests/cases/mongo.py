@@ -367,12 +367,7 @@ class Mongo(Base):
         def setup(inner_self):
             pass
         def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT activity.race, participant.id, count(*) FROM participant "
-                "INNER JOIN activity ON activity.participant=participant.id "
-                "INNER JOIN follow WHERE activity=activity.id GROUP BY participant.id,activity.race")
-            result = cursor.fetchall()
-            cursor.close()
+            pass
 
         def teardown(inner_self):
             pass
