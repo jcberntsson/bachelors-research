@@ -1,11 +1,11 @@
 #!/usr/bin/python
-from cases import Neo4j
+from cases import Couch
 
 # Run
 if __name__ == '__main__':
-    neo = Neo4j()
-    neo.init("skim")
-    case = neo.easy_get2()
+    c = Couch()
+    c.init("raceone")
+    case = c.follow()
     case.setup()
     case.run()
     case.teardown()

@@ -21,20 +21,20 @@ test_cases = {
         #'pairImageSKU',
         #'addRowsToSKU',
         #'fetchAllUserComments'
-        'easy_get',
-        'easy_get2'
+        #'easy_get',
+        #'easy_get2'
     ],
     'raceone': [
-        'follow',
-        'unfollow',
+        #'follow',
+        #'unfollow',
         'insertCoords',
-        'fetchParticipants',
-        'fetchParticipants2',
-        'unparticipate',
-        'fetchCoords',
-        'removeCoords',
-        'fetchHotRaces',
-        'fetchRace'
+        #'fetchParticipants',
+        #'fetchParticipants2',
+        #'unparticipate',
+        #'fetchCoords',
+        #'removeCoords',
+        #'fetchHotRaces',
+        #'fetchRace'
     ]
 }
 
@@ -68,6 +68,10 @@ elif database == 'mysql':
 elif database == 'mongo':
     from cases.mongo import Mongo
     database_class = Mongo()
+    
+elif database == 'couch':
+    from cases.couch import Couch
+    database_class = Couch()
 
 else:
     from cases.neo4j import Neo4j

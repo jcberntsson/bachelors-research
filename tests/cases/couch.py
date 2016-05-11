@@ -359,13 +359,29 @@ class Couch(Base):
 
     def insertCoords(self):
         def setup(inner_self):
-            pass
+            activity_id = self.get_random_id('ACTIVITY')
+            coords = []
+            for i in range(100):
+                coord = dict(
+                    type="COORDINATE",
+                    lat=10 + i,
+                    lng=11 + i,
+                    alt=20 + i,
+                    index=i)
+                coords.append(coord)
+            inner_self.activity_id = activity_id
+            inner_self.coords = coords
 
         def run(inner_self):
-            pass
+            activity = self.db.get(inner_self.activity_id)
+            activity['coordinates'] = activity['coordinates'] + inner_self.coords
+            self.db.save(activity)
 
         def teardown(inner_self):
-            pass
+            activity = self.db.get(inner_self.activity_id)
+            for item in inner_self.coords:
+                activity['coordinates'].remove(item)
+            self.db.save(activity)
 
         return self.create_case("insertCoords", setup, run, teardown)
 
