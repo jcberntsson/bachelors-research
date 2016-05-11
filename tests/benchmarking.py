@@ -28,6 +28,7 @@ test_cases = {
         #'follow',
         #'unfollow',
         'insertCoords',
+<<<<<<< HEAD
         #'fetchParticipants',
         #'fetchParticipants2',
         #'unparticipate',
@@ -77,7 +78,7 @@ else:
     from cases.neo4j import Neo4j
     database_class = Neo4j()
 
-database_class.init(company)
+#database_class.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
