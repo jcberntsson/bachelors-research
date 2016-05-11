@@ -4,7 +4,8 @@ from cases import Base
 
 class Mongo(Base):
     # connect to authenticated mongo database
-    client = MongoClient("mongodb://46.101.103.26:27017")
+    # client = MongoClient("mongodb://46.101.103.26:27017")
+    client = MongoClient("mongodb://10.135.7.215:27017")
     db = client.skimdatabase
 
     ####################################
@@ -94,7 +95,7 @@ class Mongo(Base):
             for y in range(4):
                 # Images
                 nbr = x + 5 + y
-                image = {
+                images.append(self.db.images.insert_one({
                     "name":"image_" + str(nbr),
                     "originalName": "original_name",
                     "extension": "jpg",
@@ -106,9 +107,9 @@ class Mongo(Base):
                     "horizontalDPI":50,
                     "bitDepth":15,
                     "createdAt":"2016-03-03",
-                    "accepted":False
-                }
-                images.append(image)
+                    "accepted":False,
+                    "comments":[]
+                }).inserted_id)
                 # SKUS
                 skuValues = []
                 for z in range(10):
@@ -156,7 +157,7 @@ class Mongo(Base):
             })
             
             
-            # cursor = self.db.users.find()
+            # cursor = self.db.projects.find()
             # for document in cursor:
             #     print (document)
 
@@ -199,13 +200,20 @@ class Mongo(Base):
             inner_self.project_id = self.get_random_id("projects")
             out = self.db.projects.find_one({"_id":inner_self.project_id})
             
-            inner_self.user_id = out[""]
+            inner_self.user_id = out["collaborator"][0]
+            inner_self.image_id = out["images"][0]
             
         def run(inner_self):
-            pass
-            
+            self.db.images.update(
+                {"_id": inner_self.image_id}, 
+                {"$push":{"comments":{"text":"Ooh, another new comment!", "createdAt":"2015-03-02@13:37"}}}
+            )
         def teardown(inner_self):
-            pass
+            self.db.images.update(
+                {"_id":inner_self.image_id},
+                {"$pull":{"comments":{"text":"Ooh, another new comment!"}}}
+            )
+            # print(self.db.images.find_one({"_id": inner_self.image_id}))
         
         return self.create_case("commentOnImage", setup, run, teardown)
 
@@ -218,3 +226,5 @@ class Mongo(Base):
         random = randint(0, len(container))            
         return container[random]
 	# Run project on: python main.py
+    
+   
