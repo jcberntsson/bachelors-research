@@ -2,8 +2,14 @@ from py2neo import Relationship, Graph, Node, Path
 
 from cases import Base
 
+from neo4j.v1 import GraphDatabase, basic_auth
+
 
 class Neo4j(Base):
+    #driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
+    driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
+    session = driver.session()
+
     # connect to authenticated graph database
     # graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
     graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
@@ -774,10 +780,11 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            out = self.graph.run(
-                'MATCH (n) '
-                'RETURN n'
-            )
+            #out = self.graph.run(
+            #    'MATCH (n) '
+            #    'RETURN n'
+            #)
+            out = self.session.run("MATCH (n) RETURN n")
             #while out.forward():
             #    print(out.current)
 
