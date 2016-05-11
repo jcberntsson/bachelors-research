@@ -6,20 +6,39 @@ from neo4j.v1 import GraphDatabase, basic_auth
 
 
 class Neo4j(Base):
-    #driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
-    driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
+    driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
+    #driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
     session = driver.session()
 
     # connect to authenticated graph database
     # graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
-    graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
-    #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
     ####	DATA INITIALIZATION		####
     ####################################
 
     def initRaceOne(self):
+        """
+        session = self.session
+
+        users = []
+        organizers = []
+        for x in range(100):
+            user = session.run(
+                'CREATE (user:USER { username:"user_%s", fullname:"Tester", password:"SuperHash" }) RETURN user' % str(x)
+            )
+            user = list(user)[0]['user'].properties
+            users.append(user)
+            organizer = session.run(
+                'CREATE (organizer:ORGANIZER { username:"organizer_%s", fullname:"Tester", password:"SuperHash", email:"mail@mail.se" }) RETURN organizer' % str(x)
+            )
+            organizer = list(organizer)[0]['organizer'].properties
+            organizers.append(organizer)
+
+        #return
+        """
         tx = self.graph.begin()
 
         # Users
@@ -41,7 +60,6 @@ class Neo4j(Base):
             tx.create(organizer)
             organizers.append(organizer)
         print("Users and organizers have been created")
-
         # Events & Races
         print("Creating events")
         for x in range(10):
@@ -112,6 +130,7 @@ class Neo4j(Base):
                 print("A race is done")
             print("An event is done")
         tx.commit()
+        #"""
 
     def initSkim(self):
         """
@@ -550,7 +569,7 @@ class Neo4j(Base):
             )  # .dump()
 
         def teardown(inner_self):
-            out = self.graph.evaluate(
+            out = self.session.run(
                 'MATCH (race:RACE), (participant:USER) '
                 'WHERE ID(race)=%d AND ID(participant)=%d '
                 'CREATE (participant)-[:PARTICIPATING_IN]->(act:ACTIVITY { joinedAt:"%s" })-[:OF]->(race) '
