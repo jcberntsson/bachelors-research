@@ -287,14 +287,14 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE comment")
-            cursor.execute("DROP TABLE image")
-            cursor.execute("DROP TABLE skuValue")
-            cursor.execute("DROP TABLE header")
-            cursor.execute("DROP TABLE sku")
-            cursor.execute("DROP TABLE contribution")
-            cursor.execute("DROP TABLE contributor")
-            cursor.execute("DROP TABLE project")
+            #cursor.execute("DROP TABLE comment")
+            #cursor.execute("DROP TABLE image")
+            #cursor.execute("DROP TABLE skuValue")
+            #cursor.execute("DROP TABLE header")
+            #cursor.execute("DROP TABLE sku")
+            #cursor.execute("DROP TABLE contribution")
+            #cursor.execute("DROP TABLE contributor")
+            #cursor.execute("DROP TABLE project")
             cursor.execute("DROP TABLE abc")
             self.cnx.commit()
         except mysql.connector.Error as err:
