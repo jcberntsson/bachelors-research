@@ -754,7 +754,7 @@ class Neo4j(Base):
         def run(inner_self):
             self.graph.run(
                 'RETURN 1'
-            ).dump()
+            )#.dump()
 
         def teardown(inner_self):
             pass
