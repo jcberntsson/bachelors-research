@@ -6,8 +6,8 @@ from cases import Base
 class Neo4j(Base):
     # connect to authenticated graph database
     # graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
-    #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
-    graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
     ####	DATA INITIALIZATION		####
@@ -781,8 +781,9 @@ class Neo4j(Base):
             #while out.forward():
             #    print(out.current)
             out = self.graph.find("TEST")
+            tests = []
             for test in out:
-                a = test
+                tests.append(test)
 
         def teardown(inner_self):
             pass
