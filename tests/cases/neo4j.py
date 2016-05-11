@@ -774,15 +774,15 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            out = self.graph.run(
-                'MATCH (n) '
-                'RETURN n'
-            )
+            #out = self.graph.run(
+            #    'MATCH (n) '
+            #    'RETURN n'
+            #)
             #while out.forward():
             #    print(out.current)
-            #out = self.graph.find("TEST")
-            #for test in out:
-            #    a = test
+            out = self.graph.find("TEST")
+            for test in out:
+                a = test
 
         def teardown(inner_self):
             pass
