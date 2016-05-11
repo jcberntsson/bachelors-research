@@ -281,21 +281,19 @@ class Neo4j(Base):
             inner_self.image_id = info['image_id']
 
         def run(inner_self):
-            self.session.run(
+            inner_self.comment_cursor = self.session.run(
                 'MATCH (user:USER)<-[:COLLABORATOR]-(project:PROJECT)<-[:IN]-(image:IMAGE) '
                 'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
-                'RETURN comment' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
+                'RETURN ID(comment) AS comment_id' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
             )  # .dump()
 
         def teardown(inner_self):
+            comment_id = list(inner_self.comment_cursor)[0].comment_id
             self.session.run(
-                'MATCH '
-                '   (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
-                '   (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
-                'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
-                'DELETE made,on,comment '
-                'RETURN count(*) AS deleted_rows' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
+                'START comment=Node(%d) '
+                'DETACH DELETE comment '
+                'RETURN count(*) AS deleted_nodes' % comment_id
             )  # .dump()
 
         return self.create_case("commentOnImage", setup, run, teardown)
@@ -611,9 +609,37 @@ class Neo4j(Base):
     def removeCoords(self):
         def setup(inner_self):
             inner_self.race_id = self.get_random_id('RACE')
+            coordinates_cursor = self.session.run(
+                'START race=Node(%d) '
+                'MATCH '
+                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
+                '   (start)-[:FOLLOWED_BY*]->(coord:COORDINATE)-[:FOLLOWED_BY]->(ending:COORDINATE) '
+                'RETURN coord' % inner_self.race_id
+            )
+            coordinates = list(coordinates_cursor)
+            inner_self.coords = []
+            inner_self.coord_ids = []
+            i = 0
+            for coord in coordinates:
+                coord_id = coord['coord'].id
+                inner_self.coords.append(coord['coord'].properties)
+                print(coord['coord'].properties)
+                if i == 1:
+                    inner_self.coord_ids.append(coord_id)
+                i = (i + 1) % 3
             #print(inner_self.race_id)
 
         def run(inner_self):
+            tx = self.session.begin_transaction()
+            for coord_id in inner_self.coord_ids:
+                tx.run(
+                    'START middle=Node(%d) '
+                    'MATCH (first:COORDINATE)-[f1:FOLLOWED_BY]->(middle:COORDINATE)-[f2:FOLLOWED_BY]->(last:COORDINATE) '
+                    'DELETE f1,f2,middle '
+                    'CREATE (first)-[:FOLLOWED_BY]->(last)' % coord_id
+                )
+            tx.commit()
+            """
             coordinates_cursor = self.graph.run(
                 'START race=Node(%d) '
                 'MATCH '
@@ -643,6 +669,7 @@ class Neo4j(Base):
                 i += 1
             tx.commit()
             """
+            """
             coords_count = self.graph.evaluate(
                 'START race=Node(%d) '
                 'MATCH (race)-[:STARTS_WITH]->(start:COORDINATE)-[f:FOLLOWED_BY*]->(coord:COORDINATE) '
@@ -651,7 +678,19 @@ class Neo4j(Base):
             print("Nbr of coords = " + str(coords_count))"""
 
         def teardown(inner_self):
-            tx = self.session.begin_transaction()
+            self.session.run(
+                'START race=Node(%d) '
+                'MATCH '
+                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
+                '   (start)-[:FOLLOWED_BY*]->(coord:COORDINATE)-[:FOLLOWED_BY]->(ending:COORDINATE) '
+                'DETACH DELETE coord ' % inner_self.race_id
+            )
+            tx = self.graph.begin()
+            for coord in inner_self.coords:
+                tx.run(
+                    'START '
+                )
+            """
             for coord in reversed(inner_self.removed_coords):
                 tx.run(
                     'START before=Node(%d) '
@@ -659,6 +698,7 @@ class Neo4j(Base):
                     'DELETE f '
                     'CREATE (before)-[:FOLLOWED_BY]->%s-[:FOLLOWED_BY]->(after)' % (coord['before_id'], coord['data'])
                 )
+            """
             tx.commit()
 
         return self.create_case("removeCoords", setup, run, teardown)

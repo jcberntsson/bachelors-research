@@ -18,9 +18,9 @@ test_cases = {
         'fetchSKU',
         'fetchUsers',
         'commentOnImage',
-        'pairImageSKU',
-        'addRowsToSKU',
-        'fetchAllUserComments'
+        #'pairImageSKU',
+        #'addRowsToSKU',
+        #'fetchAllUserComments'
         #'easy_get',
         #'easy_get2'
     ],
