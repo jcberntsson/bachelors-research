@@ -6,6 +6,25 @@ from core import Case
 
 class Base:
 
+    data_size = {
+        "raceone": {
+            "users": 100,
+            "events": 10,
+            "races": 5,
+            "race_coordinates": 100,
+            "activities": 10,
+            "activity_coords": 50
+        },
+        "skim": {
+            "users": 100
+        }
+    }
+
+    def set_data_size(self, multiplicator):
+        for company, props in self.data_size:
+            for name in props:
+                props[name] *= multiplicator
+
     def init(self, company):
         self.clearData()
         if company == "raceone":

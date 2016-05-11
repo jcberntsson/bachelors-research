@@ -6,22 +6,21 @@ from neo4j.v1 import GraphDatabase, basic_auth
 
 
 class Neo4j(Base):
-    driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "kandidat"))
+    #driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "kandidat"))
     #driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
-    #driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
+    driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
     session = driver.session()
 
     # connect to authenticated graph database
-    graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
-    #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
     #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
     ####	DATA INITIALIZATION		####
     ####################################
 
-    def initRaceOne(self):
-        """
+    def init_raceone(self):
         session = self.session
 
         users = []
@@ -30,16 +29,29 @@ class Neo4j(Base):
             user = session.run(
                 'CREATE (user:USER { username:"user_%s", fullname:"Tester", password:"SuperHash" }) RETURN user' % str(x)
             )
-            user = list(user)[0]['user'].properties
+            user = self.evaluate(user, "user").properties
             users.append(user)
             organizer = session.run(
                 'CREATE (organizer:ORGANIZER { username:"organizer_%s", fullname:"Tester", password:"SuperHash", email:"mail@mail.se" }) RETURN organizer' % str(x)
             )
-            organizer = list(organizer)[0]['organizer'].properties
+            organizer = self.evaluate(organizer, "organizer").properties
             organizers.append(organizer)
 
-        #return
-        """
+        for x in range(10):
+            event_cursor = session.run(
+                'CREATE (event:EVENT '
+                '   {name:"race_name",'
+                '   description:"A nice race to participate in.",'
+                '   date:"2016-06-13",'
+                '   maxDuration:3,'
+                '   preview:"linktoimage.png",'
+                '   location:"Gothenburg, Sweden",'
+                '   logoURL:"google.se/img.png"}) '
+                'RETURN ID(event) AS event_id'
+            )
+            event_id = self.evaluate(event_cursor, "event_id")
+
+    def initRaceOne(self):
         tx = self.graph.begin()
 
         # Users
@@ -387,21 +399,22 @@ class Neo4j(Base):
 
             race_id = self.get_random_id('RACE')
 
-            out = self.graph.run(
+            cursor = self.graph.run(
                 'MATCH (race:RACE), (user:USER) '
                 'WHERE ID(race)=%s AND ID(user)=%s '
                 'CREATE (user)-[:PARTICIPATING_IN]->(activity:ACTIVITY { joinedAt:"2016-05-03" })-[:OF]->(race) '
                 'RETURN ID(activity) AS activity_id' % (race_id, participant_id)
             )
-            inner_self.activity_id = list(out)[0]['activity_id']
+            inner_self.activity_id = self.evaluate(cursor, "activity_id")
 
         def run(inner_self):
-            self.session.run(
+            cursor = self.session.run(
                 'MATCH (activity:ACTIVITY), (follower:USER) '
                 'WHERE ID(activity)=%d AND ID(follower)=%d '
                 'CREATE (follower)-[f:FOLLOWING]->(activity) '
                 'RETURN follower,f,activity' % (inner_self.activity_id, inner_self.follower_id)
-            )  # .dump()
+            )
+            result = list(cursor)
 
         def teardown(inner_self):
             self.session.run(
@@ -432,29 +445,30 @@ class Neo4j(Base):
     def insertCoords(self):
         def setup(inner_self):
             inner_self.activity_id = self.get_random_id('ACTIVITY')
-            out = self.session.run(
+            cursor = self.session.run(
                 'START act=Node(%d) '
                 'MATCH (act:ACTIVITY)<-[:END_FOR]-(end:COORDINATE) '
                 'RETURN ID(end) AS end_id' % inner_self.activity_id
             )
-            inner_self.end_id = list(out)[0]['end_id']
+            inner_self.end_id = self.evaluate(cursor, "end_id")
 
         def run(inner_self):
-            out = self.session.run(
+            cursor = self.session.run(
                 'START activity=Node(%d) '
                 'MATCH (coord:COORDINATE)-[end:END_FOR]->(activity:ACTIVITY) '
                 'DELETE end '
                 'RETURN ID(coord) AS coord' % inner_self.activity_id
             )
-            out = list(out)[0]
+            out = self.first_of(cursor)
             prev_id = out['coord']
 
             query = 'START first=Node(%d), activity=Node(%d) ' \
                     'CREATE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (prev_id, inner_self.activity_id)
             for i in range(99):
-                query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i+1))
+                query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i + 1))
             query += ' CREATE (%s)-[:END_FOR]->(activity)' % "coord100"
-            self.session.run(query)
+            out = self.session.run(query)
+            result = list(out)
             """
             self.graph.run(
                 'START act=Node(%d) '
@@ -468,26 +482,20 @@ class Neo4j(Base):
                 'WHERE ID(act)=%d '
                 'DELETE end '
                 'RETURN COUNT(*) AS deleted_ends' % inner_self.activity_id
-            )  # .dump()
+            )
             self.session.run(
                 'START original_end=node(%d) '
                 'MATCH (original_end:COORDINATE)-[f:FOLLOWED_BY]->(o:COORDINATE) '
                 'MATCH p=(o:COORDINATE)-[:FOLLOWED_BY*0..]->(o2:COORDINATE) '
                 'DELETE f, p '
                 'RETURN COUNT(*) AS deleted_paths' % inner_self.end_id
-            )  # .dump()
+            )
             self.session.run(
                 'MATCH (coord:COORDINATE), (act:ACTIVITY) '
                 'WHERE ID(coord)=%d AND ID(act)=%d '
                 'CREATE (coord)-[:END_FOR]->(act) '
                 'RETURN COUNT(*) AS created_ends' % (inner_self.end_id, inner_self.activity_id)
-            )  # .dump()
-            """
-            self.graph.run(
-                'START act=Node(%d) '
-                'MATCH (act)-[:STARTS_WITH|FOLLOWED_BY*]-(coord:COORDINATE) '
-                'RETURN COUNT(coord)' % inner_self.activity_id
-            ).dump()"""
+            )
 
         return self.create_case("insertCoords", setup, run, teardown)
 
@@ -496,17 +504,36 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            self.session.run(
+            cursor = self.session.run(
                 'MATCH (user:USER)-[:PARTICIPATING_IN]->(activity:ACTIVITY) '
                 'RETURN user.username, count(activity) AS count '
                 'ORDER BY count DESC '
                 'LIMIT 10'
-            )  # .dump()
+            )
+            participants = list(cursor)
 
         def teardown(inner_self):
             pass
 
         return self.create_case("fetchParticipants", setup, run, teardown)
+
+    def fetchParticipants2(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.session.run(
+                'MATCH (participant:USER)-[:PARTICIPATING_IN]->(act:ACTIVITY)<-[:FOLLOWING]-(follower:USER) '
+                'RETURN participant.username, ID(act), count(follower) AS count '
+                'ORDER BY count DESC '
+                'LIMIT 10'
+            )
+            participants = list(cursor)
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def duplicateEvent(self):
         def setup(inner_self):
@@ -519,23 +546,6 @@ class Neo4j(Base):
             pass
 
         return self.create_case("duplicateEvent", setup, run, teardown)
-
-    def fetchParticipants2(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            self.session.run(
-                'MATCH (participant:USER)-[:PARTICIPATING_IN]->(act:ACTIVITY)<-[:FOLLOWING]-(follower:USER) '
-                'RETURN participant.username, ID(act), count(follower) AS count '
-                'ORDER BY count DESC '
-                'LIMIT 10'
-            )  # .dump()
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("fetchParticipants2", setup, run, teardown)
 
     def unparticipate(self):
         def setup(inner_self):
@@ -561,11 +571,12 @@ class Neo4j(Base):
             inner_self.follower_ids = follower_ids
 
         def run(inner_self):
-            self.session.run(
+            cursor = self.session.run(
                 'START act=Node(%d) '
                 'DETACH DELETE act '
                 'RETURN COUNT(*) AS deleted' % inner_self.activity_id
-            )  # .dump()
+            )
+            deleted = self.evaluate(cursor, "deleted")
 
         def teardown(inner_self):
             out = self.session.run(
@@ -598,9 +609,7 @@ class Neo4j(Base):
                 'MATCH (act:ACTIVITY)-[:STARTS_WITH|FOLLOWED_BY*]-(coord:COORDINATE) '
                 'RETURN coord' % inner_self.activity_id
             )
-            coords = []
-            for coord in cursor:
-                coords.append(coord['coord'])
+            coordinates = list(cursor)
 
         def teardown(inner_self):
             pass
@@ -624,7 +633,6 @@ class Neo4j(Base):
             for coord in coordinates:
                 coord_id = coord['coord'].id
                 inner_self.coords.append(coord['coord'].properties)
-                print(coord['coord'].properties)
                 if i == 1:
                     inner_self.coord_ids.append(coord_id)
                 i = (i + 1) % 3
@@ -641,42 +649,13 @@ class Neo4j(Base):
                 )
             tx.commit()
             """
-            coordinates_cursor = self.graph.run(
-                'START race=Node(%d) '
-                'MATCH '
-                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
-                '   (start)-[:FOLLOWED_BY*]->(before:COORDINATE)-[:FOLLOWED_BY]->(coord:COORDINATE) '
-                'RETURN ID(coord) AS coord_id, coord, ID(before) AS before_id' % inner_self.race_id
-            )
-            i = 0
-            inner_self.removed_coords = []
-            tx = self.session.begin_transaction()
-            for coord_info in coordinates_cursor:
-                if i % 3 == 0:
-                    coord = coord_info['coord']
-                    coord_id = coord_info['coord_id']
-                    before_id = coord_info['before_id']
-                    coordinate = {
-                        "data": coord,
-                        "before_id": before_id
-                    }
-                    inner_self.removed_coords.append(coordinate)
-                    tx.run(
-                        'MATCH (first:COORDINATE)-[f1:FOLLOWED_BY]->(middle:COORDINATE)-[f2:FOLLOWED_BY]->(last:COORDINATE) '
-                        'WHERE ID(middle)=%d '
-                        'DELETE f1,f2,middle '
-                        'CREATE (first)-[:FOLLOWED_BY]->(last)' % coord_id
-                    )
-                i += 1
-            tx.commit()
-            """
-            """
-            coords_count = self.graph.evaluate(
+            coords_count = self.session.run(
                 'START race=Node(%d) '
                 'MATCH (race)-[:STARTS_WITH]->(start:COORDINATE)-[f:FOLLOWED_BY*]->(coord:COORDINATE) '
-                'RETURN COUNT(f)' % inner_self.race_id
+                'RETURN COUNT(f) AS count' % inner_self.race_id
             )
-            print("Nbr of coords = " + str(coords_count))"""
+            print(self.evaluate(coords_count, "count"))
+            """
 
         def teardown(inner_self):
             cursor = self.session.run(
@@ -685,29 +664,23 @@ class Neo4j(Base):
                 '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
                 '   (start)-[:FOLLOWED_BY*]->(coord:COORDINATE)-[:FOLLOWED_BY]->(ending:COORDINATE) '
                 'DETACH DELETE coord '
-                'RETURN ID(start) AS start_id' % inner_self.race_id
+                'RETURN ID(start) AS start_id, ID(end) AS end_id' % inner_self.race_id
             )
-            prev_id = self.evaluate(cursor, "start_id")
-            print(prev_id)
-            #tx = self.graph.begin()
+            result = self.first_of(cursor)
+            prev_id = result["start_id"]
+            end_id = result["end_id"]
+
             for coord in inner_self.coords:
                 out = self.session.run(
                     'START prev=Node(%d) '
                     'CREATE (prev)-[:FOLLOWED_BY]->(coord:COORDINATE { lat:%d, lng:%d, alt:%d }) '
-                    'RETURN ID(coord) AS coord_id' % (prev_id, coord.lat, coord.lng, coord.alt )
+                    'RETURN ID(coord) AS coord_id' % (prev_id, coord['lat'], coord['lng'], coord['alt'])
                 )
                 prev_id = self.evaluate(out, "coord_id")
-                print(prev_id)
-            """
-            for coord in reversed(inner_self.removed_coords):
-                tx.run(
-                    'START before=Node(%d) '
-                    'MATCH (before)-[f:FOLLOWED_BY]->(after:COORDINATE) '
-                    'DELETE f '
-                    'CREATE (before)-[:FOLLOWED_BY]->%s-[:FOLLOWED_BY]->(after)' % (coord['before_id'], coord['data'])
-                )
-            """
-            #tx.commit()
+            self.session.run(
+                'START prev=Node(%d), end=Node(%d) '
+                'CREATE (prev)-[:FOLLOWED_BY]->(end)' % (prev_id, end_id)
+            )
 
         return self.create_case("removeCoords", setup, run, teardown)
 
@@ -719,7 +692,7 @@ class Neo4j(Base):
                 'MATCH (race)-[:IN]->(event:EVENT) '
                 'RETURN race, ID(event) AS event_id' % inner_self.race_id
             )
-            info = list(race_cursor)[0]
+            info = self.first_of(race_cursor)
             inner_self.race = info['race']
             inner_self.event_id = info['event_id']
             activity_cursor = self.session.run(
@@ -768,15 +741,16 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            self.session.run(
+            cursor = self.session.run(
                 'MATCH '
                 '   (race:RACE)<-[:OF]-(activity:ACTIVITY), '
                 '   (participant:USER)-[:PARTICIPATING_IN]->(activity)<-[:FOLLOWING]-(follower:USER) '
-                'WITH race '
-                'RETURN race, COUNT(follower)+COUNT(participant) AS popularity '
+                'WITH race, COUNT(follower)+COUNT(participant) AS popularity '
+                'RETURN race, popularity '
                 'ORDER BY popularity '
                 'LIMIT 10'
             )
+            races = list(cursor)
 
         def teardown(inner_self):
             pass
@@ -793,17 +767,17 @@ class Neo4j(Base):
                 'WHERE ID(race)=%d '
                 'RETURN race, event' % inner_self.race_id
             )
-            cursor = list(cursor)[0]
-            race = cursor['race']
-            event = cursor['event']
+            result = self.first_of(cursor)
+            race = result['race'].properties
+            event = result['event'].properties
             cursor = self.session.run(
                 'MATCH (race:RACE)-[:STARTS_WITH]->(start:COORDINATE)-[:FOLLOWED_BY*]->(coord:COORDINATE) '
                 'WHERE ID(race)=%d '
                 'RETURN coord' % inner_self.race_id
             )
             coords = []
-            for coord in cursor:
-                coords.append(coord['coord'])
+            for record in cursor:
+                coords.append(record['coord'].properties)
             cursor = self.session.run(
                 'MATCH '
                 '   (race:RACE)<-[:OF]-(act:ACTIVITY)<-[:PARTICIPATING_IN]-(user:USER),'
@@ -812,8 +786,8 @@ class Neo4j(Base):
                 'RETURN user, COUNT(follower) AS nbr_of_followers' % inner_self.race_id
             )
             participants = []
-            for info in cursor:
-                participants.append(info)
+            for record in cursor:
+                participants.append(record["user"].properties)
             returnable = dict(information=race, event=event, coordinates=coords, participants=participants)
 
         def teardown(inner_self):
@@ -864,3 +838,7 @@ class Neo4j(Base):
     @staticmethod
     def evaluate(cursor, name):
         return list(cursor)[0][name]
+
+    @staticmethod
+    def first_of(cursor):
+        return list(cursor)[0]

@@ -18,23 +18,23 @@ test_cases = {
         'fetchSKU',
         'fetchUsers',
         'commentOnImage',
-        #'pairImageSKU',
-        #'addRowsToSKU',
-        #'fetchAllUserComments'
+        'pairImageSKU',
+        'addRowsToSKU',
+        'fetchAllUserComments'
         #'easy_get',
         #'easy_get2'
     ],
     'raceone': [
-        #'follow',
-        #'unfollow',
+        'follow',
+        'unfollow',
         'insertCoords',
-        #'fetchParticipants',
-        #'fetchParticipants2',
-        #'unparticipate',
-        #'fetchCoords',
-        #'removeCoords',
-        #'fetchHotRaces',
-        #'fetchRace'
+        'fetchParticipants',
+        'fetchParticipants2',
+        'unparticipate',
+        'fetchCoords',
+        'removeCoords',
+        'fetchHotRaces',
+        'fetchRace'
     ]
 }
 
@@ -77,7 +77,7 @@ else:
     from cases.neo4j import Neo4j
     database_class = Neo4j()
 
-database_class.init(company)
+#database_class.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
