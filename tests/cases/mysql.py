@@ -173,8 +173,8 @@ class MySQL(Base):
         cursor.close()
 
     def clearData(self):
-        cursor = self.cnx.cursor()
         try:
+            cursor = self.cnx.cursor()
             cursor.execute("DROP TABLE activityCoordinate")
             cursor.execute("DROP TABLE follow")
             cursor.execute("DROP TABLE activity")
@@ -190,7 +190,8 @@ class MySQL(Base):
             cursor.execute("DROP TABLE map")
             cursor.execute("DROP TABLE category")
             cursor.execute("DROP TABLE organizer")
-            self.cnx.commit();
+            self.cnx.commit()
+            cursor.close()
         except mysql.connector.Error as err:
             print(err.msg)
         else:
@@ -206,11 +207,11 @@ class MySQL(Base):
             cursor.execute("DROP TABLE contributor")
             cursor.execute("DROP TABLE project")
             self.cnx.commit()
+            cursor.close()
         except mysql.connector.Error as err:
             print(err.msg)
         else:
             print("Dropping OK")
-        cursor.close()
 
     ############################
     ####	TEST METHODS	####
