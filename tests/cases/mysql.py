@@ -1024,7 +1024,6 @@ class MySQL(Base):
     def easy_get2(self):
         def setup(inner_self):
             cursor = self.cnx.cursor()
-            cursor.execute("DROP TABLE abc")
             cursor.execute("CREATE TABLE abc (id bigint NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB")
             values = ""
             for v in range(1000):
