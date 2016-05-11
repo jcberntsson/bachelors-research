@@ -253,9 +253,11 @@ class Neo4j(Base):
                 'RETURN ID(image) AS image_id, ID(user) AS user_id '
                 'LIMIT 1' % inner_self.project_id
             )
-            out.forward()
-            inner_self.user_id = out.current['user_id']
-            inner_self.image_id = out.current['image_id']
+            #out.forward()
+            #inner_self.user_id = out.current['user_id']
+            #inner_self.image_id = out.current['image_id']
+            info = list(out)
+            print(info)
 
         def run(inner_self):
             self.session.run(
