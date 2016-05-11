@@ -191,6 +191,19 @@ class MySQL(Base):
         self.cnx.commit()
         cursor.close()
 
+    def initReference(self):
+        cursor = self.cnx.cursor()
+        cursor.execute(
+            "CREATE TABLE abc (id bigint not null auto_increment,name varchar(20), primary key(id)) ENGINE=InnoDB"
+        )
+        for i in range(self.quantity_of("blob")):
+            cursor.execute(
+                "INSERT INTO abc(name) "
+                "VALUES('hello')"
+            )
+        self.cnx.commit()
+        cursor.close()
+
     def clearData(self):
         try:
             cursor = self.cnx.cursor()
@@ -225,6 +238,15 @@ class MySQL(Base):
             cursor.execute("DROP TABLE contribution")
             cursor.execute("DROP TABLE contributor")
             cursor.execute("DROP TABLE project")
+            self.cnx.commit()
+            cursor.close()
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("Dropping OK")
+        try:
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE abc")
             self.cnx.commit()
             cursor.close()
         except mysql.connector.Error as err:
@@ -802,7 +824,7 @@ class MySQL(Base):
 
         return self.create_case("fetchRace", setup, run, teardown)
 
-    def easy_get(self):
+    def tinyGet(self):
         def setup(inner_self):
             pass
 
@@ -817,7 +839,7 @@ class MySQL(Base):
 
         return self.create_case("easy_get", setup, run, teardown)
 
-    def easy_get2(self):
+    def smallGet(self):
         def setup(inner_self):
             pass
 

@@ -187,25 +187,43 @@ class Mongo(Base):
             })
             print("Project done")
 
+    def initReference(self):
+        for a in range(self.quantity_of("blob")):
+            self.db.abc.insert_one({"name": "hello"})
+
     def clearData(self):
         self.client.drop_database("db")
 
     ############################
     ####	TEST METHODS	####
     ############################
-    # TODO: All inserting methods should first find the nodes that it is relating for
-
-    def easy_get(self):
+    
+    # REFERENCE
+    def tinyGet(self):
         def setup(inner_self):
-            inner_self.sku_id = self.get_random_id("skus")
+            pass
 
         def run(inner_self):
-            self.db.skus.find_one({"_id": inner_self.sku_id})
+            cursor = self.db.abd.find()
+            result = list(cursor)
 
         def teardown(inner_self):
             pass
 
         return self.create_case("easy_get", setup, run, teardown)
+
+    def smallGet(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.db.abc.find({})
+            result = list(cursor)
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("easy_get2", setup, run, teardown)
 
     # SKIM
     def fetchSKU(self):
@@ -518,7 +536,7 @@ class Mongo(Base):
             inner_self.race_id = race_id
 
         def run(inner_self):
-            race = self.db["races"].find_one({"_id":race_id})
+            race = self.db["races"].find_one({"_id": inner_self.race_id})
 
         def teardown(inner_self):
             pass
