@@ -114,6 +114,7 @@ class Neo4j(Base):
         tx.commit()
 
     def initSkim(self):
+        """
         tx = self.graph.begin()
 
         for x in range(1000):
@@ -121,8 +122,7 @@ class Neo4j(Base):
                 'CREATE (test:TEST)'
             )
 
-        tx.commit()
-        """
+        tx.commit()"""
         tx = self.graph.begin()
 
         # Users
@@ -201,7 +201,6 @@ class Neo4j(Base):
                     tx.create(Relationship(comment, "MADE_BY", users[x * 2 + z]))
 
         tx.commit()
-        """
 
     def clearData(self):
         # Dangerous
@@ -218,11 +217,12 @@ class Neo4j(Base):
             inner_self.sku_id = self.get_random_id('SKU')
 
         def run(inner_self):
-            out = self.graph.run(
+            out = self.session.run(
                 'START sku=Node(%d) '
                 'MATCH (value:SKU_VALUE)-[of:OF]->(sku:SKU) '
                 'RETURN value' % inner_self.sku_id
             )  # .dump()
+            sku = list(out)
 
         def teardown(inner_self):
             pass
@@ -234,9 +234,10 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            self.graph.run(
+            out = self.session.run(
                 'MATCH (user:USER) RETURN user'
             )  # .dump()
+            users = list(out)
 
         def teardown(inner_self):
             pass
@@ -246,7 +247,7 @@ class Neo4j(Base):
     def commentOnImage(self):
         def setup(inner_self):
             inner_self.project_id = self.get_random_id('PROJECT')
-            out = self.graph.run(
+            out = self.session.run(
                 'MATCH (image:IMAGE)-[:IN]->(project:PROJECT)-[:COLLABORATOR]->(user:USER) '
                 'WHERE ID(project)=%d '
                 'RETURN ID(image) AS image_id, ID(user) AS user_id '
@@ -257,7 +258,7 @@ class Neo4j(Base):
             inner_self.image_id = out.current['image_id']
 
         def run(inner_self):
-            self.graph.run(
+            self.session.run(
                 'MATCH (user:USER)<-[:COLLABORATOR]-(project:PROJECT)<-[:IN]-(image:IMAGE) '
                 'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
@@ -279,7 +280,7 @@ class Neo4j(Base):
     def pairImageSKU(self):
         def setup(inner_self):
             inner_self.project_id = self.get_random_id('PROJECT')
-            out = self.graph.run(
+            out = self.session.run(
                 'MATCH (image:IMAGE)-[:IN]->(project:PROJECT)<-[:IN]-(sku:SKU) '
                 'WHERE ID(project)=%d '
                 'RETURN ID(sku) AS sku_id, ID(image) AS image_id '
@@ -290,7 +291,7 @@ class Neo4j(Base):
             inner_self.image_id = out.current['image_id']
 
         def run(inner_self):
-            self.graph.run(
+            self.session.run(
                 'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE)'
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)-[b:BELONGS_TO]->(sku) '
@@ -299,7 +300,7 @@ class Neo4j(Base):
             )  # .dump()
 
         def teardown(inner_self):
-            self.graph.run(
+            self.session.run(
                 'MATCH (image:IMAGE)-[b:BELONGS_TO]->(sku:SKU)-[in:IN]->(project:PROJECT) '
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
                 'DELETE b '
@@ -315,7 +316,7 @@ class Neo4j(Base):
             inner_self.sku_id = self.get_random_id('SKU')
 
         def run(inner_self):
-            tx = self.graph.begin()
+            tx = self.session.begin_transaction()
             for i in range(10):
                 tx.run(
                     'START sku=Node(%d) '
@@ -327,7 +328,7 @@ class Neo4j(Base):
             tx.commit()
 
         def teardown(inner_self):
-            self.graph.run(
+            self.session.run(
                 'MATCH (sku:SKU)<-[of:OF]-(value:SKU_VALUE) '
                 'WHERE ID(sku)=%d AND value.header="remove_me" '
                 'DELETE of, value '
@@ -341,11 +342,12 @@ class Neo4j(Base):
             inner_self.user_id = self.get_random_id('USER')
 
         def run(inner_self):
-            self.graph.run(
+            out = self.session.run(
                 'MATCH (comment:COMMENT)-[:MADE_BY]->(user:USER) '
                 'WHERE ID(user)=%d '
                 'RETURN comment' % inner_self.user_id
             )
+            comments = list(out)
 
         def teardown(inner_self):
             pass
