@@ -159,6 +159,9 @@ class Mongo(Base):
                 "images": images,
                 "skus": skulist
             })
+    def reference(self):
+        for a in range(100):
+            self.db.insert_one({"name":"hello"})
 
 
             # cursor = self.db.projects.find()
@@ -172,18 +175,31 @@ class Mongo(Base):
     ####	TEST METHODS	####
     ############################
     # TODO: All inserting methods should first find the nodes that it is relating for
-
-    def easy_get(self):
+    def tinyGet(self):
         def setup(inner_self):
-            inner_self.sku_id = self.get_random_id("skus")
+            pass
 
         def run(inner_self):
-            self.db.skus.find_one({"_id": inner_self.sku_id})
+            cursor = self.db.abd.find()
 
         def teardown(inner_self):
             pass
 
         return self.create_case("easy_get", setup, run, teardown)
+
+    def smallGet(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.db.abc.find()
+            result = list(cursor)
+            print(result)
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("easy_get2", setup, run, teardown)
 
     # SKIM
     def fetchSKU(self):
