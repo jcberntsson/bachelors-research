@@ -223,8 +223,5 @@ class Mongo(Base):
         container = []
         for entity in self.db[entity_name].find():
             container.append(entity["_id"])
-        random = randint(0, len(container))            
+        random = randint(0, len(container) - 1)
         return container[random]
-	# Run project on: python main.py
-    
-   
