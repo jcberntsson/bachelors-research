@@ -73,7 +73,7 @@ else:
     from cases.neo4j import Neo4j
     database_class = Neo4j()
 
-database_class.init(company)
+#database_class.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
