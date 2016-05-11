@@ -242,7 +242,7 @@ class Mongo(Base):
             container.append(entity["_id"])
         random = randint(0, len(container) - 1)
         return container[random]
-<<<<<<< HEAD
+
 	# Run project on: python main.py
     
    
