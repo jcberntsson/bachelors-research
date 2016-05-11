@@ -1040,7 +1040,7 @@ class MySQL(Base):
         def run(inner_self):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM abc")
-            result = cursor.fetchall()
+            result = list(cursor) #cursor.fetchall()
             cursor.close()
 
         def teardown(inner_self):
