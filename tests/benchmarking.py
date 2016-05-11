@@ -28,7 +28,6 @@ test_cases = {
         #'follow',
         #'unfollow',
         'insertCoords',
-<<<<<<< HEAD
         #'fetchParticipants',
         #'fetchParticipants2',
         #'unparticipate',
