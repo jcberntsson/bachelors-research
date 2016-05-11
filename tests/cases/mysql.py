@@ -1020,3 +1020,29 @@ class MySQL(Base):
             pass
 
         return self.create_case("easy_get", setup, run, teardown)
+        
+    def easy_get2(self):
+        def setup(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("CREATE TABLE abc (id bigint NOT NULL AUTO_INCREMENT) ENGINE=InnoDB")
+            values = ""
+            for v in range(1000):
+                values = values + '('+ v + '),'
+            values = values[:-1]
+            cursor.execute("INSERT INTO abc (id) VALUES "+values)
+            cursor.close()
+            self.cnx.commit()
+
+        def run(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("SELECT * FROM abc")
+            result = cursor.fetchall()
+            cursor.close()
+
+        def teardown(inner_self):
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE abc")
+            cursor.close()
+            self.cnx.commit()
+
+        return self.create_case("easy_get2", setup, run, teardown)
