@@ -93,24 +93,32 @@ if __name__ == '__main__':
         print("======== Start %s ========" % test_case)
         case_to_test = getattr(database_class, test_case)
         time_array = []
+        error = False
         for i in range(iterations):
             case = case_to_test()
             case.setup()
-            # TODO: Check if timeit is unreliable
-            time = timeit(case.run, number=1) * 1000  # in ms
+            try:
+                time = timeit(case.run, number=1) * 1000  # in ms
+            except Exception as ex:
+                error = True
+                print("Exception during execution: %s" % ex)
+                break
             case.teardown()
             time_array.append(time)
 
-        # TODO: Extract information for CPU load
-
         # Calculate results
-        total_time = 0
-        peak_time = 0
-        for time in time_array:
-            total_time += time
-            if time > peak_time:
-                peak_time = time
-        avg_time = total_time / len(time_array)
+        if error:
+            total_time = -1
+            peak_time = -1
+            avg_time = -1
+        else:
+            total_time = 0
+            peak_time = 0
+            for time in time_array:
+                total_time += time
+                if time > peak_time:
+                    peak_time = time
+            avg_time = total_time / len(time_array)
 
         # Log results
         print("Results (in ms):")

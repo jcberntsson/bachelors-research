@@ -417,14 +417,15 @@ class Neo4j(Base):
             result = list(cursor)
 
         def teardown(inner_self):
-            self.session.run(
+            cursor = self.session.run(
                 'MATCH '
                 '   (follower:USER)-[following:FOLLOWING]->(activity:ACTIVITY)-[of:OF]->(:RACE),'
                 '   (participant:USER)-[participating:PARTICIPATING_IN]->(activity) '
                 'WHERE ID(activity)=%d AND ID(follower)=%d '
                 'DELETE following, of, participating, activity '
                 'RETURN COUNT(*) AS nbr_deleted' % (inner_self.activity_id, inner_self.follower_id)
-            )  # .dump()
+            )
+            result = list(cursor)
 
         return self.create_case("follow", setup, run, teardown)
 
@@ -837,8 +838,12 @@ class Neo4j(Base):
 
     @staticmethod
     def evaluate(cursor, name):
-        return list(cursor)[0][name]
+        return Neo4j.first_of(cursor)[name]
 
     @staticmethod
     def first_of(cursor):
-        return list(cursor)[0]
+        try:
+            return list(cursor)[0]
+        except IndexError as err:
+            print("IndexError for evaluate(): %s" % err)
+            return None
