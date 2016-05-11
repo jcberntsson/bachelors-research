@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from cases import Base
+import random
 from random import randint
 import datetime
 
@@ -419,72 +420,36 @@ class Mongo(Base):
 
     def removeCoords(self):
         def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM map")
-            result = cursor.fetchall()
-            rand = random.randint(0,len(result)-1)
-            map_id = result[rand][0]
-            inner_self.map_id = str(map_id)
-            cursor.execute("SELECT id,lat,lng,alt,map FROM point WHERE map="+str(map_id))
-            result = cursor.fetchall()
-            inner_self.points = result
-            cursor.execute("SELECT id FROM point WHERE map="+str(map_id))
-            result = cursor.fetchall()
-            random.shuffle(result)
-            inner_self.point_ids = result[:(len(result)//3)]
-            cursor.close()
+            race_id = self.get_random_id("races")
+            race = self.db["races"].find_one({"_id":race_id},{"activities":0})
+            coordinates = race["coordinates"]
+            random.shuffle(coordinates)
+            inner_self.race_id = race_id
+            inner_self.coordinates = coordinates[:(len(coordinates)//3)]
+            print(len(coordinates))
 
         def run(inner_self):
-            point_ids = ""
-            for p in inner_self.point_ids:
-                point_ids = point_ids + str(p[0]) + ","
-            point_ids = point_ids[:-1]
-            cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM point WHERE id IN ("+point_ids+")")
-            cursor.close()
-            self.cnx.commit()
+            self.db["races"].update({"_id":inner_self.race_id},{"$pull":{"coordinates":{"$in":inner_self.coordinates}}})
+            print(len(self.db["races"].find_one({"_id":inner_self.race_id},{"activities":0})["coordinates"]))
 
         def teardown(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM point WHERE map="+inner_self.map_id)
-            for p in inner_self.points:
-                point_id = str(p[0])
-                lat = str(p[1])
-                lng = str(p[2])
-                alt = str(p[3])
-                map = str(p[4])
-                cursor.execute("INSERT INTO point (id, lat,lng,alt,map) VALUES("+point_id+","+lat+","+lng+","+alt+","+map+")")
-            cursor.close()
-            self.cnx.commit()
+            self.db["races"].update({"_id":inner_self.race_id},{"$push":{"coordinates":{"$each":inner_self.coordinates}}})
+            print(len(self.db["races"].find_one({"_id":inner_self.race_id},{"activities":0})["coordinates"]))
 
         return self.create_case("removeCoords", setup, run, teardown)
 
     def removeRace(self):
         def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT id,name,description,race_date,max_duration,preview,location,logo_url,event_id FROM race")
-            result = cursor.fetchall()
-            rand = random.randint(0,len(result)-1)
-            inner_self.race = result[rand]
-            race_id = result[rand][0]
-            cursor.execute("SELECT id,map,race FROM racemap WHERE race='"+str(race_id)+"'")
-            result = cursor.fetchall()
-            inner_self.racemaps = result
-            inner_self.race_id = str(race_id)
-            cursor.close()
+            race_id = self.get_random_id("races")
+            race = self.db["races"].find_one({"_id":race_id})
+            inner_self.race = race
+            inner_self.race_id = race_id 
+               
         def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("DELETE FROM race where id='"+inner_self.race_id+"'")
-            cursor.close()
-            self.cnx.commit()
+            self.db["races"].remove({"_id":inner_self.race_id})
 
         def teardown(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("INSERT INTO race (id,name,description,race_date,max_duration,preview,location,logo_url,event_id) VALUES('"+str(inner_self.race[0])+"','"+str(inner_self.race[1])+"','"+str(inner_self.race[2])+"','"+str(inner_self.race[3])+"','"+str(inner_self.race[4])+"','"+str(inner_self.race[5])+"','"+str(inner_self.race[6])+"','"+str(inner_self.race[7])+"','"+str(inner_self.race[8])+"')")
-            for rm in inner_self.racemaps:
-                cursor.execute("INSERT INTO racemap (id,map,race) VALUES('"+str(rm[0])+"','"+str(rm[1])+"','"+str(rm[2])+"')")
-            cursor.close()
-            self.cnx.commit()
+            self.db.races.insert_one(inner_self.race)
 
         return self.create_case("removeRace", setup, run, teardown)
 
@@ -506,31 +471,11 @@ class Mongo(Base):
 
     def fetchRace(self):
         def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM race")
-            result = cursor.fetchall()
-            rand = random.randint(0,len(result)-1)
-            race_id = result[rand][0]
-            inner_self.race_id = str(race_id)
+            race_id = self.get_random_id("races")
+            inner_self.race_id = race_id
 
         def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT race.*,event.name,racemap.id,racemap.map,p1.lat,p1.lng,p1.alt,p2.lat,p2.lng,p2.alt FROM race INNER JOIN event ON race.event_id=event.id "+
-                "INNER JOIN racemap ON racemap.race = race.id "+
-                "LEFT JOIN point as p1 ON racemap.start_point = p1.id "+
-                "LEFT JOIN point as p2 ON racemap.goal_point = p2.id "+
-                "WHERE race.ID="+inner_self.race_id)
-            result = cursor.fetchall()[0]
-            map_id = str(result[13])
-            race = result[:14]
-            start_point = result[14:17]
-            goal_point = result[17:20]
-            cursor.execute("SELECT * FROM point WHERE map = "+map_id +" ORDER BY orderIndex")
-            mapCoords = cursor.fetchall()[0]
-            cursor.execute("SELECT participant.id, participant.username,participant.fullname FROM activity INNER JOIN participant ON activity.participant=participant.id WHERE race = "+inner_self.race_id)
-            participants = cursor.fetchall()
-            returnable = dict(race=race,start_point=start_point,goal_point=goal_point,map_coordinates=mapCoords,participants=participants)
-            cursor.close()
+            race = self.db["races"].find_one({"_id":race_id})
 
         def teardown(inner_self):
             pass
