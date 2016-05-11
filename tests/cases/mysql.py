@@ -287,15 +287,14 @@ class MySQL(Base):
         ##Drop old tables
         try:
             cursor = self.cnx.cursor()
-            #cursor.execute("DROP TABLE comment")
-            #cursor.execute("DROP TABLE image")
-            #cursor.execute("DROP TABLE skuValue")
-            #cursor.execute("DROP TABLE header")
-            #cursor.execute("DROP TABLE sku")
-            #cursor.execute("DROP TABLE contribution")
-            #cursor.execute("DROP TABLE contributor")
-            #cursor.execute("DROP TABLE project")
-            cursor.execute("DROP TABLE abc")
+            cursor.execute("DROP TABLE comment")
+            cursor.execute("DROP TABLE image")
+            cursor.execute("DROP TABLE skuValue")
+            cursor.execute("DROP TABLE header")
+            cursor.execute("DROP TABLE sku")
+            cursor.execute("DROP TABLE contribution")
+            cursor.execute("DROP TABLE contributor")
+            cursor.execute("DROP TABLE project")
             self.cnx.commit()
         except mysql.connector.Error as err:
             print(err.msg)
@@ -303,6 +302,7 @@ class MySQL(Base):
             print("Dropping OK")
         cursor.close()
 
+        """
         cursor = self.cnx.cursor()
         cursor.execute("CREATE TABLE abc (id bigint NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB")
         values = ""
@@ -312,9 +312,9 @@ class MySQL(Base):
         cursor.execute("INSERT INTO abc (id) VALUES " + values)
         cursor.close()
         self.cnx.commit()
+        """
 
         ##Create tables
-        """
         print("Creating tables")
         TABLES = []
         TABLES.append(
@@ -457,7 +457,7 @@ class MySQL(Base):
                     cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
                         "VALUES('Haha, cool image','2016-04-04','"+str(users[x*2+z])+"','"+str(image_id)+"')")
         self.cnx.commit()
-        cursor.close()"""
+        cursor.close()
 
 
     def clearData(self):
