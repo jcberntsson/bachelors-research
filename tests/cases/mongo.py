@@ -18,52 +18,61 @@ class Mongo(Base):
     def initRaceOne(self):
         # Users and Organizers
         users = []
-        organizers = []
-        allCordinates = []
-        for x in range(100):
+        print("Creating users and organizers")
+        for x in range(self.quantity_of("users")):
             users.append(self.db.users.insert_one({
                 "username": "user_" + str(x),
                 "email": "user_" + str(x) + "@gmail.com",
                 "password": "SuperHash"
             }).inserted_id)
+        organizers = []
+        for x in range(self.quantity_of("organizers")):
             organizers.append(self.db.organizers.insert_one({
                 "username": "organizer_" + str(x),
                 "fullname": "Tester",
                 "password": "xpassx",
                 "email": "mail_" + str(x) + "@gmail.se"
             }).inserted_id)
-        # Events & Races        
-        for x in range(10):
+        print("Users and organizers done")
+        # Coordinates
+        race_coordinates = []
+        for i in range(self.quantity_of("race_coordinates")):
+            race_coordinates.append({
+                "lat": 10 + i,
+                "lng": 11 + i,
+                "alt": 12 + i,
+                "createdAt": datetime.datetime.now()
+            })
+        activity_coordinates = []
+        for i in range(self.quantity_of("activity_coordinates")):
+            activity_coordinates.append({
+                "lat": 10 + i,
+                "lng": 11 + i,
+                "alt": 12 + i,
+                "createdAt": datetime.datetime.now()
+            })
+        # Events & Races
+        print("Creating events")
+        for x in range(self.quantity_of("events")):
             event = self.db.events.insert_one({
                 "name": "event_" + str(x),
                 "logoURL": "gooogle.se/img.png",
                 "organizer": organizers[x * 5]
             }).inserted_id
-            for y in range(5):
-                allCordinates = []
-                for i in range(98):
-                    allCordinates.append({
-                        "lat": 10 + i,
-                        "lng": 11 + i,
-                        "alt": 12 + i,
-                        "createdAt":datetime.datetime.now()
-                    })
+            for y in range(self.quantity_of("races")):
                 rands = []
                 activities = []
-                for z in range(10):
+                for z in range(self.quantity_of("activities")):
                     # Participants
-                    rand = self.new_rand_int(rands, 0, 99)
+                    rand = self.new_rand_int(rands, 0, len(users) - 1)
                     rands.append(rand)
-                    rand2 = self.new_rand_int(rands, 0, 99)
-                    rands.append(rand2)
                     activities.append({
                         "participating": users[rand],
                         "joinedAt": "2016-08-08",
-                        "following": [users[rand2]],
-                        "coordinates": allCordinates,
+                        "following": [users[rand + 1]],
+                        "coordinates": activity_coordinates,
                     })
-
-                raceId = self.db.races.insert_one({
+                self.db.races.insert_one({
                     "name": "race_" + str(x * y + x + y),
                     "description": "A nice race to participate in.",
                     "date": "2016-06-13",
@@ -73,30 +82,32 @@ class Mongo(Base):
                     "logoURL": "google.se/img.png",
                     "event": event,
                     "start": {"lat": 33, "lng": 44, "alt": 100},
-                    "coordinates": allCordinates,
+                    "coordinates": race_coordinates,
                     "end": {"lat": 40, "lng": 34, "alt": 320},
                     "activities": activities
-                }).inserted_id
+                })
+            print("Event done")
 
     def initSkim(self):
         # User array to be able to print out in console
         users = []
+        print("Creating users")
         # Users is a collection of user documents in skimdatabase
-        for x in range(50):
+        for x in range(self.quantity_of("users")):
             users.append(self.db.users.insert_one({
                 "username": "user_" + str(x),
                 "email": "user_" + str(x) + "@gmail.com",
                 "password": "xpassx"
             }).inserted_id)
+        print("Users done")
         # Projects and collaborator
-        for x in range(8):
-            collaboratorsData = []
-            for y in range(10):
-                collaboratorsData.append(self.db.users.find({}, {})[x * 2 + y])
+        print("Creating projects")
+        for x in range(self.quantity_of("projects")):
+            collaborators = []
+            for y in range(self.quantity_of("collaborators")):
+                collaborators.append(self.db.users.find({}, {})[x * 2 + y])
             images = []
-            skulist = []
-            skuimages = []
-            for y in range(4):
+            for y in range(self.quantity_of("images")):
                 # Images
                 nbr = x + 5 + y
                 images.append(self.db.images.insert_one({
@@ -114,50 +125,56 @@ class Mongo(Base):
                     "accepted": False,
                     "comments": []
                 }).inserted_id)
+            sku_list = []
+            for y in range(self.quantity_of("skus")):
                 # SKUS
-                skuValues = []
-                for z in range(10):
+                sku_values = []
+                for z in range(self.quantity_of("sku_values")):
                     # SKU Values
-                    skuValues.append({
+                    sku_values.append({
                         "header": "header_" + str(z),
                         "value": str(z)
                     })
-                    # SKU images
-                for z in range(2):
-                    # Comments
-                    comment = {
-                        "text": "Haha, cool image bastard",
-                        "createdAt": "2016-04-04",
-                        "made_by": users[x * 2 + z]
+                # SKU images
+                sku_images = []
+                for z in range(self.quantity_of("sku_images")):
+                    comments = []
+                    for z in range(self.quantity_of("image_comments")):
+                        # Comments
+                        comment = {
+                            "text": "Haha, cool image bastard",
+                            "createdAt": "2016-04-04",
+                            "made_by": users[x * 2 + z]
+                        }
+                        comments.append(comment)
+                    nbr = x + 5 + y
+                    image_sku = {
+                        "name": "sku_image_" + str(nbr),
+                        "originalName": "original_name",
+                        "extension": "jpg",
+                        "encoding": "PNG/SFF",
+                        "size": 1024,
+                        "height": 1080,
+                        "width": 720,
+                        "verticalDPI": 40,
+                        "horizontalDPI": 50,
+                        "bitDepth": 15,
+                        "createdAt": "2016-03-03",
+                        "accepted": False,
+                        "comments": comments
                     }
-                nbr = x + 5 + y
-                imagesku = {
-                    "name": "sku_image_" + str(nbr),
-                    "originalName": "original_name",
-                    "extension": "jpg",
-                    "encoding": "PNG/SFF",
-                    "size": 1024,
-                    "height": 1080,
-                    "width": 720,
-                    "verticalDPI": 40,
-                    "horizontalDPI": 50,
-                    "bitDepth": 15,
-                    "createdAt": "2016-03-03",
-                    "accepted": False,
-                    "comments": comment
-                }
-                skuimages.append(imagesku)
-                skulist.append(self.db.skus.insert_one({
+                    sku_images.append(image_sku)
+                sku_list.append(self.db.skus.insert_one({
                     "name": "sku_" + str(nbr),
-                    "sku_values": skuValues,
-                    "images_sku": skuimages
+                    "sku_values": sku_values,
+                    "images_sku": sku_images
                 }).inserted_id)
 
-            project = self.db.projects.insert_one({
+            self.db.projects.insert_one({
                 "name": "project_" + str(x),
-                "collaborator": collaboratorsData,
+                "collaborator": collaborators,
                 "images": images,
-                "skus": skulist
+                "skus": sku_list
             })
     def reference(self):
         for a in range(100):
