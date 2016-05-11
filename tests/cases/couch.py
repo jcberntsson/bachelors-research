@@ -437,7 +437,10 @@ class Couch(Base):
             inner_self.participant_id = activity['participant_id']
 
         def run(inner_self):
-
+            pass
+            #out = self.db.view('_design/unparticipate', key=inner_self.activity_id)
+            #for row in out:
+                #print(row)
 
         def teardown(inner_self):
             pass
