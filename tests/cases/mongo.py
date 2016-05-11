@@ -458,12 +458,8 @@ class Mongo(Base):
             pass
 
         def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT activity.race, count(*) as rating FROM activity "
-                "INNER JOIN follow on follow.activity=activity.id GROUP BY activity.race ORDER BY rating DESC LIMIT 10")
-            result = cursor.fetchall()
-            cursor.close()
-
+            race = self.db.races.aggregate([{"$unwind": '$activities'},{"$group": {"_id": '$_id',"totalsize": {"$sum": {"$size": '$activities.following'}}}},{"$limit":10}])
+            
         def teardown(inner_self):
             pass
 

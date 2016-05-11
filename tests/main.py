@@ -5,7 +5,7 @@ from cases import Mongo
 if __name__ == '__main__':
     m = Mongo()
     m.init("raceone")
-    case = m.removeRace()
+    case = m.fetchHotRaces()
     case.setup()
     case.run()
     case.teardown()
