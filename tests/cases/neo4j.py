@@ -6,14 +6,14 @@ from neo4j.v1 import GraphDatabase, basic_auth
 
 
 class Neo4j(Base):
-    driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
-    #driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
+    #driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
+    driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
     session = driver.session()
 
     # connect to authenticated graph database
     # graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
-    #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
-    graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
     ####	DATA INITIALIZATION		####
