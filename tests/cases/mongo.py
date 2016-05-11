@@ -401,19 +401,16 @@ class Mongo(Base):
 
     def fetchCoords(self):
         def setup(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT id FROM activity")
-            result = cursor.fetchall()
-            rand = random.randint(0,len(result)-1)
-            activity_id = result[rand][0]
-            inner_self.activity_id = str(activity_id)
-            cursor.close()
+            race_id = self.get_random_id("races")
+            race = self.db["races"].find_one({"_id":race_id},{"coordinates":0})
+            random = randint(0, len(race["activities"]) - 1)
+            participant_id = race["activities"][random]["participating"]
+            inner_self.race_id = race_id
+            inner_self.participant_id = participant_id
 
         def run(inner_self):
-            cursor = self.cnx.cursor()
-            cursor.execute("SELECT * FROM activityCoordinate WHERE activity="+inner_self.activity_id)
-            result = cursor.fetchall()
-            cursor.close()
+            race = self.db["races"].find_one({"_id":inner_self.race_id},{"coordinates":0,"activities":{"$elemMatch":{"participating":inner_self.participant_id}},"activities.participating":0,"activities.following":0,"activities.joinedAt":0})
+            coordinates = race["activities"][0]["coordinates"]
 
         def teardown(inner_self):
             pass
