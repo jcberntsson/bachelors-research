@@ -260,7 +260,6 @@ class Neo4j(Base):
             #print(info)
             inner_self.user_id = info['user_id']
             inner_self.image_id = info['image_id']
-            print("USER: %s, IMAGE: %s" % (inner_self.user_id, inner_self.image_id))
 
         def run(inner_self):
             self.session.run(
@@ -291,9 +290,9 @@ class Neo4j(Base):
                 'RETURN ID(sku) AS sku_id, ID(image) AS image_id '
                 'LIMIT 1' % inner_self.project_id
             )
-            out.forward()
-            inner_self.sku_id = out.current['sku_id']
-            inner_self.image_id = out.current['image_id']
+            info = list(out)[0]
+            inner_self.sku_id = info['sku_id']
+            inner_self.image_id = info['image_id']
 
         def run(inner_self):
             self.session.run(
