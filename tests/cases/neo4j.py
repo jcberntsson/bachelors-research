@@ -747,6 +747,20 @@ class Neo4j(Base):
 
         return self.create_case("fetchRace", setup, run, teardown)
 
+    def easy_get(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            self.graph.run(
+                'RETURN 1'
+            ).dump()
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("easy_get", setup, run, teardown)
+
     def get_random_id(self, entity_name):
         from random import randint
         entities = self.graph.run(
