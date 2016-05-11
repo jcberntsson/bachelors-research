@@ -150,3 +150,9 @@ class Base:
     @staticmethod
     def create_case(name, setup, run, teardown):
         return type(name, (Case, object), {"setup": setup, "run": run, "teardown": teardown})()
+
+    @staticmethod
+    def get_random_of(values):
+        from random import randint
+        index = randint(0, len(values) - 1)
+        return values[index]

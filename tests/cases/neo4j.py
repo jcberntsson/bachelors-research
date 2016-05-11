@@ -971,12 +971,6 @@ class Neo4j(Base):
         return entities.current['ent_id'] if entity_count > 0 and entities.forward(forward_count) else None
 
     @staticmethod
-    def get_random_of(values):
-        from random import randint
-        index = randint(0, len(values) - 1)
-        return values[index]
-
-    @staticmethod
     def evaluate(cursor, name):
         return Neo4j.first_of(cursor)[name]
 
