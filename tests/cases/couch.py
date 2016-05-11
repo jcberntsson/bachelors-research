@@ -437,7 +437,7 @@ class Couch(Base):
             inner_self.participant_id = activity['participant_id']
 
         def run(inner_self):
-            pass
+
 
         def teardown(inner_self):
             pass
