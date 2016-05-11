@@ -188,7 +188,7 @@ class Mongo(Base):
             
         def run(inner_self):
             out = self.db.users.find()
-            print(list(out))
+            users = list(out)
             # this will print out the value print(list(self.db.users.find())) 
         
         def teardown(inner_self):
