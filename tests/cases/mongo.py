@@ -9,7 +9,7 @@ class Mongo(Base):
     # connect to authenticated mongo database
     client = MongoClient("mongodb://46.101.103.26:27017")
     #client = MongoClient("mongodb://10.135.3.156:27017")
-    db = client.skimdatabase
+    db = client.db
 
     ####################################
     ####	DATA INITIALIZATION		####
@@ -57,14 +57,14 @@ class Mongo(Base):
             event = self.db.events.insert_one({
                 "name": "event_" + str(x),
                 "logoURL": "gooogle.se/img.png",
-                "organizer": organizers[x * 5]
+                "organizer": organizers[x]
             }).inserted_id
             for y in range(self.quantity_of("races")):
                 rands = []
                 activities = []
                 for z in range(self.quantity_of("activities")):
                     # Participants
-                    rand = self.new_rand_int(rands, 0, len(users) - 1)
+                    rand = self.new_rand_int(rands, 0, len(users) - 2)
                     rands.append(rand)
                     activities.append({
                         "participating": users[rand],
@@ -105,10 +105,19 @@ class Mongo(Base):
         for x in range(self.quantity_of("projects")):
             collaborators = []
             for y in range(self.quantity_of("collaborators")):
-                collaborators.append(self.db.users.find({}, {})[x * 2 + y])
+                collaborators.append(users[(x + 1) * y])
             images = []
-            for y in range(self.quantity_of("images")):
+            for y in range(self.quantity_of("project_images")):
                 # Images
+                comments = []
+                for z in range(self.quantity_of("image_comments")):
+                    # Comments
+                    comment = {
+                        "text": "Haha, cool image bastard",
+                        "createdAt": "2016-04-04",
+                        "made_by": self.get_random_of(collaborators)
+                    }
+                    comments.append(comment)
                 nbr = x + 5 + y
                 images.append(self.db.images.insert_one({
                     "name": "image_" + str(nbr),
@@ -123,7 +132,7 @@ class Mongo(Base):
                     "bitDepth": 15,
                     "createdAt": "2016-03-03",
                     "accepted": False,
-                    "comments": []
+                    "comments": comments
                 }).inserted_id)
             sku_list = []
             for y in range(self.quantity_of("skus")):
@@ -139,12 +148,12 @@ class Mongo(Base):
                 sku_images = []
                 for z in range(self.quantity_of("sku_images")):
                     comments = []
-                    for z in range(self.quantity_of("image_comments")):
+                    for a in range(self.quantity_of("image_comments")):
                         # Comments
                         comment = {
                             "text": "Haha, cool image bastard",
                             "createdAt": "2016-04-04",
-                            "made_by": users[x * 2 + z]
+                            "made_by": self.get_random_of(collaborators)
                         }
                         comments.append(comment)
                     nbr = x + 5 + y
@@ -165,7 +174,7 @@ class Mongo(Base):
                     }
                     sku_images.append(image_sku)
                 sku_list.append(self.db.skus.insert_one({
-                    "name": "sku_" + str(nbr),
+                    "name": "sku_" + str(x * y),
                     "sku_values": sku_values,
                     "images_sku": sku_images
                 }).inserted_id)
@@ -176,14 +185,10 @@ class Mongo(Base):
                 "images": images,
                 "skus": sku_list
             })
-
-
-            # cursor = self.db.projects.find()
-            # for document in cursor:
-            #     print (document)
+            print("Project done")
 
     def clearData(self):
-        self.client.drop_database("skimdatabase")
+        self.client.drop_database("db")
 
     ############################
     ####	TEST METHODS	####

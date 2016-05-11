@@ -20,6 +20,13 @@ class Neo4j(Base):
     ####	DATA INITIALIZATION		####
     ####################################
 
+    def initReference(self):
+        session = self.session
+        for x in range(self.quantity_of("blob")):
+            session.run(
+                'CREATE (test:TEST {name:"Hello"})'
+            )
+
     def initRaceOne(self):
         session = self.session
 
@@ -47,7 +54,7 @@ class Neo4j(Base):
             event_cursor = session.run(
                 'START organizer=Node(%d) '
                 'CREATE (event:EVENT {name:"event_name",logoURL:"google.se/img.png"})-[:MADE_BY]->(organizer) '
-                'RETURN ID(event) AS event_id' % organizer_ids[x * 5]
+                'RETURN ID(event) AS event_id' % organizer_ids[x]
             )
             event_id = self.evaluate(event_cursor, "event_id")
             for y in range(self.quantity_of("races")):
@@ -373,7 +380,38 @@ class Neo4j(Base):
     ############################
     ####	TEST METHODS	####
     ############################
-    # TODO: All inserting methods should first find the nodes that it is relating for
+
+    # Reference
+    def tinyGet(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.session.run(
+                'RETURN 1'
+            )
+            results = list(cursor)
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("tinyGet", setup, run, teardown)
+
+    def smallGet(self):
+        def setup(inner_self):
+            pass
+
+        def run(inner_self):
+            cursor = self.session.run(
+                'MATCH (test:TEST) '
+                'RETURN test'
+            )
+            results = list(cursor)
+
+        def teardown(inner_self):
+            pass
+
+        return self.create_case("smallGet", setup, run, teardown)
 
     # SKIM
     def fetchSKU(self):

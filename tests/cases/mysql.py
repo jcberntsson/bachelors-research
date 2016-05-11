@@ -55,7 +55,7 @@ class MySQL(Base):
             eventname = "event_" + str(x)
             cursor.execute(
                 "INSERT INTO event (name,organizer_id,logoUrl) "
-                "VALUES('%s','%d','google.se/img.png')" % (eventname, organizers[x * 5])
+                "VALUES('%s','%d','google.se/img.png')" % (eventname, organizers[x])
             )
             event_id = cursor.lastrowid
             for y in range(self.quantity_of("races")):

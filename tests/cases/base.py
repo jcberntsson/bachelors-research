@@ -25,6 +25,9 @@ class Base:
             "sku_values": 15,
             "sku_images": 2,
             "image_comments": 5
+        },
+        "reference": {
+            "blob": 1000
         }
     }
 
