@@ -192,7 +192,9 @@ class MySQL(Base):
         cursor.close()
     def initReference(self):
         cursor = self.cnx.cursor()
-        cursor.execute("CREATE TABLE abc (id bigint not null auto_increment, primary key(id)) ENGINE=InnoDB")
+        cursor.execute("CREATE TABLE abc (id bigint not null auto_increment,name varchar(20), primary key(id)) ENGINE=InnoDB")
+        for i in range(100):
+            cursor.execute("INSERT INTO abc(name) VALUES('hello')")
         self.cnx.commit()
         cursor.close()
 
