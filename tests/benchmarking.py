@@ -32,7 +32,7 @@ test_cases = {
         'fetchCoords',
         'removeCoords',
         'fetchHotRaces',
-        'fetchRace'
+        'fetchRace',
         'removeRace'
     ],
     'reference': [
