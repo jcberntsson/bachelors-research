@@ -1041,7 +1041,7 @@ class MySQL(Base):
             cursor = self.cnx.cursor()
             cursor.execute("SELECT * FROM abc")
             result = cursor.fetchall()
-            print(result)
+            print(len(result))
             cursor.close()
 
         def teardown(inner_self):
