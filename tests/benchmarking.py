@@ -21,8 +21,6 @@ test_cases = {
         'pairImageSKU',
         'addRowsToSKU',
         'fetchAllUserComments'
-        #'easy_get',
-        #'easy_get2'
     ],
     'raceone': [
         'follow',
@@ -35,6 +33,7 @@ test_cases = {
         'removeCoords',
         'fetchHotRaces',
         'fetchRace'
+        'removeRace'
     ],
     'reference': [
         'tinyGet',
