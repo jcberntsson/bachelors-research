@@ -49,6 +49,8 @@ class Base:
             self.initRaceOne()
         elif company == "skim":
             self.initSkim()
+        elif company == "reference":
+            self.initReference()
         else:
             print(company + " not supported as type")
 
@@ -58,6 +60,10 @@ class Base:
 
     @abc.abstractmethod
     def initSkim(self):
+        return
+
+    @abc.abstractmethod
+    def initReference(self):
         return
 
     @abc.abstractmethod
@@ -136,6 +142,15 @@ class Base:
 
     @abc.abstractmethod
     def fetchHotRaces(self):
+        pass
+
+    # Reference
+    @abc.abstractmethod
+    def tinyGet(self):
+        pass
+
+    @abc.abstractmethod
+    def smallGet(self):
         pass
 
     # Help methods
