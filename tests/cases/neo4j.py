@@ -781,8 +781,8 @@ class Neo4j(Base):
             #while out.forward():
             #    print(out.current)
             out = self.graph.find("TEST")
-            #for test in out:
-            #    print(test)
+            for test in out:
+                a = test
 
         def teardown(inner_self):
             pass
