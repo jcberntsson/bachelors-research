@@ -169,18 +169,6 @@ class Mongo(Base):
     ############################
     # TODO: All inserting methods should first find the nodes that it is relating for
 
-    def easy_get(self):
-        def setup(inner_self):
-            pass
-
-        def run(inner_self):
-            self.db.skus.find_one({"_id": inner_self.sku_id})
-
-        def teardown(inner_self):
-            pass
-
-        return self.create_case("easy_get", setup, run, teardown)
-
     # SKIM
     def fetchSKU(self):
         def setup(inner_self):

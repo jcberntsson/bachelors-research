@@ -281,19 +281,19 @@ class Neo4j(Base):
             inner_self.image_id = info['image_id']
 
         def run(inner_self):
-            inner_self.comment_cursor = self.session.run(
+            comment_cursor = self.session.run(
                 'MATCH (user:USER)<-[:COLLABORATOR]-(project:PROJECT)<-[:IN]-(image:IMAGE) '
                 'WHERE ID(user)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)<-[:ON]-(comment:COMMENT {text:"Ooh, another new comment!", createdAt:"2015-03-02@13:37"} )-[:MADE_BY]->(user) '
                 'RETURN ID(comment) AS comment_id' % (inner_self.user_id, inner_self.project_id, inner_self.image_id)
             )  # .dump()
+            inner_self.comment_id = list(comment_cursor)[0].comment_id
 
         def teardown(inner_self):
-            comment_id = list(inner_self.comment_cursor)[0].comment_id
             self.session.run(
                 'START comment=Node(%d) '
                 'DETACH DELETE comment '
-                'RETURN count(*) AS deleted_nodes' % comment_id
+                'RETURN count(*) AS deleted_nodes' % inner_self.comment_id
             )  # .dump()
 
         return self.create_case("commentOnImage", setup, run, teardown)
@@ -312,13 +312,14 @@ class Neo4j(Base):
             inner_self.image_id = info['image_id']
 
         def run(inner_self):
-            self.session.run(
+            belong_cursor = self.session.run(
                 'MATCH (sku:SKU)-[:IN]->(project:PROJECT)<-[in:IN]-(image:IMAGE) '
                 'WHERE ID(sku)=%d AND ID(project)=%d AND ID(image)=%d '
                 'CREATE (image)-[b:BELONGS_TO]->(sku) '
                 'DELETE in '
-                'RETURN ID(b) AS ID' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
+                'RETURN ID(b) AS id' % (inner_self.sku_id, inner_self.project_id, inner_self.image_id)
             )  # .dump()
+            inner_self.belong_id = list(belong_cursor)[0].id
 
         def teardown(inner_self):
             self.session.run(
