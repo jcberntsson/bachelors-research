@@ -25,16 +25,16 @@ test_cases = {
         #'easy_get2'
     ],
     'raceone': [
-        'follow',
-        'unfollow',
+        #'follow',
+        #'unfollow',
         'insertCoords',
-        'fetchParticipants',
-        'fetchParticipants2',
-        'unparticipate',
-        'fetchCoords',
+        #'fetchParticipants',
+        #'fetchParticipants2',
+        #'unparticipate',
+        #'fetchCoords',
         #'removeCoords',
-        'fetchHotRaces',
-        'fetchRace'
+        #'fetchHotRaces',
+        #'fetchRace'
     ]
 }
 
@@ -68,6 +68,10 @@ elif database == 'mysql':
 elif database == 'mongo':
     from cases.mongo import Mongo
     database_class = Mongo()
+    
+elif database == 'couch':
+    from cases.couch import Couch
+    database_class = Couch()
 
 else:
     from cases.neo4j import Neo4j
