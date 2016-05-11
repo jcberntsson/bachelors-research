@@ -21,7 +21,8 @@ test_cases = {
         #'pairImageSKU',
         #'addRowsToSKU',
         #'fetchAllUserComments'
-        'easy_get'
+        'easy_get',
+        'easy_get2'
     ],
     'raceone': [
         'follow',
@@ -44,7 +45,7 @@ print("Extracting arguments")
 # Extract arguments
 database = argv[1]
 company = argv[2]
-iterations = 10000  # Number of runs per test case
+iterations = 100  # Number of runs per test case
 
 # Test arguments
 is_valid_company = (company == "raceone" or company == "skim")
