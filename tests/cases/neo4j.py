@@ -260,6 +260,7 @@ class Neo4j(Base):
             #print(info)
             inner_self.user_id = info['user_id']
             inner_self.image_id = info['image_id']
+            print("USER: %s, IMAGE: %s" % (inner_self.user_id, inner_self.image_id))
 
         def run(inner_self):
             self.session.run(
@@ -270,7 +271,7 @@ class Neo4j(Base):
             )  # .dump()
 
         def teardown(inner_self):
-            self.graph.run(
+            self.session.run(
                 'MATCH '
                 '   (user:USER)<-[collaborator:COLLABORATOR]-(project:PROJECT)<-[in:IN]-(image:IMAGE), '
                 '   (user)<-[made:MADE_BY]-(comment:COMMENT)-[on:ON]->(image) '
