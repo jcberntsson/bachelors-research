@@ -15,14 +15,27 @@ if len(argv) < 2:
 # Declaration of all test cases. Should reflect the google spreadsheet to enable synchronization.
 test_cases = {
     'skim': [
-        'pairImageSKU'
+        #'fetchSKU',
+        #'fetchUsers',
+        #'commentOnImage',
+        #'pairImageSKU',
+        #'addRowsToSKU',
+        #'fetchAllUserComments'
+        #'easy_get',
+        #'easy_get2'
     ],
     'raceone': [
-        'unfollow',
-        'fetchComments',
-        'fetchHotPosts'
-    ],
-    'reddit': []
+        #'follow',
+        #'unfollow',
+        'insertCoords',
+        #'fetchParticipants',
+        #'fetchParticipants2',
+        #'unparticipate',
+        #'fetchCoords',
+        #'removeCoords',
+        #'fetchHotRaces',
+        #'fetchRace'
+    ]
 }
 
 # Definition of the column system in the Google Spreadsheet
@@ -35,7 +48,7 @@ company = argv[2]
 iterations = 100  # Number of runs per test case
 
 # Test arguments
-is_valid_company = (company == "raceone" or company == "skim" or company == "reddit")
+is_valid_company = (company == "raceone" or company == "skim")
 if not is_valid_company:
     print("Invalid company " + company)
     print("Syntax: 'python benchmarking.py <database> <company>'")
@@ -55,12 +68,16 @@ elif database == 'mysql':
 elif database == 'mongo':
     from cases.mongo import Mongo
     database_class = Mongo()
+    
+elif database == 'couch':
+    from cases.couch import Couch
+    database_class = Couch()
 
 else:
     from cases.neo4j import Neo4j
     database_class = Neo4j()
 
-# database_class.init(company)
+#database_class.init(company)
 print("Database is done")
 
 # Configure the google sheet sync
