@@ -190,6 +190,11 @@ class MySQL(Base):
                         )
         self.cnx.commit()
         cursor.close()
+    def initReference(self):
+        cursor = self.cnx.cursor()
+        cursor.execute("CREATE TABLE abc (id bigint not null auto_increment, primary key(id)) ENGINE=InnoDB")
+        self.cnx.commit()
+        cursor.close()
 
     def clearData(self):
         try:
@@ -231,6 +236,16 @@ class MySQL(Base):
             print(err.msg)
         else:
             print("Dropping OK")
+        try:
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE abc")
+            self.cnx.commit()
+            cursor.close()
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("Dropping OK")
+            
 
     ############################
     ####	TEST METHODS	####
@@ -802,7 +817,7 @@ class MySQL(Base):
 
         return self.create_case("fetchRace", setup, run, teardown)
 
-    def easy_get(self):
+    def tinyGet(self):
         def setup(inner_self):
             pass
 
@@ -817,7 +832,7 @@ class MySQL(Base):
 
         return self.create_case("easy_get", setup, run, teardown)
 
-    def easy_get2(self):
+    def smallGet(self):
         def setup(inner_self):
             pass
 
