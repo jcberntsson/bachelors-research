@@ -242,6 +242,36 @@ class Mongo(Base):
             container.append(entity["_id"])
         random = randint(0, len(container) - 1)
         return container[random]
+
+	# Run project on: python main.py
+    
+   
+   
+#    test_cases = {
+#     'skim': [
+#         #'fetchSKU',
+#         #'fetchUsers',
+#         #'commentOnImage',
+#         #'pairImageSKU',
+#         #'addRowsToSKU',
+#         #'fetchAllUserComments'
+#         #'easy_get',
+#         #'easy_get2'
+#     ],
+#     'raceone': [
+#         #'follow',
+#         #'unfollow',
+#         'insertCoords',
+#         #'fetchParticipants',
+#         #'fetchParticipants2',
+#         #'unparticipate',
+#         #'fetchCoords',
+#         #'removeCoords',
+#         #'fetchHotRaces',
+#         #'fetchRace'
+#     ]
+# }
+
    
     # RACEONE
     def follow(self):
@@ -473,3 +503,4 @@ class Mongo(Base):
 
         return self.create_case("fetchRace", setup, run, teardown)
     
+

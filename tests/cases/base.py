@@ -6,26 +6,44 @@ from core import Case
 
 class Base:
 
-    data_size = {
+    quantities = {
         "raceone": {
             "users": 100,
+            "organizers": 10,
             "events": 10,
             "races": 5,
             "race_coordinates": 100,
             "activities": 10,
-            "activity_coords": 50
+            "activity_coordinates": 50
         },
         "skim": {
-            "users": 100
+            "users": 100,
+            "projects": 10,
+            "collaborators": 10,
+            "project_images": 100,
+            "skus": 20,
+            "sku_values": 15,
+            "sku_images": 2,
+            "image_comments": 5
         }
     }
 
-    def set_data_size(self, multiplicator):
-        for company, props in self.data_size:
-            for name in props:
+    current_company = None
+
+    def quantity_of(self, entity):
+        if self.current_company is None:
+            return 0
+        else:
+            return self.quantities[self.current_company][entity.lower()]
+
+    def multiply_quantities_with(self, multiplicator):
+        for company, props in self.quantities.items():
+            for name, value in props.items():
                 props[name] *= multiplicator
 
     def init(self, company):
+        company = company.lower()
+        self.current_company = company
         self.clearData()
         if company == "raceone":
             self.initRaceOne()
@@ -132,3 +150,9 @@ class Base:
     @staticmethod
     def create_case(name, setup, run, teardown):
         return type(name, (Case, object), {"setup": setup, "run": run, "teardown": teardown})()
+
+    @staticmethod
+    def get_random_of(values):
+        from random import randint
+        index = randint(0, len(values) - 1)
+        return values[index]
