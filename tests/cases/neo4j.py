@@ -6,52 +6,102 @@ from neo4j.v1 import GraphDatabase, basic_auth
 
 
 class Neo4j(Base):
-    #driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "kandidat"))
-    #driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
-    driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
+    # driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "kandidat"))
+    driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
+    #driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
     session = driver.session()
 
     # connect to authenticated graph database
-    #graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
-    graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
-    #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
+    # graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
     ####	DATA INITIALIZATION		####
     ####################################
 
-    def init_raceone(self):
+    def initRaceOne(self):
         session = self.session
 
-        users = []
-        organizers = []
-        for x in range(100):
-            user = session.run(
-                'CREATE (user:USER { username:"user_%s", fullname:"Tester", password:"SuperHash" }) RETURN user' % str(x)
+        user_ids = []
+        print("Creating users and organizers")
+        for x in range(self.quantity_of("users")):
+            cursor = session.run(
+                'CREATE (user:USER { username:"user_%s", fullname:"Tester", password:"SuperHash" }) '
+                'RETURN ID(user) AS user_id' % str(x)
             )
-            user = self.evaluate(user, "user").properties
-            users.append(user)
-            organizer = session.run(
-                'CREATE (organizer:ORGANIZER { username:"organizer_%s", fullname:"Tester", password:"SuperHash", email:"mail@mail.se" }) RETURN organizer' % str(x)
+            user_id = self.evaluate(cursor, "user_id")
+            user_ids.append(user_id)
+        organizer_ids = []
+        for x in range(self.quantity_of("organizers")):
+            cursor = session.run(
+                'CREATE (organizer:ORGANIZER { username:"organizer_%s", fullname:"Tester", password:"SuperHash", email:"mail@mail.se" }) '
+                'RETURN ID(organizer) AS organizer_id' % str(x)
             )
-            organizer = self.evaluate(organizer, "organizer").properties
-            organizers.append(organizer)
+            organizer_id = self.evaluate(cursor, "organizer_id")
+            organizer_ids.append(organizer_id)
+        print("Users and organizers done")
 
-        for x in range(10):
+        print("Creating events")
+        for x in range(self.quantity_of("events")):
             event_cursor = session.run(
-                'CREATE (event:EVENT '
-                '   {name:"race_name",'
-                '   description:"A nice race to participate in.",'
-                '   date:"2016-06-13",'
-                '   maxDuration:3,'
-                '   preview:"linktoimage.png",'
-                '   location:"Gothenburg, Sweden",'
-                '   logoURL:"google.se/img.png"}) '
-                'RETURN ID(event) AS event_id'
+                'START organizer=Node(%d) '
+                'CREATE (event:EVENT {name:"event_name",logoURL:"google.se/img.png"})-[:MADE_BY]->(organizer) '
+                'RETURN ID(event) AS event_id' % organizer_ids[x * 5]
             )
             event_id = self.evaluate(event_cursor, "event_id")
+            for y in range(self.quantity_of("races")):
+                race_cursor = session.run(
+                    'START event=Node(%d) '
+                    'CREATE (race:RACE '
+                    '   {name:"race_name",'
+                    '   description:"A nice race to participate in.",'
+                    '   date:"2016-06-13",'
+                    '   maxDuration:3,'
+                    '   preview:"linktoimage.png",'
+                    '   location:"Gothenburg, Sweden",'
+                    '   logoURL:"google.se/img.png"})-[:IN]->(event) '
+                    'RETURN ID(race) AS race_id' % event_id
+                )
+                race_id = self.evaluate(race_cursor, "race_id")
+                session.run(self.create_coords(self.quantity_of("race_coordinates"), race_id))
 
-    def initRaceOne(self):
+                # Participants and Followers
+                rands = []
+                for z in range(self.quantity_of("activities")):
+                    rand = self.new_rand_int(rands, 0, len(user_ids) - 2)
+                    rands.append(rand)
+                    activity_cursor = session.run(
+                        'START participant=Node(%d), follower=Node(%d), race=Node(%d) '
+                        'CREATE (participant)-[:PARTICIPATING_IN]->(activity:ACTIVITY {joinedAt:"2016-05-05"})-[:OF]->(race) '
+                        'CREATE (activity)<-[:FOLLOWING]-(follower) '
+                        'RETURN ID(activity) AS activity_id' % (user_ids[rand], user_ids[rand + 1], race_id)
+                    )
+                    activity_id = self.evaluate(activity_cursor, "activity_id")
+                    session.run(self.create_coords(self.quantity_of("activity_coordinates"), activity_id))
+                print("Race done")
+            print("Event done")
+
+    @staticmethod
+    def create_coords(nbr, for_id):
+        if nbr <= 1:
+            return ""
+        lat = 10
+        lng = 11
+        alt = 20
+        query = 'START race=Node(%d) ' \
+                'CREATE (race)-[:STARTS_WITH]->(coord0:COORDINATE { lat:%d, lng:%d, alt:%d }) ' % (
+                    for_id, lat, lng, alt)
+        for i in range(nbr - 1):
+            lat += 1
+            lng += 1
+            alt += 1
+            query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:%d, lng:%d, alt:%d }) ' % (
+                "coord" + str(i), "coord" + str(i + 1), lat, lng, alt)
+        query += 'CREATE (%s)-[:END_FOR]->(race)' % ("coord" + str(nbr - 1))
+        return query
+
+    def initRaceOne2(self):
         tx = self.graph.begin()
 
         # Users
@@ -143,18 +193,100 @@ class Neo4j(Base):
                 print("A race is done")
             print("An event is done")
         tx.commit()
-        #"""
+        # """
 
     def initSkim(self):
-        """
-        tx = self.graph.begin()
+        session = self.session
 
-        for x in range(1000):
-            tx.run(
-                'CREATE (test:TEST)'
+        user_ids = []
+        print("Creating users")
+        for x in range(self.quantity_of("users")):
+            cursor = session.run(
+                'CREATE (user:USER { username:"user_%d", email:"mail@mail.se", password:"SuperHash" }) '
+                'RETURN ID(user) AS user_id' % x
             )
+            user_id = self.evaluate(cursor, "user_id")
+            user_ids.append(user_id)
+        print("Users done")
 
-        tx.commit()"""
+        print("Creating projects")
+        for x in range(self.quantity_of("projects")):
+            project_cursor = session.run(
+                'CREATE (project:PROJECT {name:"project_%d"}) '
+                'RETURN ID(project) AS project_id' % x
+            )
+            project_id = self.evaluate(project_cursor, "project_id")
+            collaborator_ids = []
+            for y in range(self.quantity_of("collaborators")):
+                user_id = user_ids[(x + 1) * y]
+                session.run(
+                    'START project=Node(%d), collaborator=Node(%d) '
+                    'CREATE (project)-[:COLLABORATOR]->(collaborator)' % (project_id, user_id)
+                )
+                collaborator_ids.append(user_id)
+            for y in range(self.quantity_of("project_images")):
+                image_cursor = session.run(
+                    'START project=Node(%d) '
+                    'CREATE (image:IMAGE {'
+                    '   name:"image_name",'
+                    '   originalName:"original_name",'
+                    '   extension:"jpg",'
+                    '   encoding:"PNG/SFF",'
+                    '   size:1024,'
+                    '   height:1080,'
+                    '   width:720,'
+                    '   verticalDPI:40,'
+                    '   horizontalDPI:50,'
+                    '   bitDepth:15,'
+                    '   createdAt:"2016-03-03",'
+                    '   accepted:False})-[:IN]->(project) '
+                    'RETURN ID(image) AS image_id' % project_id
+                )
+                image_id = self.evaluate(image_cursor, "image_id")
+                for z in range(self.quantity_of("image_comments")):
+                    session.run(
+                        'START image=Node(%d), user=Node(%d) '
+                        'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (image_id, self.get_random_of(collaborator_ids))
+                    )
+            for y in range(self.quantity_of("skus")):
+                sku_cursor = session.run(
+                    'START project=Node(%d) '
+                    'CREATE (sku:SKU {name:"sku_name"})-[:IN]->(project) '
+                    'RETURN ID(sku) AS sku_id' % project_id
+                )
+                sku_id = self.evaluate(sku_cursor, "sku_id")
+                for z in range(self.quantity_of("sku_values")):
+                    session.run(
+                        'START sku=Node(%d) '
+                        'CREATE (value:SKU_VALUE {header:"header_%d", value:%d})-[:IN]->(sku) ' % (sku_id, z, z)
+                    )
+                for z in range(self.quantity_of("sku_images")):
+                    image_cursor = session.run(
+                        'START sku=Node(%d) '
+                        'CREATE (image:IMAGE {'
+                        '   name:"image_name",'
+                        '   originalName:"original_name",'
+                        '   extension:"jpg",'
+                        '   encoding:"PNG/SFF",'
+                        '   size:1024,'
+                        '   height:1080,'
+                        '   width:720,'
+                        '   verticalDPI:40,'
+                        '   horizontalDPI:50,'
+                        '   bitDepth:15,'
+                        '   createdAt:"2016-03-03",'
+                        '   accepted:False})-[:BELONGS_TO]->(sku) '
+                        'RETURN ID(image) AS image_id' % sku_id
+                    )
+                    image_id = self.evaluate(image_cursor, "image_id")
+                    for a in range(self.quantity_of("image_comments")):
+                        session.run(
+                            'START image=Node(%d), user=Node(%d) '
+                            'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (image_id, self.get_random_of(collaborator_ids))
+                        )
+            print("Project done")
+
+    def initSkim2(self):
         tx = self.graph.begin()
 
         # Users
@@ -285,11 +417,11 @@ class Neo4j(Base):
                 'RETURN ID(image) AS image_id, ID(user) AS user_id '
                 'LIMIT 1' % inner_self.project_id
             )
-            #out.forward()
-            #inner_self.user_id = out.current['user_id']
-            #inner_self.image_id = out.current['image_id']
+            # out.forward()
+            # inner_self.user_id = out.current['user_id']
+            # inner_self.image_id = out.current['image_id']
             info = list(out)[0]
-            #print(info)
+            # print(info)
             inner_self.user_id = info['user_id']
             inner_self.image_id = info['image_id']
 
@@ -464,9 +596,11 @@ class Neo4j(Base):
             prev_id = out['coord']
 
             query = 'START first=Node(%d), activity=Node(%d) ' \
-                    'CREATE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (prev_id, inner_self.activity_id)
+                    'CREATE (first)-[:FOLLOWED_BY]->(coord0:COORDINATE { lat:10, lng:11, alt:20 }) ' % (
+                    prev_id, inner_self.activity_id)
             for i in range(99):
-                query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % ("coord" + str(i), "coord" + str(i + 1))
+                query += ' CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:10, lng:11, alt:20 })' % (
+                "coord" + str(i), "coord" + str(i + 1))
             query += ' CREATE (%s)-[:END_FOR]->(activity)' % "coord100"
             out = self.session.run(query)
             result = list(out)
@@ -637,7 +771,7 @@ class Neo4j(Base):
                 if i == 1:
                     inner_self.coord_ids.append(coord_id)
                 i = (i + 1) % 3
-            #print(inner_self.race_id)
+                # print(inner_self.race_id)
 
         def run(inner_self):
             tx = self.session.begin_transaction()
@@ -803,7 +937,7 @@ class Neo4j(Base):
         def run(inner_self):
             out = self.graph.run(
                 'RETURN 1'
-            )#.dump()
+            )  # .dump()
 
         def teardown(inner_self):
             pass
@@ -835,6 +969,12 @@ class Neo4j(Base):
         ).evaluate()
         forward_count = randint(1, entity_count)
         return entities.current['ent_id'] if entity_count > 0 and entities.forward(forward_count) else None
+
+    @staticmethod
+    def get_random_of(values):
+        from random import randint
+        index = randint(0, len(values) - 1)
+        return values[index]
 
     @staticmethod
     def evaluate(cursor, name):

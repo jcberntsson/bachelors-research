@@ -78,6 +78,7 @@ else:
     database_class = Neo4j()
 
 #database_class.init(company)
+database_class.multiply_quantities_with(2)
 print("Database is done")
 
 # Configure the google sheet sync
