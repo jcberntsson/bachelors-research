@@ -6,14 +6,15 @@ from neo4j.v1 import GraphDatabase, basic_auth
 
 
 class Neo4j(Base):
-    driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
+    driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "kandidat"))
+    #driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
     #driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
     session = driver.session()
 
     # connect to authenticated graph database
-    # graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
+    graph = Graph("http://neo4j:kandidat@localhost:7474/db/data/")
     #graph = Graph("http://neo4j:kandidat@10.135.10.154:7474/db/data/")
-    graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
+    #graph = Graph("http://neo4j:kandidat@46.101.235.47:7474/db/data/")
 
     ####################################
     ####	DATA INITIALIZATION		####
@@ -332,7 +333,6 @@ class Neo4j(Base):
 
         return self.create_case("pairImageSKU", setup, run, teardown)
 
-    # TODO: Add rows, not just 1 value
     def addRowsToSKU(self):
         def setup(inner_self):
             inner_self.sku_id = self.get_random_id('SKU')
@@ -679,18 +679,25 @@ class Neo4j(Base):
             print("Nbr of coords = " + str(coords_count))"""
 
         def teardown(inner_self):
-            self.session.run(
+            cursor = self.session.run(
                 'START race=Node(%d) '
                 'MATCH '
                 '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
                 '   (start)-[:FOLLOWED_BY*]->(coord:COORDINATE)-[:FOLLOWED_BY]->(ending:COORDINATE) '
-                'DETACH DELETE coord ' % inner_self.race_id
+                'DETACH DELETE coord '
+                'RETURN ID(start) AS start_id' % inner_self.race_id
             )
-            tx = self.graph.begin()
+            prev_id = self.evaluate(cursor, "start_id")
+            print(prev_id)
+            #tx = self.graph.begin()
             for coord in inner_self.coords:
-                tx.run(
-                    'START '
+                out = self.session.run(
+                    'START prev=Node(%d) '
+                    'CREATE (prev)-[:FOLLOWED_BY]->(coord:COORDINATE { lat:%d, lng:%d, alt:%d }) '
+                    'RETURN ID(coord) AS coord_id' % (prev_id, coord.lat, coord.lng, coord.alt )
                 )
+                prev_id = self.evaluate(out, "coord_id")
+                print(prev_id)
             """
             for coord in reversed(inner_self.removed_coords):
                 tx.run(
@@ -700,7 +707,7 @@ class Neo4j(Base):
                     'CREATE (before)-[:FOLLOWED_BY]->%s-[:FOLLOWED_BY]->(after)' % (coord['before_id'], coord['data'])
                 )
             """
-            tx.commit()
+            #tx.commit()
 
         return self.create_case("removeCoords", setup, run, teardown)
 
@@ -853,3 +860,7 @@ class Neo4j(Base):
         ).evaluate()
         forward_count = randint(1, entity_count)
         return entities.current['ent_id'] if entity_count > 0 and entities.forward(forward_count) else None
+
+    @staticmethod
+    def evaluate(cursor, name):
+        return list(cursor)[0][name]
