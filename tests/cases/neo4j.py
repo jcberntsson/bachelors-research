@@ -778,8 +778,8 @@ class Neo4j(Base):
                 'MATCH (test:TEST) '
                 'RETURN test'
             )
-            while out.forward():
-                print(out.current)
+            #while out.forward():
+            #    print(out.current)
 
         def teardown(inner_self):
             pass
