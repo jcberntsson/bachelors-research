@@ -32,7 +32,7 @@ test_cases = {
         'fetchParticipants2',
         'unparticipate',
         'fetchCoords',
-        'removeCoords',
+        #'removeCoords',
         'fetchHotRaces',
         'fetchRace'
     ]
