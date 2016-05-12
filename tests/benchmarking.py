@@ -33,7 +33,7 @@ test_cases = {
        # 'removeCoords',
         #'fetchHotRaces',
         #'fetchRace',
-        #'removeRace'
+        'removeRace'
     ],
     'reference': [
         'tinyGet',
