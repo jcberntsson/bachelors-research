@@ -615,12 +615,10 @@ class Neo4j(Base):
             inner_self.coord_ids = []
             i = 0
             for coord in coordinates:
-                coord_id = coord['coord'].id
-                inner_self.coords.append(coord['coord'].properties)
                 if i == 1:
-                    inner_self.coord_ids.append(coord_id)
+                    inner_self.coords.append(coord['coord'].properties)
+                    inner_self.coord_ids.append(coord['coord'].id)
                 i = (i + 1) % 3
-                # print(inner_self.race_id)
 
         def run(inner_self):
             tx = self.session.begin_transaction()
@@ -645,25 +643,21 @@ class Neo4j(Base):
             cursor = self.session.run(
                 'START race=Node(%d) '
                 'MATCH '
-                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[:END_FOR]-(end:COORDINATE), '
-                '   (start)-[:FOLLOWED_BY*]->(coord:COORDINATE)-[:FOLLOWED_BY]->(ending:COORDINATE) '
-                'DETACH DELETE coord '
-                'RETURN ID(start) AS start_id, ID(end) AS end_id' % inner_self.race_id
+                '   (start:COORDINATE)<-[:STARTS_WITH]-(race)<-[end_for:END_FOR]-(end:COORDINATE) '
+                'DELETE end_for '
+                'RETURN ID(end) AS end_id' % inner_self.race_id
             )
-            result = self.first_of(cursor)
-            prev_id = result["start_id"]
-            end_id = result["end_id"]
-
+            prev_id = self.evaluate(cursor, "end_id")
             for coord in inner_self.coords:
-                out = self.session.run(
+                cursor = self.session.run(
                     'START prev=Node(%d) '
                     'CREATE (prev)-[:FOLLOWED_BY]->(coord:COORDINATE { lat:%d, lng:%d, alt:%d }) '
                     'RETURN ID(coord) AS coord_id' % (prev_id, coord['lat'], coord['lng'], coord['alt'])
                 )
-                prev_id = self.evaluate(out, "coord_id")
+                prev_id = self.evaluate(cursor, "coord_id")
             self.session.run(
-                'START prev=Node(%d), end=Node(%d) '
-                'CREATE (prev)-[:FOLLOWED_BY]->(end)' % (prev_id, end_id)
+                'START prev=Node(%d), race=Node(%d) '
+                'CREATE (prev)-[:END_FOR]->(race)' % (prev_id, inner_self.race_id)
             )
 
         return self.create_case("removeCoords", setup, run, teardown)
