@@ -23,13 +23,13 @@ test_cases = {
         'fetchAllUserComments'
     ],
     'raceone': [
-        #'follow',
-        #'unfollow',
-        #'insertCoords',
-        #'fetchParticipants',
-        #'fetchParticipants2',
-        #'unparticipate',
-        #'fetchCoords',
+        'follow',
+        'unfollow',
+        'insertCoords',
+        'fetchParticipants',
+        'fetchParticipants2',
+        'unparticipate',
+        'fetchCoords',
         'removeCoords',
         'fetchHotRaces',
         'fetchRace',
@@ -86,7 +86,7 @@ else:
 
     database_class = Neo4j()
 
-#database_class.init(company)
+database_class.init(company)
 database_class.multiply_quantities_with(multiplier)
 
 # Configure the google sheet sync
