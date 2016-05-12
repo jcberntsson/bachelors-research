@@ -542,7 +542,7 @@ class Mongo(Base):
 
         def teardown(inner_self):
             import json 
-            self.db.races.insert_one(json.dump(inner_self.race))
+            self.db.races.insert_one(json.dumps(inner_self.race))
 
         return self.create_case("removeRace", setup, run, teardown)
 
