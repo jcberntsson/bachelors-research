@@ -210,7 +210,7 @@ class Mongo(Base):
         def teardown(inner_self):
             pass
 
-        return self.create_case("easy_get", setup, run, teardown)
+        return self.create_case("tinyGet", setup, run, teardown)
 
     def smallGet(self):
         def setup(inner_self):
@@ -223,7 +223,7 @@ class Mongo(Base):
         def teardown(inner_self):
             pass
 
-        return self.create_case("easy_get2", setup, run, teardown)
+        return self.create_case("smallGet", setup, run, teardown)
 
     # SKIM
     def fetchSKU(self):

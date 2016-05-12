@@ -39,10 +39,10 @@ class Base:
         else:
             return self.quantities[self.current_company][entity.lower()]
 
-    def multiply_quantities_with(self, multiplicator):
+    def multiply_quantities_with(self, multiplier):
         for company, props in self.quantities.items():
             for name, value in props.items():
-                props[name] *= multiplicator
+                props[name] *= multiplier
 
     def init(self, company):
         company = company.lower()
