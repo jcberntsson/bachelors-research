@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Imports
-from sys import argv
+from sys import argv, stdout
 from timeit import timeit
 from core import Sheet
 
@@ -23,7 +23,7 @@ test_cases = {
         'fetchAllUserComments'
     ],
     'raceone': [
-        #'follow',
+        'follow',
         #'unfollow',
         #'insertCoords',
         #'fetchParticipants',
@@ -33,7 +33,7 @@ test_cases = {
         #'removeCoords',
         #'fetchHotRaces',
         #'fetchRace',
-        'removeRace'
+        #'removeRace'
     ],
     'reference': [
         'tinyGet',
@@ -86,7 +86,7 @@ else:
 
     database_class = Neo4j()
 
-database_class.init(company)
+#database_class.init(company)
 database_class.multiply_quantities_with(multiplier)
 
 # Configure the google sheet sync
@@ -104,7 +104,7 @@ if __name__ == '__main__':
         error = False
         last_percentage = 0
         for i in range(iterations):
-            percentage = i // iterations
+            percentage = int(i / iterations * 100)
             case = case_to_test()
             try:
                 case.setup()
@@ -116,9 +116,9 @@ if __name__ == '__main__':
                 print("Exception during execution: %s" % ex)
                 break
             if percentage > last_percentage:
-                print("|", end=" ")
+                stdout.write("|")
+                stdout.flush()
                 last_percentage = percentage
-        print()
 
         # Calculate results
         if error:
