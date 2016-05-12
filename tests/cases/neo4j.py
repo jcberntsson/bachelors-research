@@ -182,11 +182,10 @@ class Neo4j(Base):
             'DETACH DELETE n'
         )
 
-    ############################
-    ####	TEST METHODS	####
-    ############################
+    ########################
+    ####	REFERENCE	####
+    ########################
 
-    # Reference
     def tinyGet(self):
         def setup(inner_self):
             pass
@@ -218,7 +217,10 @@ class Neo4j(Base):
 
         return self.create_case("smallGet", setup, run, teardown)
 
-    # SKIM
+    ####################
+    ####	SKIM	####
+    ####################
+
     def fetchSKU(self):
         def setup(inner_self):
             inner_self.sku_id = self.get_random_id('SKU')
@@ -364,7 +366,10 @@ class Neo4j(Base):
 
         return self.create_case("fetchAllUserComments", setup, run, teardown)
 
-    # RaceOne
+    ########################
+    ####	RACEONE 	####
+    ########################
+
     def follow(self):
         def setup(inner_self):
             inner_self.follower_id = self.get_random_id('USER')
@@ -519,7 +524,7 @@ class Neo4j(Base):
             pass
 
         def run(inner_self):
-            pass
+            raise NotImplementedError
 
         def teardown(inner_self):
             pass
@@ -665,50 +670,10 @@ class Neo4j(Base):
 
     def removeRace(self):
         def setup(inner_self):
-            inner_self.race_id = self.get_random_id('RACE')
-            race_cursor = self.session.run(
-                'START race=Node(%d) '
-                'MATCH (race)-[:IN]->(event:EVENT) '
-                'RETURN race, ID(event) AS event_id' % inner_self.race_id
-            )
-            info = self.first_of(race_cursor)
-            inner_self.race = info['race']
-            inner_self.event_id = info['event_id']
-            activity_cursor = self.session.run(
-                'START race=Node(%d) '
-                'MATCH '
-                '   (race)<-[:OF]-(activity:ACTIVITY)<-[:PARTICIPATING_IN]-(participant:USER), '
-                '   (activity)<-[:FOLLOWING]-(follower:USER) '
-                'RETURN activity.joinedAt AS joinedAt, ID(participant) AS part_id, ID(follower) AS follower_id' % inner_self.race_id
-            )
-            inner_self.activities = {}
-            while activity_cursor.forward():
-                part_id = activity_cursor.current['part_id']
-                follower_id = activity_cursor.current['follower_id']
-                joined_at = activity_cursor.current['joinedAt']
-                if part_id in inner_self.activities:
-                    inner_self.activities[part_id]['follower_ids'].append(follower_id)
-                else:
-                    inner_self.activities[part_id] = dict(joinedAt=joined_at, follower_ids=[follower_id])
-
-            """
-            cursor = self.graph.run(
-                'START race=Node(%d) '
-                'MATCH '
-                '   (race)<-[:OF]-(act:ACTIVITY)<-[:PARTICIPATING_IN]-(part:PARTICIPANT), '
-                '   (act)<-[:FOLLOWING]-(follower:FOLLOWER), '
-                '   (act)-[:STARTS_WITH|FOLLOWED_BY|END_FOR*]-(act_coord:COORDINATE), '
-                '   (race)-[:STARTS_WITH|FOLLOWED_BY|END_FOR*]-(coord:COORDINATE), '
-                '   (race)'
-                'WHERE not ((race)-[:IN]-(o)) '
-                'RETURN r,o,r2,o2' % inner_self.race_id
-            )
-            while cursor.forward():
-                print(cursor.current)
-            """
+            pass
 
         def run(inner_self):
-            pass
+            raise NotImplementedError
 
         def teardown(inner_self):
             pass
@@ -773,6 +738,10 @@ class Neo4j(Base):
             pass
 
         return self.create_case("fetchRace", setup, run, teardown)
+
+    ################################
+    ####	HELPER METHODS		####
+    ################################
 
     def get_random_id(self, entity_name):
         from random import randint
