@@ -1,13 +1,13 @@
 #!/usr/bin/python
-from cases import Neo4j
+from cases import Mongo
 
 # Run
 if __name__ == '__main__':
-    m = Neo4j()
+    m = Mongo()
     m.clearData()
-    #m.init("skim")
+    m.init("raceone")
     #print(m.get_random_id("RACE"))
-    #case = m.fetchParticipants2()
-    #case.setup()
-    #case.run()
-    #case.teardown()
+    case = m.removeRace()
+    case.setup()
+    case.run()
+    case.teardown()
