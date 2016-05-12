@@ -48,7 +48,7 @@ cols = {"total_time": 2, "peak_time": 3, "avg_time": 4, "load_peak": 5, "load_av
 print("Extracting arguments...")
 database = argv[1]
 company = argv[2]
-multiplier = argv[3] if len(argv) >= 3 else 1
+multiplier = argv[3] if len(argv) > 3 else 1
 iterations = 1000  # Number of runs per test case
 
 # Test arguments
