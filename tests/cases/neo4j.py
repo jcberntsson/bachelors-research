@@ -79,7 +79,6 @@ class Neo4j(Base):
                     )
                     activity_id = self.evaluate(activity_cursor, "activity_id")
                     session.run(self.create_coords(self.quantity_of("activity_coordinates"), activity_id))
-                print("Race done")
 
     def initSkim(self):
         session = self.session

@@ -53,7 +53,7 @@ class BenchMarker():
         print("Extracting arguments...")
         database = argv[1] if len(argv) > 1 else "all"
         company = argv[2] if len(argv) > 2 else "all"
-        self.multiplier = argv[3] if len(argv) > 3 else 1
+        self.multiplier = int(argv[3]) if len(argv) > 3 else 1
 
         # Test arguments
         is_valid_company = (company == "raceone" or company == "skim" or company == "reference")
@@ -125,6 +125,7 @@ class BenchMarker():
                     stdout.write("|")
                     stdout.flush()
                     last_percentage = percentage
+            print()
 
             # Calculate results
             if error:
