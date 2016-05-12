@@ -489,7 +489,6 @@ class Mongo(Base):
             self.db["races"].update({"_id":inner_self.race_id},{"$pull":{"activities":{"participating":inner_self.participant_id}}})
 
         def teardown(inner_self):
-            import json
             self.db["races"].update({"_id":inner_self.race_id},{"$push":{"activities":inner_self.activity}})
             
         return self.create_case("unparticipate", setup, run, teardown)
@@ -542,7 +541,9 @@ class Mongo(Base):
             self.db["races"].remove({"_id":inner_self.race_id})
 
         def teardown(inner_self):
-            self.db.races.insert_one(inner_self.race)
+            from bson import json_util
+            import json 
+            self.db.races.insert_one(json.dumps(inner_self.race, default=json_util.default))
 
         return self.create_case("removeRace", setup, run, teardown)
 
