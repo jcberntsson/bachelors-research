@@ -131,7 +131,7 @@ class Mongo(Base):
                         "made_by": users[x * 2 + z]
                     }
                 nbr = x + 5 + y
-                imagesku = {
+                skuimages.append(self.db.skuimages.insert_one({
                     "name": "sku_image_" + str(nbr),
                     "originalName": "original_name",
                     "extension": "jpg",
@@ -145,8 +145,7 @@ class Mongo(Base):
                     "createdAt": "2016-03-03",
                     "accepted": False,
                     "comments": comment
-                }
-                skuimages.append(imagesku)
+                }).inserted_id)
                 skulist.append(self.db.skus.insert_one({
                     "name": "sku_" + str(nbr),
                     "sku_values": skuValues,
@@ -234,7 +233,40 @@ class Mongo(Base):
             # print(self.db.images.find_one({"_id": inner_self.image_id}))
 
         return self.create_case("commentOnImage", setup, run, teardown)
-
+    
+    def pairImageSKU(self):
+        def setup(inner_self):
+            inner_self.project_id = self.get_random_id("projects")
+            out = self.db.projects.find_one({"_id": inner_self.project_id})
+            
+            inner_self.sku_id = out["skus"][0]
+            inner_self.image_id = out["images"][0]
+            
+        def run(inner_self):
+            self.db.skus.update(
+                {"_id": inner_self.sku_id},
+                {"$push": {"images_sku": inner_self.image_id}}
+            )
+            # print (list(self.db.skus.find({"_id": inner_self.sku_id}))) add this before update as well to see the changes
+            
+        def teardown(inner_self):
+            print (list(self.db.skus.find({"_id": inner_self.sku_id})))
+            self.db.skus.update(
+                {"_id": inner_self.sku_id},
+                {"$pull": {"images_sku": inner_self.image_id}}
+            )
+                    
+        return self.create_case("pairImageSKU", setup, run, teardown)
+    
+    def addRowsToSKU(self):
+        def setup(inner_self):
+        
+        def run(inner_self):
+            pass
+            
+        def teardown(inner_self):
+            pass
+            
     def get_random_id(self, entity_name):
         from random import randint
         container = []

@@ -1,11 +1,11 @@
 #!/usr/bin/python
-from cases import MySQL
+from cases import Mongo
 
 # Run
 if __name__ == '__main__':
-    neo = MySQL()
-    neo.init("raceone")
-    #case = neo.fetchRace()
-    #case.setup()
-    #case.run()
-    #case.teardown()
+    m = Mongo()
+    m.init("skim")
+    case = m.pairImageSKU()
+    case.setup()
+    case.run()
+    case.teardown()
