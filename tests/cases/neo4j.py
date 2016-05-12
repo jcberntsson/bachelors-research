@@ -94,6 +94,7 @@ class Neo4j(Base):
             user_ids.append(user_id)
 
         print("Creating projects")
+        print("Projects: %s" % self.quantity_of("projects"))
         for x in range(self.quantity_of("projects")):
             project_cursor = session.run(
                 'CREATE (project:PROJECT {name:"project_%d"}) '

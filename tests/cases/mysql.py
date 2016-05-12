@@ -125,6 +125,7 @@ class MySQL(Base):
         cursor.close()
 
         # Projects and images
+        print("Projects: %s" % self.quantity_of("projects"))
         cursor = self.cnx.cursor()
         for x in range(self.quantity_of("projects")):
             cursor.execute(
