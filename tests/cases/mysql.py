@@ -155,7 +155,6 @@ class MySQL(Base):
                         "INSERT INTO comment (text,createdAt,creator,image) "
                         "VALUES('Haha, cool image','2016-04-04','%d','%d')" % (self.get_random_of(contributor_ids), image_id)
                     )
-
             for y in range(self.quantity_of("skus")):
                 # SKUS
                 cursor.execute(

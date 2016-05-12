@@ -6,7 +6,7 @@ from neo4j.v1 import GraphDatabase, basic_auth
 class Neo4j(Base):
     # driver = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "kandidat"))
     driver = GraphDatabase.driver("bolt://10.135.10.154", auth=basic_auth("neo4j", "kandidat"))
-    #driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
+    # driver = GraphDatabase.driver("bolt://46.101.235.47", auth=basic_auth("neo4j", "kandidat"))
     session = driver.session()
 
     ####################################
@@ -131,7 +131,7 @@ class Neo4j(Base):
                     session.run(
                         'START image=Node(%d), user=Node(%d) '
                         'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (
-                        image_id, self.get_random_of(collaborator_ids))
+                            image_id, self.get_random_of(collaborator_ids))
                     )
             for y in range(self.quantity_of("skus")):
                 sku_cursor = session.run(
@@ -168,8 +168,9 @@ class Neo4j(Base):
                         session.run(
                             'START image=Node(%d), user=Node(%d) '
                             'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (
-                            image_id, self.get_random_of(collaborator_ids))
+                                image_id, self.get_random_of(collaborator_ids))
                         )
+            print("Project done")
 
     def clearData(self):
         # Dangerous
