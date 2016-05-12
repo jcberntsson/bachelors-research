@@ -342,7 +342,7 @@ class Neo4j(Base):
                 'MATCH (sku)<-[of:OF]-(value:SKU_VALUE) '
                 'WHERE value.header="remove_me" '
                 'DELETE of, value, in, sku '
-                'RETURN COUNT(*) AS deleted_rows' % inner_self.project
+                'RETURN COUNT(*) AS deleted_rows' % inner_self.project_id
             )
 
         return self.create_case("addRowsToSKU", setup, run, teardown)
