@@ -23,16 +23,16 @@ test_cases = {
         'fetchAllUserComments'
     ],
     'raceone': [
-#        'follow',
- #       'unfollow',
-  #      'insertCoords',
-   #     'fetchParticipants',
-    #    'fetchParticipants2',
-     #   'unparticipate',
-      #  'fetchCoords',
-       # 'removeCoords',
-        #'fetchHotRaces',
-        #'fetchRace',
+        #'follow',
+        #'unfollow',
+        #'insertCoords',
+        #'fetchParticipants',
+        #'fetchParticipants2',
+        #'unparticipate',
+        #'fetchCoords',
+        'removeCoords',
+        'fetchHotRaces',
+        'fetchRace',
         'removeRace'
     ],
     'reference': [
@@ -63,22 +63,27 @@ if not is_valid_company:
 print("Initializing database...")
 if database == 'neo4j':
     from cases.neo4j import Neo4j
+
     database_class = Neo4j()
 
 elif database == 'mysql':
     from cases.mysql import MySQL
+
     database_class = MySQL()
 
 elif database == 'mongo':
     from cases.mongo import Mongo
+
     database_class = Mongo()
-    
+
 elif database == 'couch':
     from cases.couch import Couch
+
     database_class = Couch()
 
 else:
     from cases.neo4j import Neo4j
+
     database_class = Neo4j()
 
 database_class.init(company)
