@@ -76,6 +76,7 @@ class BenchMarker():
                 self.run_tests(db, comp)
 
     def run_tests(self, database, company):
+        print("Running %s %s" % (database, company))
         # Import test class
         print("Initializing database...")
         if database == 'neo4j':
