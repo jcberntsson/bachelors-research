@@ -7,8 +7,8 @@ import datetime
 
 class Mongo(Base):
     # connect to authenticated mongo database
-    #client = MongoClient("mongodb://46.101.103.26:27017")
-    client = MongoClient("mongodb://10.135.3.156:27017")
+    client = MongoClient("mongodb://46.101.103.26:27017")
+    # client = MongoClient("mongodb://10.135.3.156:27017")
     db = client.db
 
     ####################################
@@ -174,7 +174,7 @@ class Mongo(Base):
                     }
 
                 nbr = x + 5 + y
-                skuimages.append(self.db.skuimages.insert_one({
+                sku_images.append(self.db.skuimages.insert_one({
                     "name": "sku_image_" + str(nbr),
                     "originalName": "original_name",
                     "extension": "jpg",
@@ -305,20 +305,17 @@ class Mongo(Base):
                 {"_id": inner_self.sku_id},
                 {"$push": {"images_sku": inner_self.image_id}}
             )
-            # print (list(self.db.skus.find({"_id": inner_self.sku_id}))) add this before update as well to see the changes
             
         def teardown(inner_self):
-            print (list(self.db.skus.find({"_id": inner_self.sku_id})))
             self.db.skus.update(
                 {"_id": inner_self.sku_id},
                 {"$pull": {"images_sku": inner_self.image_id}}
             )
-                    
         return self.create_case("pairImageSKU", setup, run, teardown)
     
     def addRowsToSKU(self):
         def setup(inner_self):
-        
+            pass
         def run(inner_self):
             pass
             
