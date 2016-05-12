@@ -43,6 +43,7 @@ class Base:
         for company, props in self.quantities.items():
             for name, value in props.items():
                 props[name] *= multiplier
+        print(self.quantities)
 
     def init(self, company):
         company = company.lower()
