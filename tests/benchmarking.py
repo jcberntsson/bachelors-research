@@ -23,17 +23,17 @@ test_cases = {
         'fetchAllUserComments'
     ],
     'raceone': [
-        'follow',
+        #'follow',
         #'unfollow',
         #'insertCoords',
         #'fetchParticipants',
         #'fetchParticipants2',
         #'unparticipate',
         #'fetchCoords',
-        #'removeCoords',
-        #'fetchHotRaces',
-        #'fetchRace',
-        #'removeRace'
+        'removeCoords',
+        'fetchHotRaces',
+        'fetchRace',
+        'removeRace'
     ],
     'reference': [
         'tinyGet',
