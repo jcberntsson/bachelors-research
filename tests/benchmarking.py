@@ -23,16 +23,16 @@ test_cases = {
         'fetchAllUserComments'
     ],
     'raceone': [
-#        'follow',
- #       'unfollow',
-  #      'insertCoords',
-   #     'fetchParticipants',
-    #    'fetchParticipants2',
-     #   'unparticipate',
-      #  'fetchCoords',
-       # 'removeCoords',
-        #'fetchHotRaces',
-        #'fetchRace',
+        'follow',
+        'unfollow',
+        'insertCoords',
+        'fetchParticipants',
+        'fetchParticipants2',
+        'unparticipate',
+        'fetchCoords',
+        'removeCoords',
+        'fetchHotRaces',
+        'fetchRace',
         'removeRace'
     ],
     'reference': [
