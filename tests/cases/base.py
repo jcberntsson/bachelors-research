@@ -25,6 +25,9 @@ class Base:
             "sku_values": 15,
             "sku_images": 2,
             "image_comments": 5
+        },
+        "reference": {
+            "blob": 1000
         }
     }
 
@@ -36,10 +39,10 @@ class Base:
         else:
             return self.quantities[self.current_company][entity.lower()]
 
-    def multiply_quantities_with(self, multiplicator):
+    def multiply_quantities_with(self, multiplier):
         for company, props in self.quantities.items():
             for name, value in props.items():
-                props[name] *= multiplicator
+                props[name] *= multiplier
 
     def init(self, company):
         company = company.lower()
@@ -49,6 +52,8 @@ class Base:
             self.initRaceOne()
         elif company == "skim":
             self.initSkim()
+        elif company == "reference":
+            self.initReference()
         else:
             print(company + " not supported as type")
 
@@ -58,6 +63,10 @@ class Base:
 
     @abc.abstractmethod
     def initSkim(self):
+        return
+
+    @abc.abstractmethod
+    def initReference(self):
         return
 
     @abc.abstractmethod
@@ -138,6 +147,15 @@ class Base:
     def fetchHotRaces(self):
         pass
 
+    # Reference
+    @abc.abstractmethod
+    def tinyGet(self):
+        pass
+
+    @abc.abstractmethod
+    def smallGet(self):
+        pass
+
     # Help methods
     @staticmethod
     def new_rand_int(rands, start, end):
@@ -150,3 +168,9 @@ class Base:
     @staticmethod
     def create_case(name, setup, run, teardown):
         return type(name, (Case, object), {"setup": setup, "run": run, "teardown": teardown})()
+
+    @staticmethod
+    def get_random_of(values):
+        from random import randint
+        index = randint(0, len(values) - 1)
+        return values[index]

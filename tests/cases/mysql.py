@@ -45,8 +45,8 @@ class MySQL(Base):
                 "VALUES('%s','Tester','SuperHash')" % participant_name
             )
             participants.append(cursor.lastrowid)
-        cursor.close()
         self.cnx.commit()
+        cursor.close()
 
         # Events & Races
         print("Inserting events and races.")
@@ -55,7 +55,7 @@ class MySQL(Base):
             eventname = "event_" + str(x)
             cursor.execute(
                 "INSERT INTO event (name,organizer_id,logoUrl) "
-                "VALUES('%s','%d','google.se/img.png')" % (eventname, organizers[x * 5])
+                "VALUES('%s','%d','google.se/img.png')" % (eventname, organizers[x])
             )
             event_id = cursor.lastrowid
             for y in range(self.quantity_of("races")):
@@ -70,7 +70,8 @@ class MySQL(Base):
                     )
                 cursor.execute(
                     "INSERT INTO race (name,description,race_date,max_duration,preview,location,logo_url,event_id) "
-                    "VALUES('%s','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','%s')" % (racename, event_id)
+                    "VALUES('%s','A nice race to participate in','2016-06-13',3,'linktoimage.png','Gothenburg, Sweden','google.se/logo.png','%s')" % (
+                    racename, event_id)
                 )
                 race_id = cursor.lastrowid
                 cursor.execute(
@@ -95,9 +96,8 @@ class MySQL(Base):
                             "INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) "
                             "VALUES('%d','2016-03-03',%d,%d,%d)" % (activity_id, 10 + p, 11 + p, 20 + p)
                         )
-
-        cursor.close()
         self.cnx.commit()
+        cursor.close()
 
     def initSkim(self):
         ##Create tables
@@ -110,65 +110,97 @@ class MySQL(Base):
                 self.cnx.commit()
                 cursor.close()
             except mysql.connector.Error as err:
-                '''if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                    print("already exists.")'''
-                '''else:'''
                 print(err)
 
         # Users
         users = []
         cursor = self.cnx.cursor()
-        for x in range(50):
+        for x in range(self.quantity_of("users")):
             cursor.execute(
-                "INSERT INTO contributor (username,email,password) VALUES ('user_" + str(x) + "','user_" + str(
-                    x) + "@mail.com','xpassx')")
+                "INSERT INTO contributor (username,email,password) "
+                "VALUES ('user_%d','user_%d@mail.com','xpassx')" % (x, x)
+            )
             users.append(cursor.lastrowid)
         self.cnx.commit()
         cursor.close()
 
         # Projects and images
         cursor = self.cnx.cursor()
-        for x in range(8):
-            cursor.execute("INSERT INTO project (name) VALUES('project_" + str(x) + "')")
+        for x in range(self.quantity_of("projects")):
+            cursor.execute(
+                "INSERT INTO project (name) "
+                "VALUES('project_%d')" % x
+            )
             project_id = cursor.lastrowid
 
-            for c in range(10):
+            contributor_ids = []
+            for y in range(self.quantity_of("collaborators")):
+                user_id = users[(x + 1) * y]
                 cursor.execute(
-                    "INSERT INTO contribution (contributor,project) VALUES('" + str(users[x * 2 + c]) + "','" + str(
-                        project_id) + "')")
-            for y in range(4):
+                    "INSERT INTO contribution (contributor,project) "
+                    "VALUES('%d','%d')" % (user_id, project_id)
+                )
+                contributor_ids.append(user_id)
+            for y in range(self.quantity_of("project_images")):
                 # Images
                 nbr = x + 5 + y
                 cursor.execute(
                     "INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,project) "
-                    "VALUES('image_" + str(
-                        nbr) + "','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'" + str(
-                        project_id) + "')")
+                    "VALUES('image_%d','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'%d')" % (nbr, project_id)
+                )
+                image_id = cursor.lastrowid
+                for z in range(self.quantity_of("image_comments")):
+                    # Comments
+                    cursor.execute(
+                        "INSERT INTO comment (text,createdAt,creator,image) "
+                        "VALUES('Haha, cool image','2016-04-04','%d','%d')" % (self.get_random_of(contributor_ids), image_id)
+                    )
 
+            for y in range(self.quantity_of("skus")):
                 # SKUS
-                cursor.execute("INSERT INTO sku (project) VALUES('" + str(project_id) + "')")
+                cursor.execute(
+                    "INSERT INTO sku (project) "
+                    "VALUES('%d')" % project_id
+                )
                 sku_id = cursor.lastrowid
-                for z in range(10):
+                for z in range(self.quantity_of("sku_values")):
                     # Rows
                     cursor.execute(
-                        "INSERT INTO header (sku_id,name) VALUES('" + str(sku_id) + "','header_" + str(z) + "')")
+                        "INSERT INTO header (sku_id,name) "
+                        "VALUES('%d','header_%d')" % (sku_id, z)
+                    )
                     cursor.execute(
-                        "INSERT INTO skuValue (sku_id,header_name,value) VALUES('" + str(sku_id) + "','header_" + str(
-                            z) + "','" + str(z) + "')")
+                        "INSERT INTO skuValue (sku_id,header_name,value) "
+                        "VALUES('%d','header_%d','%d')" % (sku_id, z, z)
+                    )
 
                 # SKU images
-                nbr = x + 5 + y
-                cursor.execute(
-                    "INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,sku) "
-                    "VALUES('image_" + str(
-                        nbr) + "','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'" + str(
-                        sku_id) + "')")
-                image_id = cursor.lastrowid
-                for z in range(2):
-                    # Comments
-                    cursor.execute("INSERT INTO comment (text,createdAt,creator,image) "
-                                   "VALUES('Haha, cool image','2016-04-04','" + str(users[x * 2 + z]) + "','" + str(
-                        image_id) + "')")
+                for z in range(self.quantity_of("sku_images")):
+                    nbr = x + 5 + y
+                    cursor.execute(
+                        "INSERT INTO image (name,original_name,extension,encoding,size,height,width,verticalDPI,horizontalDPI,bitDepth,createdAt,accepted,sku) "
+                        "VALUES('image_%d','original_name','jpg','PNG/SFF',1024,1080,720,40,50,15,'2016-03-03',0,'%d')" % (nbr, sku_id)
+                    )
+                    image_id = cursor.lastrowid
+                    for a in range(self.quantity_of("image_comments")):
+                        # Comments
+                        cursor.execute(
+                            "INSERT INTO comment (text,createdAt,creator,image) "
+                            "VALUES('Haha, cool image','2016-04-04','%d','%d')" % (self.get_random_of(contributor_ids), image_id)
+                        )
+        self.cnx.commit()
+        cursor.close()
+
+    def initReference(self):
+        cursor = self.cnx.cursor()
+        cursor.execute(
+            "CREATE TABLE abc (id bigint not null auto_increment,name varchar(20), primary key(id)) ENGINE=InnoDB"
+        )
+        for i in range(self.quantity_of("blob")):
+            cursor.execute(
+                "INSERT INTO abc(name) "
+                "VALUES('hello')"
+            )
         self.cnx.commit()
         cursor.close()
 
@@ -212,6 +244,15 @@ class MySQL(Base):
             print(err.msg)
         else:
             print("Dropping OK")
+        try:
+            cursor = self.cnx.cursor()
+            cursor.execute("DROP TABLE abc")
+            self.cnx.commit()
+            cursor.close()
+        except mysql.connector.Error as err:
+            print(err.msg)
+        else:
+            print("Dropping OK")
 
     ############################
     ####	TEST METHODS	####
@@ -220,18 +261,6 @@ class MySQL(Base):
     # SKIM
     def fetchSKU(self):
         def setup(inner_self):
-            # print("Setup")
-            '''            cursor = self.cnx.cursor()
-            cursor.execute("INSERT INTO project (name) VALUE('test_project')")
-            project_id = cursor.lastrowid
-            cursor.execute("INSERT INTO sku (project) VALUES('"+str(project_id)+"')")
-            sku_id = cursor.lastrowid
-            for z in range(10):
-                # Rows
-                cursor.execute("INSERT INTO header (sku_id,name) VALUES('"+str(sku_id)+"','header_"+str(z)+"')")
-                cursor.execute("INSERT INTO skuValue (sku_id,header_name,value) VALUES('"+str(sku_id)+"','header_"+str(z)+"','"+str(z)+"')")
-            inner_self.sku_id = str(sku_id)
-            cursor.close()'''
             cursor = self.cnx.cursor()
             cursor.execute("SELECT id FROM sku")
             result = cursor.fetchall()
@@ -250,14 +279,7 @@ class MySQL(Base):
             cursor.close()
 
         def teardown(inner_self):
-            '''            cursor = self.cnx.cursor()
-            cursor.execute ("DELETE FROM skuValue WHERE sku_id='"+inner_self.sku_id+"'")
-            cursor.execute ("DELETE FROM header WHERE sku_id='"+inner_self.sku_id+"'")
-            cursor.execute ("DELETE FROM sku WHERE id='"+inner_self.sku_id+"'")
-            rc = cursor.rowcount
-            cursor.close()
-            self.cnx.commit()
-            return rc'''
+            pass
 
         return self.create_case("fetchSKU", setup, run, teardown)
 
@@ -802,7 +824,7 @@ class MySQL(Base):
 
         return self.create_case("fetchRace", setup, run, teardown)
 
-    def easy_get(self):
+    def tinyGet(self):
         def setup(inner_self):
             pass
 
@@ -817,7 +839,7 @@ class MySQL(Base):
 
         return self.create_case("easy_get", setup, run, teardown)
 
-    def easy_get2(self):
+    def smallGet(self):
         def setup(inner_self):
             pass
 
