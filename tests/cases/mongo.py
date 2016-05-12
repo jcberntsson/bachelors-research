@@ -7,8 +7,8 @@ import datetime
 
 class Mongo(Base):
     # connect to authenticated mongo database
-    #client = MongoClient("mongodb://46.101.103.26:27017")
-    client = MongoClient("mongodb://10.135.3.156:27017")
+    client = MongoClient("mongodb://46.101.103.26:27017")
+    # client = MongoClient("mongodb://10.135.3.156:27017")
     db = client.db
 
     ####################################
@@ -156,23 +156,23 @@ class Mongo(Base):
                             "made_by": self.get_random_of(collaborators)
                         }
                         comments.append(comment)
-                    nbr = x + 5 + y
-                    image_sku = {
-                        "name": "sku_image_" + str(nbr),
-                        "originalName": "original_name",
-                        "extension": "jpg",
-                        "encoding": "PNG/SFF",
-                        "size": 1024,
-                        "height": 1080,
-                        "width": 720,
-                        "verticalDPI": 40,
-                        "horizontalDPI": 50,
-                        "bitDepth": 15,
-                        "createdAt": "2016-03-03",
-                        "accepted": False,
-                        "comments": comments
-                    }
-                    sku_images.append(image_sku)
+                nbr = x + 5 + y
+                sku_images.append(self.db.skuimages.insert_one({
+                    "name": "sku_image_" + str(nbr),
+                    "originalName": "original_name",
+                    "extension": "jpg",
+                    "encoding": "PNG/SFF",
+                    "size": 1024,
+                    "height": 1080,
+                    "width": 720,
+                    "verticalDPI": 40,
+                    "horizontalDPI": 50,
+                    "bitDepth": 15,
+                    "createdAt": "2016-03-03",
+                    "accepted": False,
+                    "comments": comment
+                }).inserted_id)
+
                 sku_list.append(self.db.skus.insert_one({
                     "name": "sku_" + str(x * y),
                     "sku_values": sku_values,
@@ -274,7 +274,38 @@ class Mongo(Base):
             # print(self.db.images.find_one({"_id": inner_self.image_id}))
 
         return self.create_case("commentOnImage", setup, run, teardown)
-
+    
+    def pairImageSKU(self):
+        def setup(inner_self):
+            inner_self.project_id = self.get_random_id("projects")
+            out = self.db.projects.find_one({"_id": inner_self.project_id})
+            
+            inner_self.sku_id = out["skus"][0]
+            inner_self.image_id = out["images"][0]
+            
+        def run(inner_self):
+            self.db.skus.update(
+                {"_id": inner_self.sku_id},
+                {"$push": {"images_sku": inner_self.image_id}}
+            )
+            
+        def teardown(inner_self):
+            self.db.skus.update(
+                {"_id": inner_self.sku_id},
+                {"$pull": {"images_sku": inner_self.image_id}}
+            )
+        return self.create_case("pairImageSKU", setup, run, teardown)
+    
+    def addRowsToSKU(self):
+        def setup(inner_self):
+            inner_self.sku_id = self.get_random_id("skus")
+            
+        def run(inner_self):
+            pass
+            
+        def teardown(inner_self):
+            pass
+            
     def get_random_id(self, entity_name):
         from random import randint
         container = []
