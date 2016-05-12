@@ -196,6 +196,7 @@ class MySQL(Base):
         cursor.execute(
             "CREATE TABLE abc (id bigint not null auto_increment,name varchar(20), primary key(id)) ENGINE=InnoDB"
         )
+        print("Blobs: %s" % self.quantity_of("blob"))
         for i in range(self.quantity_of("blob")):
             cursor.execute(
                 "INSERT INTO abc(name) "

@@ -15,6 +15,7 @@ class Neo4j(Base):
 
     def initReference(self):
         session = self.session
+        print("Blobs: %s" % self.quantity_of("blob"))
         for x in range(self.quantity_of("blob")):
             session.run(
                 'CREATE (test:TEST {name:"Hello"})'
