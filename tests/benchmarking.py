@@ -94,8 +94,8 @@ class BenchMarker():
         else:
             from cases.neo4j import Neo4j
             database_class = Neo4j()
-        database_class.init(company)
         database_class.multiply_quantities_with(self.multiplier)
+        database_class.init(company)
 
         # Configure the google sheet sync
         print("Initializing Google Sheet...")
