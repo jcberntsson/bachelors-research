@@ -541,8 +541,9 @@ class Mongo(Base):
             self.db["races"].remove({"_id":inner_self.race_id})
 
         def teardown(inner_self):
+            from bson import json_util
             import json 
-            self.db.races.insert_one(json.dumps(inner_self.race))
+            self.db.races.insert_one(json.dumps(inner_self.race, default=json_util.default))
 
         return self.create_case("removeRace", setup, run, teardown)
 
