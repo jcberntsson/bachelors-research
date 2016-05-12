@@ -156,22 +156,22 @@ class Mongo(Base):
                             "made_by": self.get_random_of(collaborators)
                         }
                         comments.append(comment)
-                nbr = x + 5 + y
-                sku_images.append(self.db.skuimages.insert_one({
-                    "name": "sku_image_" + str(nbr),
-                    "originalName": "original_name",
-                    "extension": "jpg",
-                    "encoding": "PNG/SFF",
-                    "size": 1024,
-                    "height": 1080,
-                    "width": 720,
-                    "verticalDPI": 40,
-                    "horizontalDPI": 50,
-                    "bitDepth": 15,
-                    "createdAt": "2016-03-03",
-                    "accepted": False,
-                    "comments": comment
-                }).inserted_id)
+                    nbr = x + 5 + y
+                    sku_images.append(self.db.skuimages.insert_one({
+                        "name": "sku_image_" + str(nbr),
+                        "originalName": "original_name",
+                        "extension": "jpg",
+                        "encoding": "PNG/SFF",
+                        "size": 1024,
+                        "height": 1080,
+                        "width": 720,
+                        "verticalDPI": 40,
+                        "horizontalDPI": 50,
+                        "bitDepth": 15,
+                        "createdAt": "2016-03-03",
+                        "accepted": False,
+                        "comments": comment
+                    }).inserted_id)
 
                 sku_list.append(self.db.skus.insert_one({
                     "name": "sku_" + str(x * y),
@@ -298,14 +298,34 @@ class Mongo(Base):
     
     def addRowsToSKU(self):
         def setup(inner_self):
-            inner_self.sku_id = self.get_random_id("skus")
-            
+            inner_self.project_id = self.get_random_id("projects")
+            sku = {
+                "name": "sku_91239",
+                "sku_values": {"header":"header_new", "value": "new"}
+            }
+            inner_self.sku = sku
+        def run(inner_self):
+            inner_self.sku_id = self.db.skus.insert_one(inner_self.sku).inserted_id
+            self.db.projects.update({"_id":inner_self.project_id},{"$push":{"skus":inner_self.sku_id}})
+        def teardown(inner_self):
+            self.db.projects.update({"_id":inner_self.project_id},{"$pull":{"skus":inner_self.sku_id}})
+            self.db.skus.remove({"_id": inner_self.sku_id})
+        return self.create_case("addRowsToSKU", setup, run, teardown)
+    
+    def fetchAllUserComments(self):
+        def setup(inner_self):
+            pass
+        # inner_self.user_id = self.get_random_id("users")
         def run(inner_self):
             pass
-            
+        # inner_self.project_id = self.get_random_id("projects")
+        #     inner_self.project_images = self.db.projects.find({"_id":inner_self.project_id},{"images":1, "_id":0})
+        #     for image in inner_self.project_images: 
         def teardown(inner_self):
             pass
             
+        return self.create_case("fetchAllUserComments", setup, run, teardown)
+        
     def get_random_id(self, entity_name):
         from random import randint
         container = []
@@ -494,8 +514,6 @@ class Mongo(Base):
             
         return self.create_case("unparticipate", setup, run, teardown)
 
-
-
     def fetchCoords(self):
         def setup(inner_self):
             race_id = self.get_random_id("races")
@@ -570,5 +588,3 @@ class Mongo(Base):
             pass
 
         return self.create_case("fetchRace", setup, run, teardown)
-    
-

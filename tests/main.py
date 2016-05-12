@@ -5,7 +5,7 @@ from cases import Mongo
 if __name__ == '__main__':
     m = Mongo()
     m.init("skim")
-    case = m.pairImageSKU()
+    case = m.fetchAllUserComments()
     case.setup()
     case.run()
     case.teardown()
