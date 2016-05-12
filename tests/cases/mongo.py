@@ -156,23 +156,6 @@ class Mongo(Base):
                             "made_by": self.get_random_of(collaborators)
                         }
                         comments.append(comment)
-                    nbr = x + 5 + y
-                    image_sku = {
-                        "name": "sku_image_" + str(nbr),
-                        "originalName": "original_name",
-                        "extension": "jpg",
-                        "encoding": "PNG/SFF",
-                        "size": 1024,
-                        "height": 1080,
-                        "width": 720,
-                        "verticalDPI": 40,
-                        "horizontalDPI": 50,
-                        "bitDepth": 15,
-                        "createdAt": "2016-03-03",
-                        "accepted": False,
-                        "comments": comments
-                    }
-
                 nbr = x + 5 + y
                 sku_images.append(self.db.skuimages.insert_one({
                     "name": "sku_image_" + str(nbr),
@@ -315,7 +298,8 @@ class Mongo(Base):
     
     def addRowsToSKU(self):
         def setup(inner_self):
-            pass
+            inner_self.sku_id = self.get_random_id("skus")
+            
         def run(inner_self):
             pass
             
