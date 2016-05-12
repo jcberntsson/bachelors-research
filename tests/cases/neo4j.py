@@ -80,7 +80,6 @@ class Neo4j(Base):
                     activity_id = self.evaluate(activity_cursor, "activity_id")
                     session.run(self.create_coords(self.quantity_of("activity_coordinates"), activity_id))
                 print("Race done")
-            print("Event done")
 
     def initSkim(self):
         session = self.session
@@ -94,7 +93,6 @@ class Neo4j(Base):
             )
             user_id = self.evaluate(cursor, "user_id")
             user_ids.append(user_id)
-        print("Users done")
 
         print("Creating projects")
         for x in range(self.quantity_of("projects")):
@@ -173,7 +171,6 @@ class Neo4j(Base):
                             'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (
                             image_id, self.get_random_of(collaborator_ids))
                         )
-            print("Project done")
 
     def clearData(self):
         # Dangerous

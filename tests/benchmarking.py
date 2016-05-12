@@ -30,9 +30,9 @@ test_cases = {
         #'fetchParticipants2',
         #'unparticipate',
         #'fetchCoords',
-        'removeCoords',
-        'fetchHotRaces',
-        'fetchRace',
+        #'removeCoords',
+        #'fetchHotRaces',
+        #'fetchRace',
         'removeRace'
     ],
     'reference': [
@@ -102,7 +102,9 @@ if __name__ == '__main__':
         case_to_test = getattr(database_class, test_case)
         time_array = []
         error = False
+        last_percentage = 0
         for i in range(iterations):
+            percentage = i // iterations
             case = case_to_test()
             try:
                 case.setup()
@@ -113,6 +115,10 @@ if __name__ == '__main__':
                 error = True
                 print("Exception during execution: %s" % ex)
                 break
+            if percentage > last_percentage:
+                print("|", end=" ")
+                last_percentage = percentage
+        print()
 
         # Calculate results
         if error:
