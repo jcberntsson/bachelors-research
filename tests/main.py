@@ -6,6 +6,7 @@ if __name__ == '__main__':
     m = Mongo()
     m.init("skim")
     case = m.fetchAllUserComments()
+    m.clearData()
     case.setup()
     case.run()
     case.teardown()

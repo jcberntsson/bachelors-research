@@ -4,11 +4,11 @@ import random
 from random import randint
 import datetime
 
-
 class Mongo(Base):
+
     # connect to authenticated mongo database
-    client = MongoClient("mongodb://46.101.103.26:27017")
-    # client = MongoClient("mongodb://10.135.3.156:27017")
+    # client = MongoClient("mongodb://46.101.103.26:27017")
+    client = MongoClient("mongodb://10.135.3.156:27017")
     db = client.db
 
     ####################################
@@ -271,8 +271,6 @@ class Mongo(Base):
                 {"_id": inner_self.image_id},
                 {"$pull": {"comments": {"text": "Ooh, another new comment!"}}}
             )
-            # print(self.db.images.find_one({"_id": inner_self.image_id}))
-
         return self.create_case("commentOnImage", setup, run, teardown)
     
     def pairImageSKU(self):
@@ -317,7 +315,7 @@ class Mongo(Base):
             pass
         # inner_self.user_id = self.get_random_id("users")
         def run(inner_self):
-            pass
+            raise NotImplementedError
         # inner_self.project_id = self.get_random_id("projects")
         #     inner_self.project_images = self.db.projects.find({"_id":inner_self.project_id},{"images":1, "_id":0})
         #     for image in inner_self.project_images: 
@@ -509,7 +507,6 @@ class Mongo(Base):
             self.db["races"].update({"_id":inner_self.race_id},{"$pull":{"activities":{"participating":inner_self.participant_id}}})
 
         def teardown(inner_self):
-            import json
             self.db["races"].update({"_id":inner_self.race_id},{"$push":{"activities":inner_self.activity}})
             
         return self.create_case("unparticipate", setup, run, teardown)
