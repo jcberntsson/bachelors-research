@@ -243,8 +243,9 @@ class Neo4j(Base):
 
         def run(inner_self):
             out = self.session.run(
-                'MATCH (user:USER) RETURN user'
-            )  # .dump()
+                'MATCH (user:USER) '
+                'RETURN user'
+            )
             users = list(out)
 
         def teardown(inner_self):
