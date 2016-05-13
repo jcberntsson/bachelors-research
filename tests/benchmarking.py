@@ -18,9 +18,9 @@ class BenchMarker():
             'fetchAllUserComments'
         ],
         'raceone': [
-            'follow',
-            'unfollow',
-            'insertCoords',
+            #'follow',
+            #'unfollow',
+            #'insertCoords',
             'fetchParticipants',
             'fetchParticipants2',
             'unparticipate',
@@ -149,10 +149,13 @@ class BenchMarker():
 
             # Sync to Google Sheets
             if sheet is not None:
-                print("Syncing to Google Sheets")
-                sheet.update_value(test_case, self.cols["total_time"], total_time)
-                sheet.update_value(test_case, self.cols["peak_time"], peak_time)
-                sheet.update_value(test_case, self.cols["avg_time"], avg_time)
+                try:
+                    print("Syncing to Google Sheets")
+                    sheet.update_value(test_case, self.cols["total_time"], total_time)
+                    sheet.update_value(test_case, self.cols["peak_time"], peak_time)
+                    sheet.update_value(test_case, self.cols["avg_time"], avg_time)
+                except Exception as ex:
+                    print(ex)
             print("======== End %s ========" % test_case)
         print("Tests are done")
 
