@@ -556,7 +556,7 @@ class Neo4j(Base):
             )
             self.session.run(
                 'START coord=Node({coord_id}), activity=Node({activity_id}) '
-                'CREATE (coord)-[:END_FOR]->(act)',
+                'CREATE (coord)-[:END_FOR]->(activity)',
                 dict(coord_id=inner_self.end_id, activity_id=inner_self.activity_id)
             )
 
