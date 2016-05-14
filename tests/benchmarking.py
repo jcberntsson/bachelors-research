@@ -93,6 +93,7 @@ class BenchMarker():
             from cases import Neo4j
             database_class = Neo4j()
         database_class.clearData()
+        database_class.current_company = company
 
         def init():
             database_class.initReference()
