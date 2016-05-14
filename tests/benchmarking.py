@@ -65,7 +65,7 @@ class BenchMarker():
             exit()
 
         for db in self.databases:
-            self.test_init(db, "reference")
+            self.test_init(db, "skim")
         #if is_valid_company and is_valid_database:
         #    self.run_tests(database, company)
         #else:
@@ -96,7 +96,7 @@ class BenchMarker():
         database_class.current_company = company
 
         def init():
-            database_class.initReference()
+            database_class.initSkim()
 
         time = 0
         try:
