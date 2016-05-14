@@ -224,10 +224,13 @@ class Neo4j(Base):
 
     def clearData(self):
         # Dangerous
-        self.session.run(
+        cursor = self.session.run(
             'MATCH (n) '
-            'DETACH DELETE n'
+            'DETACH DELETE n '
+            'RETURN COUNT(*) AS deleted'
         )
+        deleted = self.evaluate(cursor, "deleted")
+        print("Cleared %s nodes and relationships" % deleted)
 
     ########################
     ####	REFERENCE	####
