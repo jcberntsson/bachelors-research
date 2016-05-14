@@ -98,9 +98,9 @@ class BenchMarker():
         if company == "raceone":
             init = database_class.initRaceOne
         elif company == "skim":
-            init = database_class.initSkim()
+            init = database_class.initSkim
         else:
-            init = database_class.initReference()
+            init = database_class.initReference
 
         time = 0
         try:
