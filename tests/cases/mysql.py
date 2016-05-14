@@ -96,6 +96,7 @@ class MySQL(Base):
                             "INSERT INTO activityCoordinate (activity,createdAt,lat,lng,alt) "
                             "VALUES('%d','2016-03-03',%d,%d,%d)" % (activity_id, 10 + p, 11 + p, 20 + p)
                         )
+            print("Event done")
         self.cnx.commit()
         cursor.close()
 
