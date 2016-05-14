@@ -180,7 +180,7 @@ class Neo4j(Base):
                         '   createdAt:{createdAt},'
                         '   accepted:{accepted}})-[:IN]->(sku) '
                         'RETURN ID(image) AS image_id',
-                        dict(sku_id=sku_id, name="image_name", originalName="original_name", extenstion="jpg",
+                        dict(sku_id=sku_id, name="image_name", originalName="original_name", extension="jpg",
                              encoding="PNG/SFF", size=1024, height=1080, width=720, verticalDPI=40, horizontalDPI=50,
                              bitDepth=15, createdAt="2016-03-03", accepted=False)
                     )
