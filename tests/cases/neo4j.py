@@ -32,7 +32,7 @@ class Neo4j(Base):
         for i in range(self.quantity_of("race_coordinates") - 1):
             race_coords_query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) ' % (
                 "coord" + str(i), "coord" + str(i + 1))
-        race_coords_query += 'CREATE (%s)-[:END_FOR]->(race)' % "coord99"
+        race_coords_query += 'CREATE (%s)-[:END_FOR]->(race)' % "coord" + str(self.quantity_of("race_coordinates") - 1)
 
         # Create query for activity coordinates
         activity_coords_query = 'START race=Node({id}) ' \
@@ -40,7 +40,7 @@ class Neo4j(Base):
         for i in range(self.quantity_of("activity_coordinates") - 1):
             activity_coords_query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) ' % (
                 "coord" + str(i), "coord" + str(i + 1))
-        activity_coords_query += 'CREATE (%s)-[:END_FOR]->(race)' % "coord99"
+        activity_coords_query += 'CREATE (%s)-[:END_FOR]->(race)' % "coord" + str(self.quantity_of("activity_coordinates") - 1)
 
         user_ids = []
         print("Creating users and organizers")
