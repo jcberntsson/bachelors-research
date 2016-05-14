@@ -30,41 +30,45 @@ class Neo4j(Base):
         print("Creating users and organizers")
         for x in range(self.quantity_of("users")):
             cursor = session.run(
-                'CREATE (user:USER { username:"user_%s", fullname:"Tester", password:"SuperHash" }) '
-                'RETURN ID(user) AS user_id' % str(x)
+                'CREATE (user:USER { username:{username}, fullname:{fullname}, password:{password} }) '
+                'RETURN ID(user) AS user_id',
+                dict(username="user_%d" % x, fullname="Tester", password="SuperHash")
             )
             user_id = self.evaluate(cursor, "user_id")
             user_ids.append(user_id)
         organizer_ids = []
         for x in range(self.quantity_of("organizers")):
             cursor = session.run(
-                'CREATE (organizer:ORGANIZER { username:"organizer_%s", fullname:"Tester", password:"SuperHash", email:"mail@mail.se" }) '
-                'RETURN ID(organizer) AS organizer_id' % str(x)
+                'CREATE (organizer:ORGANIZER { username:{username}, fullname:{fullname}, password:{password}, email:{email} }) '
+                'RETURN ID(organizer) AS organizer_id',
+                dict(username="organizer_%d" % x, fullname="Tester", password="SuperHash", email="mail@mail.se")
             )
             organizer_id = self.evaluate(cursor, "organizer_id")
             organizer_ids.append(organizer_id)
-        print("Users and organizers done")
 
         print("Creating events")
         for x in range(self.quantity_of("events")):
             event_cursor = session.run(
-                'START organizer=Node(%d) '
-                'CREATE (event:EVENT {name:"event_name",logoURL:"google.se/img.png"})-[:MADE_BY]->(organizer) '
-                'RETURN ID(event) AS event_id' % organizer_ids[x]
+                'START organizer=Node({organizer_id}) '
+                'CREATE (event:EVENT { name:{name},logoURL:{logoURL} })-[:MADE_BY]->(organizer) '
+                'RETURN ID(event) AS event_id',
+                dict(organizer_id=organizer_ids[x], name="event_name", logoURL="google.se/img.png")
             )
             event_id = self.evaluate(event_cursor, "event_id")
             for y in range(self.quantity_of("races")):
                 race_cursor = session.run(
-                    'START event=Node(%d) '
+                    'START event=Node({event_id}) '
                     'CREATE (race:RACE '
-                    '   {name:"race_name",'
-                    '   description:"A nice race to participate in.",'
-                    '   date:"2016-06-13",'
-                    '   maxDuration:3,'
-                    '   preview:"linktoimage.png",'
-                    '   location:"Gothenburg, Sweden",'
-                    '   logoURL:"google.se/img.png"})-[:IN]->(event) '
-                    'RETURN ID(race) AS race_id' % event_id
+                    '   {name:{name},'
+                    '   description:{description},'
+                    '   date:{date},'
+                    '   maxDuration:{maxDuration},'
+                    '   preview:{preview},'
+                    '   location:{location},'
+                    '   logoURL:{logoURL}})-[:IN]->(event) '
+                    'RETURN ID(race) AS race_id',
+                    dict(event_id=event_id, name="race_name", description="A nice race to participate in.", date="2016-06-13",
+                         maxDuration=3, preview="linktoimage.png", location="Gothenburg, Sweden", logoURL="google.se/img.png")
                 )
                 race_id = self.evaluate(race_cursor, "race_id")
                 session.run(self.create_coords(self.quantity_of("race_coordinates"), race_id))
@@ -75,13 +79,15 @@ class Neo4j(Base):
                     rand = self.new_rand_int(rands, 0, len(user_ids) - 2)
                     rands.append(rand)
                     activity_cursor = session.run(
-                        'START participant=Node(%d), follower=Node(%d), race=Node(%d) '
-                        'CREATE (participant)-[:PARTICIPATING_IN]->(activity:ACTIVITY {joinedAt:"2016-05-05"})-[:OF]->(race) '
+                        'START participant=Node({participant_id}), follower=Node({follower_id}), race=Node({race_id}) '
+                        'CREATE (participant)-[:PARTICIPATING_IN]->(activity:ACTIVITY {joinedAt:{joinedAt}})-[:OF]->(race) '
                         'CREATE (activity)<-[:FOLLOWING]-(follower) '
-                        'RETURN ID(activity) AS activity_id' % (user_ids[rand], user_ids[rand + 1], race_id)
+                        'RETURN ID(activity) AS activity_id',
+                        dict(participant_id=user_ids[rand], follower_id=user_ids[rand + 1], race_id=race_id, joinedAt="2016-05-05")
                     )
                     activity_id = self.evaluate(activity_cursor, "activity_id")
                     session.run(self.create_coords(self.quantity_of("activity_coordinates"), activity_id))
+            print("Event done")
 
     def initSkim(self):
         session = self.session
