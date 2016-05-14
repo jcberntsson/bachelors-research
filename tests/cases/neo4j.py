@@ -104,13 +104,15 @@ class Neo4j(Base):
             )
             project_id = self.evaluate(project_cursor, "project_id")
             collaborator_ids = []
+            tx = session.begin_transaction()
             for y in range(self.quantity_of("collaborators")):
                 user_id = user_ids[(x + 1) * y]
-                session.run(
+                tx.run(
                     'START project=Node(%d), collaborator=Node(%d) '
                     'CREATE (project)-[:COLLABORATOR]->(collaborator)' % (project_id, user_id)
                 )
                 collaborator_ids.append(user_id)
+            tx.commit()
             for y in range(self.quantity_of("project_images")):
                 image_cursor = session.run(
                     'START project=Node(%d) '
@@ -130,12 +132,14 @@ class Neo4j(Base):
                     'RETURN ID(image) AS image_id' % project_id
                 )
                 image_id = self.evaluate(image_cursor, "image_id")
+                tx = session.begin_transaction()
                 for z in range(self.quantity_of("image_comments")):
-                    session.run(
+                    tx.run(
                         'START image=Node(%d), user=Node(%d) '
                         'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (
                             image_id, self.get_random_of(collaborator_ids))
                     )
+                tx.commit()
             for y in range(self.quantity_of("skus")):
                 sku_cursor = session.run(
                     'START project=Node(%d) '
@@ -143,11 +147,13 @@ class Neo4j(Base):
                     'RETURN ID(sku) AS sku_id' % project_id
                 )
                 sku_id = self.evaluate(sku_cursor, "sku_id")
+                tx = session.begin_transaction()
                 for z in range(self.quantity_of("sku_values")):
-                    session.run(
+                    tx.run(
                         'START sku=Node(%d) '
                         'CREATE (value:SKU_VALUE {header:"header_%d", value:%d})-[:IN]->(sku) ' % (sku_id, z, z)
                     )
+                tx.commit()
                 for z in range(self.quantity_of("sku_images")):
                     image_cursor = session.run(
                         'START sku=Node(%d) '
@@ -167,12 +173,14 @@ class Neo4j(Base):
                         'RETURN ID(image) AS image_id' % sku_id
                     )
                     image_id = self.evaluate(image_cursor, "image_id")
+                    tx = session.begin_transaction()
                     for a in range(self.quantity_of("image_comments")):
-                        session.run(
+                        tx.run(
                             'START image=Node(%d), user=Node(%d) '
                             'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (
                                 image_id, self.get_random_of(collaborator_ids))
                         )
+                    tx.commit()
             print("Project done")
 
     def clearData(self):
