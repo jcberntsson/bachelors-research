@@ -71,7 +71,8 @@ class Neo4j(Base):
                          maxDuration=3, preview="linktoimage.png", location="Gothenburg, Sweden", logoURL="google.se/img.png")
                 )
                 race_id = self.evaluate(race_cursor, "race_id")
-                session.run(self.create_coords(self.quantity_of("race_coordinates"), race_id))
+                session.run(self.create_coords(self.quantity_of("race_coordinates")),
+                            dict(id=race_id, lat=33, lng=44, alt=23))
 
                 # Participants and Followers
                 rands = []
@@ -86,7 +87,8 @@ class Neo4j(Base):
                         dict(participant_id=user_ids[rand], follower_id=user_ids[rand + 1], race_id=race_id, joinedAt="2016-05-05")
                     )
                     activity_id = self.evaluate(activity_cursor, "activity_id")
-                    session.run(self.create_coords(self.quantity_of("activity_coordinates"), activity_id))
+                    session.run(self.create_coords(self.quantity_of("activity_coordinates")),
+                                dict(id=activity_id, lat=33, lng=44, alt=23))
             print("Event done")
 
     def initSkim(self):
@@ -787,7 +789,16 @@ class Neo4j(Base):
             return None
 
     @staticmethod
-    def create_coords(nbr, for_id):
+    def create_coords(nbr):
+        if nbr <= 1:
+            return ""
+        query = 'START race=Node({id}) ' \
+                'CREATE (race)-[:STARTS_WITH]->(coord0:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) '
+        for i in range(nbr - 1):
+            query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) ' % ("coord" + str(i), "coord" + str(i + 1))
+        query += 'CREATE (%s)-[:END_FOR]->(race)' % ("coord" + str(nbr - 1))
+        return query
+        """
         if nbr <= 1:
             return ""
         lat = 10
@@ -804,3 +815,4 @@ class Neo4j(Base):
                 "coord" + str(i), "coord" + str(i + 1), lat, lng, alt)
         query += 'CREATE (%s)-[:END_FOR]->(race)' % ("coord" + str(nbr - 1))
         return query
+        """
