@@ -79,6 +79,7 @@ class BenchMarker():
 
     @staticmethod
     def test_init(database, company):
+        print("Testing init for %s and %s" % (database, company))
         if database == 'neo4j':
             from cases.neo4j import Neo4j
             database_class = Neo4j()
