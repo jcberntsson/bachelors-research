@@ -39,7 +39,7 @@ class BenchMarker():
     # Definition of the column system in the Google Spreadsheet
     cols = {"total_time": 2, "peak_time": 3, "avg_time": 4, "load_peak": 5, "load_avg": 6}
     databases = ["mysql", "neo4j", "mongo"]
-    iterations = 1000
+    iterations = 100
 
     def __init__(self, args):
         # Check if argument is provided
