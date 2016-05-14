@@ -26,6 +26,7 @@ class Neo4j(Base):
     def initRaceOne(self):
         session = self.session
 
+        # Create query for race coordinates
         race_coords_query = 'START race=Node({id}) ' \
                             'CREATE (race)-[:STARTS_WITH]->(coord0:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) '
         for i in range(self.quantity_of("race_coordinates") - 1):
@@ -33,6 +34,7 @@ class Neo4j(Base):
                 "coord" + str(i), "coord" + str(i + 1))
         race_coords_query += 'CREATE (%s)-[:END_FOR]->(race)' % "coord99"
 
+        # Create query for activity coordinates
         activity_coords_query = 'START race=Node({id}) ' \
                                 'CREATE (race)-[:STARTS_WITH]->(coord0:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) '
         for i in range(self.quantity_of("activity_coordinates") - 1):
