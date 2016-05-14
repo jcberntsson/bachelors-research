@@ -18,13 +18,13 @@ class BenchMarker():
             'fetchAllUserComments'
         ],
         'raceone': [
-            #'follow',
-            #'unfollow',
-            #'insertCoords',
-            #'fetchParticipants',
-            #'fetchParticipants2',
-            #'unparticipate',
-            #'fetchCoords',
+            'follow',
+            'unfollow',
+            'insertCoords',
+            'fetchParticipants',
+            'fetchParticipants2',
+            'unparticipate',
+            'fetchCoords',
             'removeCoords',
             'fetchHotRaces',
             'fetchRace',
@@ -64,16 +64,43 @@ class BenchMarker():
             print("Example: 'python benchmarking.py mysql skim'")
             exit()
 
-        if is_valid_company and is_valid_database:
-            self.run_tests(database, company)
-        else:
-            print("Running all tests")
-            self.run_all_tests()
+        for db in self.databases:
+            self.test_init(db, "reference")
+        #if is_valid_company and is_valid_database:
+        #    self.run_tests(database, company)
+        #else:
+        #    print("Running all tests")
+        #    self.run_all_tests()
 
     def run_all_tests(self):
         for comp, comp_cases in self.test_cases.items():
             for db in self.databases:
                 self.run_tests(db, comp)
+
+    @staticmethod
+    def test_init(database, company):
+        if database == 'neo4j':
+            from cases.neo4j import Neo4j
+            database_class = Neo4j()
+        elif database == 'mysql':
+            from cases.mysql import MySQL
+            database_class = MySQL()
+        elif database == 'mongo':
+            from cases.mongo import Mongo
+            database_class = Mongo()
+        else:
+            from cases.neo4j import Neo4j
+            database_class = Neo4j()
+
+        def init():
+            database_class.init(company)
+
+        time = 0
+        try:
+            time = timeit(init, number=1) * 1000  # in ms
+        except Exception as ex:
+            print("Exception during execution: %s" % ex)
+        print("Result for %s and %s is %d ms" % (database, company, time))
 
     def run_tests(self, database, company):
         print("Running %s %s" % (database, company))
@@ -88,9 +115,6 @@ class BenchMarker():
         elif database == 'mongo':
             from cases.mongo import Mongo
             database_class = Mongo()
-        elif database == 'couch':
-            from cases.couch import Couch
-            database_class = Couch()
         else:
             from cases.neo4j import Neo4j
             database_class = Neo4j()
