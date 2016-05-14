@@ -92,9 +92,10 @@ class BenchMarker():
         else:
             from cases import Neo4j
             database_class = Neo4j()
+        database_class.clearData()
 
         def init():
-            database_class.init(company)
+            database_class.initReference()
 
         time = 0
         try:
