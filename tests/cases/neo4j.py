@@ -18,7 +18,8 @@ class Neo4j(Base):
         print("Blobs: %s" % self.quantity_of("blob"))
         for x in range(self.quantity_of("blob")):
             tx.run(
-                'CREATE (:TEST { name:{name} })', {"name": "hello"}
+                'CREATE (:TEST { name:{name} })',
+                dict(name="hello")
             )
         tx.commit()
 
@@ -89,8 +90,9 @@ class Neo4j(Base):
         print("Creating users")
         for x in range(self.quantity_of("users")):
             cursor = session.run(
-                'CREATE (user:USER { username:"user_%d", email:"mail@mail.se", password:"SuperHash" }) '
-                'RETURN ID(user) AS user_id' % x
+                'CREATE (user:USER { username:{username}, email:{email}, password:{password} }) '
+                'RETURN ID(user) AS user_id',
+                dict(username="user_%d" % x, email="mail@mail.se", password="SuperHash")
             )
             user_id = self.evaluate(cursor, "user_id")
             user_ids.append(user_id)
@@ -99,8 +101,9 @@ class Neo4j(Base):
         print("Projects: %s" % self.quantity_of("projects"))
         for x in range(self.quantity_of("projects")):
             project_cursor = session.run(
-                'CREATE (project:PROJECT {name:"project_%d"}) '
-                'RETURN ID(project) AS project_id' % x
+                'CREATE (project:PROJECT { name:{name} }) '
+                'RETURN ID(project) AS project_id',
+                dict(name="project_%d" % x)
             )
             project_id = self.evaluate(project_cursor, "project_id")
             collaborator_ids = []
@@ -108,77 +111,86 @@ class Neo4j(Base):
             for y in range(self.quantity_of("collaborators")):
                 user_id = user_ids[(x + 1) * y]
                 tx.run(
-                    'START project=Node(%d), collaborator=Node(%d) '
-                    'CREATE (project)-[:COLLABORATOR]->(collaborator)' % (project_id, user_id)
+                    'START project=Node({project_id}), collaborator=Node({user_id}) '
+                    'CREATE (project)-[:COLLABORATOR]->(collaborator)',
+                    dict(project_id=project_id, user_id=user_id)
                 )
                 collaborator_ids.append(user_id)
             tx.commit()
             for y in range(self.quantity_of("project_images")):
                 image_cursor = session.run(
-                    'START project=Node(%d) '
+                    'START project=Node({project_id}) '
                     'CREATE (image:IMAGE {'
-                    '   name:"image_name",'
-                    '   originalName:"original_name",'
-                    '   extension:"jpg",'
-                    '   encoding:"PNG/SFF",'
-                    '   size:1024,'
-                    '   height:1080,'
-                    '   width:720,'
-                    '   verticalDPI:40,'
-                    '   horizontalDPI:50,'
-                    '   bitDepth:15,'
-                    '   createdAt:"2016-03-03",'
-                    '   accepted:False})-[:IN]->(project) '
-                    'RETURN ID(image) AS image_id' % project_id
+                    '   name:{name},'
+                    '   originalName:{originalName},'
+                    '   extension:{extension},'
+                    '   encoding:{encoding},'
+                    '   size:{size},'
+                    '   height:{height},'
+                    '   width:{width},'
+                    '   verticalDPI:{verticalDPI},'
+                    '   horizontalDPI:{horizontalDPI},'
+                    '   bitDepth:{bitDepth},'
+                    '   createdAt:{createdAt},'
+                    '   accepted:{accepted}})-[:IN]->(project) '
+                    'RETURN ID(image) AS image_id',
+                    dict(project_id=project_id, name="image_name", originalName="original_name", extenstion="jpg",
+                         encoding="PNG/SFF", size=1024, height=1080, width=720, verticalDPI=40, horizontalDPI=50,
+                         bitDepth=15, createdAt="2016-03-03", accepted=False)
                 )
                 image_id = self.evaluate(image_cursor, "image_id")
                 tx = session.begin_transaction()
                 for z in range(self.quantity_of("image_comments")):
                     tx.run(
-                        'START image=Node(%d), user=Node(%d) '
-                        'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (
-                            image_id, self.get_random_of(collaborator_ids))
+                        'START image=Node({image_id}), user=Node({user_id}) '
+                        'CREATE (user)<-[:MADE_BY]-(:COMMENT { text:{text}, createdAt:{createdAt} })-[:ON]->(image)',
+                        dict(image_id=image_id, user_id=self.get_random_of(collaborator_ids), text="Ha-Ha, cool image!", createdAt="2016-05-11")
                     )
                 tx.commit()
             for y in range(self.quantity_of("skus")):
                 sku_cursor = session.run(
-                    'START project=Node(%d) '
-                    'CREATE (sku:SKU {name:"sku_name"})-[:IN]->(project) '
-                    'RETURN ID(sku) AS sku_id' % project_id
+                    'START project=Node({project_id}) '
+                    'CREATE (sku:SKU { name:{name} })-[:IN]->(project) '
+                    'RETURN ID(sku) AS sku_id',
+                    dict(project_id=project_id, name="sku_name")
                 )
                 sku_id = self.evaluate(sku_cursor, "sku_id")
                 tx = session.begin_transaction()
                 for z in range(self.quantity_of("sku_values")):
                     tx.run(
-                        'START sku=Node(%d) '
-                        'CREATE (value:SKU_VALUE {header:"header_%d", value:%d})-[:IN]->(sku) ' % (sku_id, z, z)
+                        'START sku=Node({sku_id}) '
+                        'CREATE (:SKU_VALUE { header:{header}, value:{value} })-[:IN]->(sku)',
+                        dict(sku_id=sku_id, header="header_%d" % z, value=z)
                     )
                 tx.commit()
                 for z in range(self.quantity_of("sku_images")):
                     image_cursor = session.run(
-                        'START sku=Node(%d) '
+                        'START sku=Node({sku_id}) '
                         'CREATE (image:IMAGE {'
-                        '   name:"image_name",'
-                        '   originalName:"original_name",'
-                        '   extension:"jpg",'
-                        '   encoding:"PNG/SFF",'
-                        '   size:1024,'
-                        '   height:1080,'
-                        '   width:720,'
-                        '   verticalDPI:40,'
-                        '   horizontalDPI:50,'
-                        '   bitDepth:15,'
-                        '   createdAt:"2016-03-03",'
-                        '   accepted:False})-[:BELONGS_TO]->(sku) '
-                        'RETURN ID(image) AS image_id' % sku_id
+                        '   name:{name},'
+                        '   originalName:{originalName},'
+                        '   extension:{extension},'
+                        '   encoding:{encoding},'
+                        '   size:{size},'
+                        '   height:{height},'
+                        '   width:{width},'
+                        '   verticalDPI:{verticalDPI},'
+                        '   horizontalDPI:{horizontalDPI},'
+                        '   bitDepth:{bitDepth},'
+                        '   createdAt:{createdAt},'
+                        '   accepted:{accepted}})-[:IN]->(sku) '
+                        'RETURN ID(image) AS image_id',
+                        dict(sku_id=sku_id, name="image_name", originalName="original_name", extenstion="jpg",
+                             encoding="PNG/SFF", size=1024, height=1080, width=720, verticalDPI=40, horizontalDPI=50,
+                             bitDepth=15, createdAt="2016-03-03", accepted=False)
                     )
                     image_id = self.evaluate(image_cursor, "image_id")
                     tx = session.begin_transaction()
                     for a in range(self.quantity_of("image_comments")):
                         tx.run(
-                            'START image=Node(%d), user=Node(%d) '
-                            'CREATE (user)<-[:MADE_BY]-(comment:COMMENT {text:"Ha-Ha, cool image!", createdAt:"2016-05-11"})-[:ON]->(image) ' % (
-                                image_id, self.get_random_of(collaborator_ids))
+                            'START image=Node({image_id}), user=Node({user_id}) '
+                            'CREATE (user)<-[:MADE_BY]-(:COMMENT { text:{text}, createdAt:{createdAt} })-[:ON]->(image)',
+                            dict(image_id=image_id, user_id=self.get_random_of(collaborator_ids), text="Ha-Ha, cool image!", createdAt="2016-05-11")
                         )
                     tx.commit()
             print("Project done")
