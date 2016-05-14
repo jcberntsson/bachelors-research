@@ -64,13 +64,14 @@ class BenchMarker():
             print("Example: 'python benchmarking.py mysql skim'")
             exit()
 
-        for db in self.databases:
-            self.test_init(db, "raceone")
-        #if is_valid_company and is_valid_database:
-        #    self.run_tests(database, company)
-        #else:
-        #    print("Running all tests")
-        #    self.run_all_tests()
+        #for db in self.databases:
+        #    self.test_init(db, "raceone")
+
+        if is_valid_company and is_valid_database:
+            self.run_tests(database, company)
+        else:
+            print("Running all tests")
+            self.run_all_tests()
 
     def run_all_tests(self):
         for comp, comp_cases in self.test_cases.items():

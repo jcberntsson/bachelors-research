@@ -26,6 +26,20 @@ class Neo4j(Base):
     def initRaceOne(self):
         session = self.session
 
+        race_coords_query = 'START race=Node({id}) ' \
+                            'CREATE (race)-[:STARTS_WITH]->(coord0:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) '
+        for i in range(self.quantity_of("race_coordinates") - 1):
+            race_coords_query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) ' % (
+                "coord" + str(i), "coord" + str(i + 1))
+        race_coords_query += 'CREATE (%s)-[:END_FOR]->(race)' % "coord99"
+
+        activity_coords_query = 'START race=Node({id}) ' \
+                                'CREATE (race)-[:STARTS_WITH]->(coord0:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) '
+        for i in range(self.quantity_of("activity_coordinates") - 1):
+            activity_coords_query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) ' % (
+                "coord" + str(i), "coord" + str(i + 1))
+        activity_coords_query += 'CREATE (%s)-[:END_FOR]->(race)' % "coord99"
+
         user_ids = []
         print("Creating users and organizers")
         for x in range(self.quantity_of("users")):
@@ -67,12 +81,13 @@ class Neo4j(Base):
                     '   location:{location},'
                     '   logoURL:{logoURL}})-[:IN]->(event) '
                     'RETURN ID(race) AS race_id',
-                    dict(event_id=event_id, name="race_name", description="A nice race to participate in.", date="2016-06-13",
-                         maxDuration=3, preview="linktoimage.png", location="Gothenburg, Sweden", logoURL="google.se/img.png")
+                    dict(event_id=event_id, name="race_name", description="A nice race to participate in.",
+                         date="2016-06-13",
+                         maxDuration=3, preview="linktoimage.png", location="Gothenburg, Sweden",
+                         logoURL="google.se/img.png")
                 )
                 race_id = self.evaluate(race_cursor, "race_id")
-                session.run(self.create_coords(self.quantity_of("race_coordinates")),
-                            dict(id=race_id, lat=33, lng=44, alt=23))
+                session.run(race_coords_query, dict(id=race_id, lat=33, lng=44, alt=23))
 
                 # Participants and Followers
                 rands = []
@@ -84,11 +99,11 @@ class Neo4j(Base):
                         'CREATE (participant)-[:PARTICIPATING_IN]->(activity:ACTIVITY {joinedAt:{joinedAt}})-[:OF]->(race) '
                         'CREATE (activity)<-[:FOLLOWING]-(follower) '
                         'RETURN ID(activity) AS activity_id',
-                        dict(participant_id=user_ids[rand], follower_id=user_ids[rand + 1], race_id=race_id, joinedAt="2016-05-05")
+                        dict(participant_id=user_ids[rand], follower_id=user_ids[rand + 1], race_id=race_id,
+                             joinedAt="2016-05-05")
                     )
                     activity_id = self.evaluate(activity_cursor, "activity_id")
-                    session.run(self.create_coords(self.quantity_of("activity_coordinates")),
-                                dict(id=activity_id, lat=33, lng=44, alt=23))
+                    session.run(activity_coords_query, dict(id=activity_id, lat=33, lng=44, alt=23))
             print("Event done")
 
     def initSkim(self):
@@ -152,7 +167,8 @@ class Neo4j(Base):
                     tx.run(
                         'START image=Node({image_id}), user=Node({user_id}) '
                         'CREATE (user)<-[:MADE_BY]-(:COMMENT { text:{text}, createdAt:{createdAt} })-[:ON]->(image)',
-                        dict(image_id=image_id, user_id=self.get_random_of(collaborator_ids), text="Ha-Ha, cool image!", createdAt="2016-05-11")
+                        dict(image_id=image_id, user_id=self.get_random_of(collaborator_ids), text="Ha-Ha, cool image!",
+                             createdAt="2016-05-11")
                     )
                 tx.commit()
             for y in range(self.quantity_of("skus")):
@@ -198,7 +214,8 @@ class Neo4j(Base):
                         tx.run(
                             'START image=Node({image_id}), user=Node({user_id}) '
                             'CREATE (user)<-[:MADE_BY]-(:COMMENT { text:{text}, createdAt:{createdAt} })-[:ON]->(image)',
-                            dict(image_id=image_id, user_id=self.get_random_of(collaborator_ids), text="Ha-Ha, cool image!", createdAt="2016-05-11")
+                            dict(image_id=image_id, user_id=self.get_random_of(collaborator_ids),
+                                 text="Ha-Ha, cool image!", createdAt="2016-05-11")
                         )
                     tx.commit()
             print("Project done")
@@ -795,7 +812,8 @@ class Neo4j(Base):
         query = 'START race=Node({id}) ' \
                 'CREATE (race)-[:STARTS_WITH]->(coord0:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) '
         for i in range(nbr - 1):
-            query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) ' % ("coord" + str(i), "coord" + str(i + 1))
+            query += 'CREATE (%s)-[:FOLLOWED_BY]->(%s:COORDINATE { lat:{lat}, lng:{lng}, alt:{alt} }) ' % (
+                "coord" + str(i), "coord" + str(i + 1))
         query += 'CREATE (%s)-[:END_FOR]->(race)' % ("coord" + str(nbr - 1))
         return query
         """
