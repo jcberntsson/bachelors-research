@@ -830,9 +830,8 @@ class Neo4j(Base):
     def get_random_id(self, entity_name):
         from random import randint
         cursor = self.session.run(
-            'MATCH (ent:{ent_name})'
-            'RETURN ID(ent) AS ent_id',
-            dict(ent_name=entity_name)
+            'MATCH (ent:%s)'
+            'RETURN ID(ent) AS ent_id' % entity_name
         )
         entities = list(cursor)
         index = randint(0, len(entities) - 1)
