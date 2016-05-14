@@ -14,12 +14,13 @@ class Neo4j(Base):
     ####################################
 
     def initReference(self):
-        session = self.session
+        tx = self.session.begin_transaction()
         print("Blobs: %s" % self.quantity_of("blob"))
         for x in range(self.quantity_of("blob")):
-            session.run(
+            tx.run(
                 'CREATE (test:TEST {name:"Hello"})'
             )
+        tx.commit()
 
     def initRaceOne(self):
         session = self.session
