@@ -65,7 +65,7 @@ class BenchMarker():
             exit()
 
         for db in self.databases:
-            self.test_init(db, "skim")
+            self.test_init(db, "raceone")
         #if is_valid_company and is_valid_database:
         #    self.run_tests(database, company)
         #else:
