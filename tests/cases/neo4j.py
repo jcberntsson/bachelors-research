@@ -18,7 +18,7 @@ class Neo4j(Base):
         print("Blobs: %s" % self.quantity_of("blob"))
         for x in range(self.quantity_of("blob")):
             tx.run(
-                'CREATE (test:TEST {name:"Hello"})'
+                'CREATE (:TEST { name:{name} })', {"name": "hello"}
             )
         tx.commit()
 
