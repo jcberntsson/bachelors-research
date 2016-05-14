@@ -81,16 +81,16 @@ class BenchMarker():
     def test_init(database, company):
         print("Testing init for %s and %s" % (database, company))
         if database == 'neo4j':
-            from cases.neo4j import Neo4j
+            from cases import Neo4j
             database_class = Neo4j()
         elif database == 'mysql':
-            from cases.mysql import MySQL
+            from cases import MySQL
             database_class = MySQL()
         elif database == 'mongo':
-            from cases.mongo import Mongo
+            from cases import Mongo
             database_class = Mongo()
         else:
-            from cases.neo4j import Neo4j
+            from cases import Neo4j
             database_class = Neo4j()
 
         def init():
